@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Masuk / Daftar — Dewi Tailor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config={theme:{extend:{colors:{primary:"#9B6B7A",secondary:"#C9A84C","warm-white":"#FDF8F5","dark-brown":"#2D1B1B",cream:"#E8D5C4"},fontFamily:{heading:["Playfair Display","serif"],body:["Poppins","sans-serif"]}}}}</script>
+  <style>
+    body{background:#2D1B1B;font-family:'Poppins',sans-serif}
+    .hero-bg{background:linear-gradient(rgba(45,27,27,.75),rgba(45,27,27,.75)),url('https://images.unsplash.com/photo-1555529771-835f59fc5efe?q=80&w=2000');background-size:cover;background-position:center}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+    .card{animation:fadeUp .5s ease both}
+    .otp-box{width:46px;height:56px;font-size:1.4rem;font-weight:700;text-align:center;border:2px solid #E8D5C4;border-radius:12px;background:#fff;color:#2D1B1B;transition:border-color .2s}
+    .otp-box:focus{border-color:#9B6B7A;outline:none}
+    .mode-btn-active{background:#9B6B7A;color:#fff;box-shadow:0 2px 8px rgba(155,107,122,.3)}
+    .mode-btn{color:#9B6B7A;background:transparent}
+    input{font-family:'Poppins',sans-serif}
+  </style>
+</head>
+<body class="hero-bg min-h-screen flex items-center justify-center p-6">
+  <div class="w-full max-w-md">
+    <div class="text-center mb-8">
+      <a href="index.html" class="font-['Playfair_Display'] text-3xl font-bold text-white italic">Dewi Tailor</a>
+      <p class="text-white/50 text-sm mt-1">Jahitan Presisi, Keanggunan yang Berbicara</p>
+    </div>
+
+    <div class="bg-white rounded-3xl shadow-2xl overflow-hidden card">
+      <!-- Header -->
+      <div class="p-8 border-b border-[#E8D5C4] bg-gradient-to-b from-[#9B6B7A]/5 to-transparent text-center">
+        <div id="hdr-icon" class="w-14 h-14 bg-[#9B6B7A]/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
+          <svg class="w-7 h-7 text-[#9B6B7A]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+        </div>
+        <h1 id="step-title" class="font-['Playfair_Display'] text-2xl font-bold text-[#2D1B1B]">Selamat Datang</h1>
+        <p id="step-sub" class="text-gray-400 text-sm mt-1">Masuk atau buat akun baru</p>
+      </div>
+
+      <!-- Step 1: Mode + Phone -->
+      <div id="step-1" class="p-8 space-y-5">
+        <div class="flex bg-[#FDF8F5] rounded-2xl p-1 gap-1">
+          <button id="btn-masuk" onclick="setMode('masuk')" class="mode-btn-active flex-1 py-2.5 rounded-xl font-semibold text-sm transition-all">Masuk</button>
+          <button id="btn-daftar" onclick="setMode('daftar')" class="mode-btn flex-1 py-2.5 rounded-xl font-semibold text-sm transition-all">Daftar</button>
+        </div>
+        <div>
+          <label class="block text-sm font-semibold mb-2 text-[#2D1B1B]">Nomor HP</label>
+          <div class="flex">
+            <span class="flex items-center px-4 bg-[#FDF8F5] border border-r-0 border-[#E8D5C4] rounded-l-xl text-sm font-medium text-gray-500 select-none">+62</span>
+            <input id="phone-input" type="tel" placeholder="8123456789" maxlength="13"
+              class="flex-1 border border-[#E8D5C4] rounded-r-xl px-4 py-3 focus:border-[#9B6B7A] focus:outline-none transition-all text-sm">
+          </div>
+        </div>
+        <p id="err1" class="text-red-500 text-sm text-center min-h-4"></p>
+        <button id="send-btn" onclick="sendOTP()"
+          class="w-full bg-[#9B6B7A] text-white py-4 rounded-full font-semibold hover:brightness-110 transition-all shadow-lg shadow-[#9B6B7A]/20">
+          Kirim Kode OTP
+        </button>
+        <div id="recaptcha-container"></div>
+      </div>
+
+      <!-- Step 2: OTP -->
+      <div id="step-2" class="p-8 space-y-6 hidden">
+        <p class="text-sm text-gray-500 text-center">Masukkan 6 digit kode yang dikirim ke nomor Anda</p>
+        <div class="flex justify-center gap-2" id="otp-boxes">
+          <input class="otp-box" maxlength="1" inputmode="numeric">
+          <input class="otp-box" maxlength="1" inputmode="numeric">
+          <input class="otp-box" maxlength="1" inputmode="numeric">
+          <input class="otp-box" maxlength="1" inputmode="numeric">
+          <input class="otp-box" maxlength="1" inputmode="numeric">
+          <input class="otp-box" maxlength="1" inputmode="numeric">
+        </div>
+        <p id="err2" class="text-red-500 text-sm text-center min-h-4"></p>
+        <button id="verify-btn" onclick="verifyOTP()"
+          class="w-full bg-[#9B6B7A] text-white py-4 rounded-full font-semibold hover:brightness-110 transition-all">
+          Verifikasi
+        </button>
+        <button onclick="goBack()" class="w-full text-gray-400 text-sm hover:text-[#9B6B7A] transition-all">← Ubah Nomor</button>
+      </div>
+
+      <!-- Step 3: Set Username -->
+      <div id="step-3" class="p-8 space-y-5 hidden">
+        <p class="text-sm text-gray-500 text-center">Anda pengguna baru! Pilih nama pengguna untuk ditampilkan.</p>
+        <div>
+          <label class="block text-sm font-semibold mb-2 text-[#2D1B1B]">Username</label>
+          <input id="uname-input" type="text" placeholder="ibu_sari_123" maxlength="20"
+            class="w-full border border-[#E8D5C4] rounded-xl px-4 py-3 focus:border-[#9B6B7A] focus:outline-none transition-all text-sm">
+          <p class="text-xs text-gray-400 mt-1">3–20 karakter: huruf, angka, underscore saja.</p>
+        </div>
+        <p id="err3" class="text-red-500 text-sm text-center min-h-4"></p>
+        <button id="save-btn" onclick="saveUsername()"
+          class="w-full bg-[#9B6B7A] text-white py-4 rounded-full font-semibold hover:brightness-110 transition-all">
+          Simpan & Mulai
+        </button>
+      </div>
+    </div>
+    <p class="text-center text-white/30 text-xs mt-6">© 2026 Dewi Tailor</p>
+  </div>
+
+  <script type="module">
+    import { auth, db } from "./js/firebase-config.js";
+    import { RecaptchaVerifier, signInWithPhoneNumber, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { doc, getDoc, setDoc, Timestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    const params = new URLSearchParams(window.location.search);
+    const redirectTo = params.get('redirect') || 'index.html';
+
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        const snap = await getDoc(doc(db, 'users', user.uid));
+        if (snap.exists()) { window.location.href = redirectTo; }
+        else { showStep(3); }
+      }
+    });
+
+    let confirmResult = null;
+    let rcVerifier = null;
+    window.currentMode = 'masuk';
+
+    window.setMode = (m) => {
+      window.currentMode = m;
+      document.getElementById('btn-masuk').className = `${m==='masuk'?'mode-btn-active':'mode-btn'} flex-1 py-2.5 rounded-xl font-semibold text-sm transition-all`;
+      document.getElementById('btn-daftar').className = `${m==='daftar'?'mode-btn-active':'mode-btn'} flex-1 py-2.5 rounded-xl font-semibold text-sm transition-all`;
+    };
+
+    window.sendOTP = async () => {
+      const phone = document.getElementById('phone-input').value.trim().replace(/^0/, '');
+      const err = document.getElementById('err1');
+      err.textContent = '';
+      if (!phone || phone.length < 8) { err.textContent = 'Masukkan nomor HP yang valid.'; return; }
+      const btn = document.getElementById('send-btn');
+      btn.disabled = true; btn.textContent = 'Mengirim...';
+      try {
+        if (!rcVerifier) {
+          rcVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', { size: 'invisible' });
+          await rcVerifier.render();
+        }
+        confirmResult = await signInWithPhoneNumber(auth, '+62' + phone, rcVerifier);
+        document.getElementById('step-title').textContent = 'Masukkan Kode OTP';
+        document.getElementById('step-sub').textContent = 'Kode dikirim ke +62' + phone;
+        showStep(2);
+        setupOTP();
+        setTimeout(() => document.querySelector('.otp-box')?.focus(), 100);
+      } catch(e) {
+        err.textContent = 'Gagal kirim OTP. Pastikan nomor HP valid. (' + (e.code || e.message) + ')';
+        rcVerifier = null;
+      } finally { btn.disabled = false; btn.textContent = 'Kirim Kode OTP'; }
+    };
+
+    function setupOTP() {
+      const boxes = document.querySelectorAll('.otp-box');
+      boxes.forEach((b, i) => {
+        b.value = '';
+        b.oninput = () => { b.value = b.value.replace(/\D/,'').slice(0,1); if(b.value && i<5) boxes[i+1].focus(); };
+        b.onkeydown = (e) => { if(e.key==='Backspace' && !b.value && i>0){ boxes[i-1].focus(); boxes[i-1].value=''; } };
+      });
+    }
+
+    window.verifyOTP = async () => {
+      const otp = [...document.querySelectorAll('.otp-box')].map(b => b.value).join('');
+      const err = document.getElementById('err2');
+      err.textContent = '';
+      if (otp.length < 6) { err.textContent = 'Masukkan 6 digit kode OTP.'; return; }
+      const btn = document.getElementById('verify-btn');
+      btn.disabled = true; btn.textContent = 'Memverifikasi...';
+      try {
+        const result = await confirmResult.confirm(otp);
+        const user = result.user;
+        const snap = await getDoc(doc(db, 'users', user.uid));
+        if (snap.exists()) { window.location.href = redirectTo; }
+        else { showStep(3); }
+      } catch(e) {
+        document.getElementById('err2').textContent = 'Kode OTP salah atau kadaluarsa.';
+      } finally { btn.disabled = false; btn.textContent = 'Verifikasi'; }
+    };
+
+    window.saveUsername = async () => {
+      const uname = document.getElementById('uname-input').value.trim();
+      const err = document.getElementById('err3');
+      err.textContent = '';
+      if (!/^[a-zA-Z0-9_]{3,20}$/.test(uname)) { err.textContent = 'Username 3-20 karakter: huruf, angka, underscore.'; return; }
+      const btn = document.getElementById('save-btn');
+      btn.disabled = true; btn.textContent = 'Menyimpan...';
+      try {
+        const user = auth.currentUser;
+        await setDoc(doc(db, 'users', user.uid), {
+          username: uname, phone: user.phoneNumber, createdAt: Timestamp.now(), uid: user.uid,
+        });
+        window.location.href = redirectTo;
+      } catch(e) {
+        err.textContent = 'Gagal menyimpan. Coba lagi.';
+      } finally { btn.disabled = false; btn.textContent = 'Simpan & Mulai'; }
+    };
+
+    window.goBack = () => { showStep(1); document.getElementById('step-title').textContent = 'Selamat Datang'; document.getElementById('step-sub').textContent = 'Masuk atau buat akun baru'; };
+
+    function showStep(n) {
+      ['step-1','step-2','step-3'].forEach((id,i) => document.getElementById(id).classList.toggle('hidden', i+1 !== n));
+    }
+  </script>
+</body>
+</html>
