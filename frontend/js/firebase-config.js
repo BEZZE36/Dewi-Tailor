@@ -7,16 +7,17 @@ import { getAuth } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-aut
 // Cara mendapatkan: Firebase Console → Project Settings → Your Apps
 // =============================================================
 const firebaseConfig = {
-  apiKey:            "AIzaSy_GANTI_DENGAN_API_KEY_ANDA",
-  authDomain:        "nama-project-anda.firebaseapp.com",
-  projectId:         "nama-project-anda",
-  storageBucket:     "nama-project-anda.appspot.com",
-  messagingSenderId: "123456789012",
-  appId:             "1:123456789012:web:abcdef1234567890",
+  apiKey: "AIzaSyBU1Y99KodBbZkurhCLsYyQVxPWoeO2gVw",
+  authDomain: "dewi-tailor.firebaseapp.com",
+  projectId: "dewi-tailor",
+  storageBucket: "dewi-tailor.firebasestorage.app",
+  messagingSenderId: "530097648228",
+  appId: "1:530097648228:web:3a4c1c2b15bae9c10fe571",
+  measurementId: "G-88Z47K71TB",
 };
 // =============================================================
 
-const app  = initializeApp(firebaseConfig);
-export const db   = getFirestore(app);
+const app = initializeApp(firebaseConfig);
+export const db = getFirestore(app);
 export const auth = getAuth(app);
 export default app;

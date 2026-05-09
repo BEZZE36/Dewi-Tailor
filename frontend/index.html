@@ -1,378 +1,542 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Dewi Tailor — Jahitan Presisi, Keanggunan yang Berbicara</title>
-    <meta name="description" content="Website manajemen penjahit khusus wanita dewasa & anak perempuan. Jahitan presisi dengan keanggunan yang berbicara.">
-    
+    <meta
+      name="description"
+      content="Website manajemen penjahit khusus wanita dewasa & anak perempuan. Jahitan presisi dengan keanggunan yang berbicara."
+    />
+
     <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
-    
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Poppins:wght@300;400;500;600&display=swap"
+      rel="stylesheet"
+    />
+
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primary: '#9B6B7A',
-                        secondary: '#C9A84C',
-                        'warm-white': '#FDF8F5',
-                        'dark-brown': '#2D1B1B',
-                        'cream': '#E8D5C4',
-                    },
-                    fontFamily: {
-                        heading: ['Playfair Display', 'serif'],
-                        body: ['Poppins', 'sans-serif'],
-                        admin: ['Inter', 'sans-serif'],
-                    }
-                }
-            }
-        }
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: "#9B6B7A",
+              secondary: "#C9A84C",
+              "warm-white": "#FDF8F5",
+              "dark-brown": "#2D1B1B",
+              cream: "#E8D5C4",
+            },
+            fontFamily: {
+              heading: ["Playfair Display", "serif"],
+              body: ["Poppins", "sans-serif"],
+              admin: ["Inter", "sans-serif"],
+            },
+          },
+        },
+      };
     </script>
-    
+
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
-    
-    <style>
-        .glass-nav {
-            background: rgba(253, 248, 245, 0.8);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid #E8D5C4;
-        }
-        .hero-gradient {
-            background: linear-gradient(rgba(45, 27, 27, 0.6), rgba(45, 27, 27, 0.6)), url('https://images.unsplash.com/photo-1555529771-835f59fc5efe?q=80&w=2000&auto=format&fit=crop');
-            background-size: cover;
-            background-position: center;
-        }
-        .card-hover:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(155, 107, 122, 0.1);
-        }
-        .gallery-item:hover .overlay {
-            opacity: 1;
-        }
-        .nav-link::after {
-            content: '';
-            position: absolute;
-            width: 0;
-            height: 2px;
-            bottom: -4px;
-            left: 0;
-            background-color: #9B6B7A;
-            transition: width 0.3s ease;
-        }
-        .nav-link:hover::after {
-            width: 100%;
-        }
-    </style>
-</head>
-<body class="bg-warm-white text-dark-brown font-body">
 
+    <style>
+      .glass-nav {
+        background: rgba(253, 248, 245, 0.8);
+        backdrop-filter: blur(10px);
+        border-bottom: 1px solid #e8d5c4;
+      }
+      .hero-gradient {
+        background:
+          linear-gradient(rgba(45, 27, 27, 0.6), rgba(45, 27, 27, 0.6)),
+          url("https://images.unsplash.com/photo-1555529771-835f59fc5efe?q=80&w=2000&auto=format&fit=crop");
+        background-size: cover;
+        background-position: center;
+      }
+      .card-hover:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(155, 107, 122, 0.1);
+      }
+      .gallery-item:hover .overlay {
+        opacity: 1;
+      }
+      .nav-link::after {
+        content: "";
+        position: absolute;
+        width: 0;
+        height: 2px;
+        bottom: -4px;
+        left: 0;
+        background-color: #9b6b7a;
+        transition: width 0.3s ease;
+      }
+      .nav-link:hover::after {
+        width: 100%;
+      }
+    </style>
+  </head>
+  <body class="bg-warm-white text-dark-brown font-body">
     <!-- Header / Nav -->
     <header class="fixed top-0 w-full z-50 glass-nav">
-        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
-            <a href="index.html" class="font-heading text-2xl font-bold text-primary italic">Dewi Tailor</a>
-            
-            <!-- Desktop Nav -->
-            <div class="hidden lg:flex items-center space-x-8">
-                <a href="#beranda" class="nav-link relative font-medium">Beranda</a>
-                <a href="#galeri" class="nav-link relative font-medium">Galeri</a>
-                <a href="#layanan" class="nav-link relative font-medium">Layanan</a>
-                <a href="antrian.html" class="nav-link relative font-medium">Antrian</a>
-                <a href="cek-status.html" class="nav-link relative font-medium">Cek Order</a>
-                <a href="pre-order.html" class="bg-primary text-white px-6 py-2 rounded-full font-semibold hover:bg-opacity-90 transition-all">Pre-Order</a>
-            </div>
-            
-            <!-- Mobile Toggle -->
-            <button id="mobile-menu-btn" class="lg:hidden text-primary">
-                <i data-lucide="menu"></i>
-            </button>
-        </nav>
-        
-        <!-- Mobile Nav Menu -->
-        <div id="mobile-menu" class="hidden lg:hidden bg-warm-white border-t border-cream px-6 py-4 space-y-4">
-            <a href="#beranda" class="block font-medium">Beranda</a>
-            <a href="#galeri" class="block font-medium">Galeri</a>
-            <a href="#layanan" class="block font-medium">Layanan</a>
-            <a href="antrian.html" class="block font-medium">Antrian</a>
-            <a href="cek-status.html" class="block font-medium">Cek Order</a>
-            <a href="pre-order.html" class="block bg-primary text-white text-center py-3 rounded-lg font-semibold">Pre-Order</a>
+      <nav
+        class="container mx-auto px-6 py-4 flex justify-between items-center"
+      >
+        <a
+          href="index.html"
+          class="font-heading text-2xl font-bold text-primary italic"
+          >Dewi Tailor</a
+        >
+
+        <!-- Desktop Nav -->
+        <div class="hidden lg:flex items-center space-x-8">
+          <a href="#beranda" class="nav-link relative font-medium">Beranda</a>
+          <a href="#galeri" class="nav-link relative font-medium">Galeri</a>
+          <a href="#layanan" class="nav-link relative font-medium">Layanan</a>
+          <a href="antrian.html" class="nav-link relative font-medium"
+            >Antrian</a
+          >
+          <a href="cek-status.html" class="nav-link relative font-medium"
+            >Cek Order</a
+          >
+          <a
+            href="pre-order.html"
+            class="bg-primary text-white px-6 py-2 rounded-full font-semibold hover:bg-opacity-90 transition-all"
+            >Pre-Order</a
+          >
         </div>
+
+        <!-- Mobile Toggle -->
+        <button id="mobile-menu-btn" class="lg:hidden text-primary">
+          <i data-lucide="menu"></i>
+        </button>
+      </nav>
+
+      <!-- Mobile Nav Menu -->
+      <div
+        id="mobile-menu"
+        class="hidden lg:hidden bg-warm-white border-t border-cream px-6 py-4 space-y-4"
+      >
+        <a href="#beranda" class="block font-medium">Beranda</a>
+        <a href="#galeri" class="block font-medium">Galeri</a>
+        <a href="#layanan" class="block font-medium">Layanan</a>
+        <a href="antrian.html" class="block font-medium">Antrian</a>
+        <a href="cek-status.html" class="block font-medium">Cek Order</a>
+        <a
+          href="pre-order.html"
+          class="block bg-primary text-white text-center py-3 rounded-lg font-semibold"
+          >Pre-Order</a
+        >
+      </div>
     </header>
 
     <!-- Hero Section -->
-    <section id="beranda" class="hero-gradient h-screen flex items-center justify-center text-center text-white px-6 pt-20">
-        <div class="max-w-4xl">
-            <h1 class="font-heading text-6xl md:text-8xl mb-6 tracking-tight">DEWI TAILOR</h1>
-            <p class="text-xl md:text-2xl font-light mb-10 tracking-widest italic opacity-90">"Jahitan Presisi, Keanggunan yang Berbicara"</p>
-            <div class="flex flex-col md:flex-row justify-center gap-4">
-                <a href="pre-order.html" class="bg-primary text-white px-8 py-4 rounded-full text-lg font-semibold hover:bg-opacity-90 transition-all">Pre-Order Sekarang</a>
-                <a href="#galeri" class="bg-transparent border-2 border-white text-white px-8 py-4 rounded-full text-lg font-semibold hover:bg-white hover:text-primary transition-all">Lihat Galeri</a>
-            </div>
+    <section
+      id="beranda"
+      class="hero-gradient h-screen flex items-center justify-center text-center text-white px-6 pt-20"
+    >
+      <div class="max-w-4xl">
+        <h1 class="font-heading text-6xl md:text-8xl mb-6 tracking-tight">
+          DEWI TAILOR
+        </h1>
+        <p
+          class="text-xl md:text-2xl font-light mb-10 tracking-widest italic opacity-90"
+        >
+          "Jahitan Presisi, Keanggunan yang Berbicara"
+        </p>
+        <div class="flex flex-col md:flex-row justify-center gap-4">
+          <a
+            href="pre-order.html"
+            class="bg-primary text-white px-8 py-4 rounded-full text-lg font-semibold hover:bg-opacity-90 transition-all"
+            >Pre-Order Sekarang</a
+          >
+          <a
+            href="#galeri"
+            class="bg-transparent border-2 border-white text-white px-8 py-4 rounded-full text-lg font-semibold hover:bg-white hover:text-primary transition-all"
+            >Lihat Galeri</a
+          >
         </div>
+      </div>
     </section>
 
     <!-- 3 Keunggulan Section -->
     <section class="py-24 bg-white">
-        <div class="container mx-auto px-6">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-12">
-                <div class="text-center space-y-4">
-                    <div class="w-16 h-16 bg-warm-white rounded-full flex items-center justify-center mx-auto text-primary text-3xl">
-                        <i data-lucide="scissors"></i>
-                    </div>
-                    <h3 class="font-heading text-2xl font-semibold">Khusus Wanita & Anak</h3>
-                    <p class="text-gray-600 leading-relaxed">Kami hanya melayani pakaian wanita dewasa dan anak perempuan dengan keahlian spesialis.</p>
-                </div>
-                <div class="text-center space-y-4">
-                    <div class="w-16 h-16 bg-warm-white rounded-full flex items-center justify-center mx-auto text-primary text-3xl">
-                        <i data-lucide="ruler"></i>
-                    </div>
-                    <h3 class="font-heading text-2xl font-semibold">Fitting di Tempat</h3>
-                    <p class="text-gray-600 leading-relaxed">Setiap pelanggan wajib datang untuk pengukuran presisi demi hasil jahitan yang sempurna.</p>
-                </div>
-                <div class="text-center space-y-4">
-                    <div class="w-16 h-16 bg-warm-white rounded-full flex items-center justify-center mx-auto text-primary text-3xl">
-                        <i data-lucide="thread"></i>
-                    </div>
-                    <h3 class="font-heading text-2xl font-semibold">Kain dari Pelanggan</h3>
-                    <p class="text-gray-600 leading-relaxed">Anda bebas memilih bahan favorit, kami fokus pada kualitas jahitan terbaik.</p>
-                </div>
+      <div class="container mx-auto px-6">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-12">
+          <div class="text-center space-y-4">
+            <div
+              class="w-16 h-16 bg-warm-white rounded-full flex items-center justify-center mx-auto text-primary text-3xl"
+            >
+              <i data-lucide="scissors"></i>
             </div>
+            <h3 class="font-heading text-2xl font-semibold">
+              Khusus Wanita & Anak
+            </h3>
+            <p class="text-gray-600 leading-relaxed">
+              Kami hanya melayani pakaian wanita dewasa dan anak perempuan
+              dengan keahlian spesialis.
+            </p>
+          </div>
+          <div class="text-center space-y-4">
+            <div
+              class="w-16 h-16 bg-warm-white rounded-full flex items-center justify-center mx-auto text-primary text-3xl"
+            >
+              <i data-lucide="ruler"></i>
+            </div>
+            <h3 class="font-heading text-2xl font-semibold">
+              Fitting di Tempat
+            </h3>
+            <p class="text-gray-600 leading-relaxed">
+              Setiap pelanggan wajib datang untuk pengukuran presisi demi hasil
+              jahitan yang sempurna.
+            </p>
+          </div>
+          <div class="text-center space-y-4">
+            <div
+              class="w-16 h-16 bg-warm-white rounded-full flex items-center justify-center mx-auto text-primary text-3xl"
+            >
+              <i data-lucide="thread"></i>
+            </div>
+            <h3 class="font-heading text-2xl font-semibold">
+              Kain dari Pelanggan
+            </h3>
+            <p class="text-gray-600 leading-relaxed">
+              Anda bebas memilih bahan favorit, kami fokus pada kualitas jahitan
+              terbaik.
+            </p>
+          </div>
         </div>
+      </div>
     </section>
 
     <!-- Galeri Section -->
     <section id="galeri" class="py-24 bg-warm-white">
-        <div class="container mx-auto px-6">
-            <div class="text-center mb-16">
-                <h2 class="font-heading text-4xl md:text-5xl mb-4">Galeri Hasil Jahitan</h2>
-                <div class="w-24 h-1 bg-primary mx-auto mb-6"></div>
-                <p class="text-gray-600 max-w-2xl mx-auto">Lihat berbagai karya terbaik kami yang telah membahagiakan para pelanggan.</p>
-            </div>
-            
-            <div id="gallery-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                <!-- Gallery items will be loaded from Firebase here -->
-                <!-- Placeholder for static preview -->
-            </div>
-            
-            <div class="text-center mt-16">
-                <button id="see-all-btn" class="border-2 border-primary text-primary px-10 py-3 rounded-full font-semibold hover:bg-primary hover:text-white transition-all">Lihat Semua</button>
-            </div>
+      <div class="container mx-auto px-6">
+        <div class="text-center mb-16">
+          <h2 class="font-heading text-4xl md:text-5xl mb-4">
+            Galeri Hasil Jahitan
+          </h2>
+          <div class="w-24 h-1 bg-primary mx-auto mb-6"></div>
+          <p class="text-gray-600 max-w-2xl mx-auto">
+            Lihat berbagai karya terbaik kami yang telah membahagiakan para
+            pelanggan.
+          </p>
         </div>
+
+        <div
+          id="gallery-grid"
+          class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+        >
+          <!-- Gallery items will be loaded from Firebase here -->
+          <!-- Placeholder for static preview -->
+        </div>
+
+        <div class="text-center mt-16">
+          <button
+            id="see-all-btn"
+            class="border-2 border-primary text-primary px-10 py-3 rounded-full font-semibold hover:bg-primary hover:text-white transition-all"
+          >
+            Lihat Semua
+          </button>
+        </div>
+      </div>
     </section>
 
     <!-- Layanan & Estimasi Harga Table -->
     <section id="layanan" class="py-24 bg-white">
-        <div class="container mx-auto px-6">
-            <div class="text-center mb-16">
-                <h2 class="font-heading text-4xl md:text-5xl mb-4">Layanan & Estimasi</h2>
-                <div class="w-24 h-1 bg-primary mx-auto mb-6"></div>
-            </div>
-            
-            <div class="max-w-4xl mx-auto overflow-hidden rounded-2xl border border-cream shadow-sm">
-                <table class="w-full text-left">
-                    <thead class="bg-warm-white border-b border-cream">
-                        <tr>
-                            <th class="px-8 py-5 font-semibold text-primary">Jenis Pakaian</th>
-                            <th class="px-8 py-5 font-semibold text-primary">Kategori</th>
-                            <th class="px-8 py-5 font-semibold text-primary">Estimasi Ongkos</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-cream">
-                        <tr>
-                            <td class="px-8 py-4">Blouse / Atasan</td>
-                            <td class="px-8 py-4">Wanita Dewasa</td>
-                            <td class="px-8 py-4">Rp 80.000 – 150.000</td>
-                        </tr>
-                        <tr>
-                            <td class="px-8 py-4">Rok / Celana Wanita</td>
-                            <td class="px-8 py-4">Wanita Dewasa</td>
-                            <td class="px-8 py-4">Rp 75.000 – 120.000</td>
-                        </tr>
-                        <tr>
-                            <td class="px-8 py-4">Dress Casual</td>
-                            <td class="px-8 py-4">Wanita Dewasa</td>
-                            <td class="px-8 py-4">Rp 120.000 – 200.000</td>
-                        </tr>
-                        <tr>
-                            <td class="px-8 py-4">Dress Pesta</td>
-                            <td class="px-8 py-4">Wanita Dewasa</td>
-                            <td class="px-8 py-4">Rp 200.000 – 400.000</td>
-                        </tr>
-                        <tr>
-                            <td class="px-8 py-4">Gamis</td>
-                            <td class="px-8 py-4">Wanita Dewasa</td>
-                            <td class="px-8 py-4">Rp 150.000 – 300.000</td>
-                        </tr>
-                        <tr>
-                            <td class="px-8 py-4">Kebaya</td>
-                            <td class="px-8 py-4">Wanita Dewasa</td>
-                            <td class="px-8 py-4">Rp 250.000 – 500.000</td>
-                        </tr>
-                        <tr>
-                            <td class="px-8 py-4">Jumpsuit</td>
-                            <td class="px-8 py-4">Wanita Dewasa</td>
-                            <td class="px-8 py-4">Rp 150.000 – 250.000</td>
-                        </tr>
-                        <tr>
-                            <td class="px-8 py-4">Pakaian Anak</td>
-                            <td class="px-8 py-4">Anak Perempuan</td>
-                            <td class="px-8 py-4">Rp 75.000 – 180.000</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-            <p class="text-center mt-8 text-gray-500 italic text-sm">* Harga adalah estimasi ongkos jahit. Harga pasti ditentukan setelah konsultasi fitting.</p>
+      <div class="container mx-auto px-6">
+        <div class="text-center mb-16">
+          <h2 class="font-heading text-4xl md:text-5xl mb-4">
+            Layanan & Estimasi
+          </h2>
+          <div class="w-24 h-1 bg-primary mx-auto mb-6"></div>
         </div>
+
+        <div
+          class="max-w-4xl mx-auto overflow-hidden rounded-2xl border border-cream shadow-sm"
+        >
+          <table class="w-full text-left">
+            <thead class="bg-warm-white border-b border-cream">
+              <tr>
+                <th class="px-8 py-5 font-semibold text-primary">
+                  Jenis Pakaian
+                </th>
+                <th class="px-8 py-5 font-semibold text-primary">Kategori</th>
+                <th class="px-8 py-5 font-semibold text-primary">
+                  Estimasi Ongkos
+                </th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-cream">
+              <tr>
+                <td class="px-8 py-4">Blouse / Atasan</td>
+                <td class="px-8 py-4">Wanita Dewasa</td>
+                <td class="px-8 py-4">Rp 100.000 – 150.000</td>
+              </tr>
+              <tr>
+                <td class="px-8 py-4">Rok / Celana Wanita</td>
+                <td class="px-8 py-4">Wanita Dewasa</td>
+                <td class="px-8 py-4">Rp 120.000 – 150.000</td>
+              </tr>
+              <tr>
+                <td class="px-8 py-4">Dress Casual</td>
+                <td class="px-8 py-4">Wanita Dewasa</td>
+                <td class="px-8 py-4">Rp 150.000 – 300.000</td>
+              </tr>
+              <tr>
+                <td class="px-8 py-4">Dress Pesta</td>
+                <td class="px-8 py-4">Wanita Dewasa</td>
+                <td class="px-8 py-4">Rp 200.000 – 300.000</td>
+              </tr>
+              <tr>
+                <td class="px-8 py-4">Gamis</td>
+                <td class="px-8 py-4">Wanita Dewasa</td>
+                <td class="px-8 py-4">Rp 150.000 – 250.000</td>
+              </tr>
+              <tr>
+                <td class="px-8 py-4">Kebaya</td>
+                <td class="px-8 py-4">Wanita Dewasa</td>
+                <td class="px-8 py-4">Rp 150.000 – 250.000</td>
+              </tr>
+              <tr>
+                <td class="px-8 py-4">Pakaian Anak</td>
+                <td class="px-8 py-4">Anak Perempuan</td>
+                <td class="px-8 py-4">Rp 150.000 – 250.000</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="text-center mt-8 text-gray-500 italic text-sm">
+          * Harga adalah estimasi ongkos jahit. Harga pasti ditentukan setelah
+          konsultasi fitting.
+        </p>
+      </div>
     </section>
 
     <!-- Cara Pesan Section -->
     <section class="py-24 bg-primary text-white">
-        <div class="container mx-auto px-6">
-            <h2 class="font-heading text-4xl text-center mb-20">Cara Pesan</h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-12 relative">
-                <!-- Connectors -->
-                <div class="hidden md:block absolute top-10 left-1/4 right-1/4 h-0.5 border-t-2 border-dashed border-white border-opacity-30"></div>
-                
-                <div class="text-center relative z-10">
-                    <div class="w-20 h-20 bg-white text-primary rounded-full flex items-center justify-center mx-auto text-3xl font-bold mb-6">1</div>
-                    <h3 class="text-xl font-semibold mb-4">Isi Form Pre-Order</h3>
-                    <p class="text-white text-opacity-80">Mendaftar antrian secara online melalui website kami.</p>
-                </div>
-                <div class="text-center relative z-10">
-                    <div class="w-20 h-20 bg-white text-primary rounded-full flex items-center justify-center mx-auto text-3xl font-bold mb-6">2</div>
-                    <h3 class="text-xl font-semibold mb-4">Datang Fitting</h3>
-                    <p class="text-white text-opacity-80">Kunjungi butik kami untuk pengukuran presisi sesuai jadwal.</p>
-                </div>
-                <div class="text-center relative z-10">
-                    <div class="w-20 h-20 bg-white text-primary rounded-full flex items-center justify-center mx-auto text-3xl font-bold mb-6">3</div>
-                    <h3 class="text-xl font-semibold mb-4">Serahkan Kain</h3>
-                    <p class="text-white text-opacity-80">Bawa kain favorit Anda dan tunggu hasil jahitan yang menawan.</p>
-                </div>
+      <div class="container mx-auto px-6">
+        <h2 class="font-heading text-4xl text-center mb-20">Cara Pesan</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-12 relative">
+          <!-- Connectors -->
+          <div
+            class="hidden md:block absolute top-10 left-1/4 right-1/4 h-0.5 border-t-2 border-dashed border-white border-opacity-30"
+          ></div>
+
+          <div class="text-center relative z-10">
+            <div
+              class="w-20 h-20 bg-white text-primary rounded-full flex items-center justify-center mx-auto text-3xl font-bold mb-6"
+            >
+              1
             </div>
+            <h3 class="text-xl font-semibold mb-4">Isi Form Pre-Order</h3>
+            <p class="text-white text-opacity-80">
+              Mendaftar antrian secara online melalui website kami.
+            </p>
+          </div>
+          <div class="text-center relative z-10">
+            <div
+              class="w-20 h-20 bg-white text-primary rounded-full flex items-center justify-center mx-auto text-3xl font-bold mb-6"
+            >
+              2
+            </div>
+            <h3 class="text-xl font-semibold mb-4">Datang Fitting</h3>
+            <p class="text-white text-opacity-80">
+              Kunjungi butik kami untuk pengukuran presisi sesuai jadwal.
+            </p>
+          </div>
+          <div class="text-center relative z-10">
+            <div
+              class="w-20 h-20 bg-white text-primary rounded-full flex items-center justify-center mx-auto text-3xl font-bold mb-6"
+            >
+              3
+            </div>
+            <h3 class="text-xl font-semibold mb-4">Serahkan Kain</h3>
+            <p class="text-white text-opacity-80">
+              Bawa kain favorit Anda dan tunggu hasil jahitan yang menawan.
+            </p>
+          </div>
         </div>
+      </div>
     </section>
 
     <!-- Testimoni Section -->
     <section class="py-24 bg-warm-white">
-        <div class="container mx-auto px-6">
-            <h2 class="font-heading text-4xl text-center mb-16">Pelanggan Bahagia</h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div class="bg-white p-8 rounded-2xl shadow-sm border border-cream">
-                    <div class="flex text-secondary mb-4">
-                        <i data-lucide="star" class="fill-current"></i>
-                        <i data-lucide="star" class="fill-current"></i>
-                        <i data-lucide="star" class="fill-current"></i>
-                        <i data-lucide="star" class="fill-current"></i>
-                        <i data-lucide="star" class="fill-current"></i>
-                    </div>
-                    <p class="text-gray-600 italic mb-6">"Hasil jahitannya sangat rapi dan pas sekali di badan. Benar-benar presisi seperti namanya!"</p>
-                    <div class="font-semibold">— Ibu Rina S.</div>
-                </div>
-                <div class="bg-white p-8 rounded-2xl shadow-sm border border-cream">
-                    <div class="flex text-secondary mb-4">
-                        <i data-lucide="star" class="fill-current"></i>
-                        <i data-lucide="star" class="fill-current"></i>
-                        <i data-lucide="star" class="fill-current"></i>
-                        <i data-lucide="star" class="fill-current"></i>
-                        <i data-lucide="star" class="fill-current"></i>
-                    </div>
-                    <p class="text-gray-600 italic mb-6">"Kebaya yang dibuat sangat anggun. Banyak yang memuji saat dipakai ke pernikahan teman."</p>
-                    <div class="font-semibold">— Siti M.</div>
-                </div>
-                <div class="bg-white p-8 rounded-2xl shadow-sm border border-cream">
-                    <div class="flex text-secondary mb-4">
-                        <i data-lucide="star" class="fill-current"></i>
-                        <i data-lucide="star" class="fill-current"></i>
-                        <i data-lucide="star" class="fill-current"></i>
-                        <i data-lucide="star" class="fill-current"></i>
-                        <i data-lucide="star" class="fill-current"></i>
-                    </div>
-                    <p class="text-gray-600 italic mb-6">"Gamis untuk anak saya sangat nyaman dipakai seharian. Jahitannya kuat dan detailnya cantik."</p>
-                    <div class="font-semibold">— Ibu Maya</div>
-                </div>
+      <div class="container mx-auto px-6">
+        <h2 class="font-heading text-4xl text-center mb-16">
+          Pelanggan Bahagia
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div class="bg-white p-8 rounded-2xl shadow-sm border border-cream">
+            <div class="flex text-secondary mb-4">
+              <i data-lucide="star" class="fill-current"></i>
+              <i data-lucide="star" class="fill-current"></i>
+              <i data-lucide="star" class="fill-current"></i>
+              <i data-lucide="star" class="fill-current"></i>
+              <i data-lucide="star" class="fill-current"></i>
             </div>
+            <p class="text-gray-600 italic mb-6">
+              "Hasil jahitannya sangat rapi dan pas sekali di badan. Benar-benar
+              presisi seperti namanya!"
+            </p>
+            <div class="font-semibold">— Ibu Rina S.</div>
+          </div>
+          <div class="bg-white p-8 rounded-2xl shadow-sm border border-cream">
+            <div class="flex text-secondary mb-4">
+              <i data-lucide="star" class="fill-current"></i>
+              <i data-lucide="star" class="fill-current"></i>
+              <i data-lucide="star" class="fill-current"></i>
+              <i data-lucide="star" class="fill-current"></i>
+              <i data-lucide="star" class="fill-current"></i>
+            </div>
+            <p class="text-gray-600 italic mb-6">
+              "Kebaya yang dibuat sangat anggun. Banyak yang memuji saat dipakai
+              ke pernikahan teman."
+            </p>
+            <div class="font-semibold">— Siti M.</div>
+          </div>
+          <div class="bg-white p-8 rounded-2xl shadow-sm border border-cream">
+            <div class="flex text-secondary mb-4">
+              <i data-lucide="star" class="fill-current"></i>
+              <i data-lucide="star" class="fill-current"></i>
+              <i data-lucide="star" class="fill-current"></i>
+              <i data-lucide="star" class="fill-current"></i>
+              <i data-lucide="star" class="fill-current"></i>
+            </div>
+            <p class="text-gray-600 italic mb-6">
+              "Gamis untuk anak saya sangat nyaman dipakai seharian. Jahitannya
+              kuat dan detailnya cantik."
+            </p>
+            <div class="font-semibold">— Ibu Maya</div>
+          </div>
         </div>
+      </div>
     </section>
 
     <!-- Footer -->
     <footer class="bg-dark-brown text-white py-16">
-        <div class="container mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-12">
-            <div class="col-span-1 md:col-span-2">
-                <a href="index.html" class="font-heading text-3xl font-bold text-secondary mb-4 block italic">Dewi Tailor</a>
-                <p class="text-gray-400 mb-8 max-w-md">Jahitan Presisi, Keanggunan yang Berbicara. Butik penjahit khusus wanita dengan sentuhan profesional.</p>
-                <div class="flex space-x-4">
-                    <a href="#" class="w-10 h-10 bg-white bg-opacity-10 rounded-full flex items-center justify-center hover:bg-secondary transition-all"><i data-lucide="instagram"></i></a>
-                    <a href="#" class="w-10 h-10 bg-white bg-opacity-10 rounded-full flex items-center justify-center hover:bg-secondary transition-all"><i data-lucide="facebook"></i></a>
-                </div>
-            </div>
-            <div>
-                <h4 class="text-lg font-semibold mb-6 text-secondary">Kontak</h4>
-                <ul class="space-y-4 text-gray-400">
-                    <li class="flex items-start gap-3">
-                        <i data-lucide="map-pin" class="text-secondary flex-shrink-0"></i>
-                        <span>Jl. Mawar Melati No. 123, Jakarta Selatan</span>
-                    </li>
-                    <li class="flex items-center gap-3">
-                        <i data-lucide="phone" class="text-secondary flex-shrink-0"></i>
-                        <span>+62 812 3456 7890</span>
-                    </li>
-                    <li class="flex items-center gap-3">
-                        <i data-lucide="clock" class="text-secondary flex-shrink-0"></i>
-                        <span>Senin – Sabtu: 08.00 – 17.00</span>
-                    </li>
-                </ul>
-            </div>
-            <div>
-                <h4 class="text-lg font-semibold mb-6 text-secondary">Tautan</h4>
-                <ul class="space-y-4 text-gray-400">
-                    <li><a href="#galeri" class="hover:text-secondary transition-all">Galeri</a></li>
-                    <li><a href="#layanan" class="hover:text-secondary transition-all">Layanan</a></li>
-                    <li><a href="antrian.html" class="hover:text-secondary transition-all">Antrian</a></li>
-                    <li><a href="pre-order.html" class="hover:text-secondary transition-all">Mulai Pre-Order</a></li>
-                </ul>
-            </div>
+      <div
+        class="container mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-12"
+      >
+        <div class="col-span-1 md:col-span-2">
+          <a
+            href="index.html"
+            class="font-heading text-3xl font-bold text-secondary mb-4 block italic"
+            >Dewi Tailor</a
+          >
+          <p class="text-gray-400 mb-8 max-w-md">
+            Jahitan Presisi, Keanggunan yang Berbicara. Butik penjahit khusus
+            wanita dengan sentuhan profesional.
+          </p>
+          <div class="flex space-x-4">
+            <a
+              href="#"
+              class="w-10 h-10 bg-white bg-opacity-10 rounded-full flex items-center justify-center hover:bg-secondary transition-all"
+              ><i data-lucide="instagram"></i
+            ></a>
+            <a
+              href="#"
+              class="w-10 h-10 bg-white bg-opacity-10 rounded-full flex items-center justify-center hover:bg-secondary transition-all"
+              ><i data-lucide="facebook"></i
+            ></a>
+          </div>
         </div>
-        <div class="container mx-auto px-6 border-t border-white border-opacity-10 mt-16 pt-8 text-center text-gray-500 text-sm">
-            &copy; 2026 Dewi Tailor. All rights reserved.
+        <div>
+          <h4 class="text-lg font-semibold mb-6 text-secondary">Kontak</h4>
+          <ul class="space-y-4 text-gray-400">
+            <li class="flex items-start gap-3">
+              <i data-lucide="map-pin" class="text-secondary flex-shrink-0"></i>
+              <span>Jl. Mawar Melati No. 123, Jakarta Selatan</span>
+            </li>
+            <li class="flex items-center gap-3">
+              <i data-lucide="phone" class="text-secondary flex-shrink-0"></i>
+              <span>+62 812 3456 7890</span>
+            </li>
+            <li class="flex items-center gap-3">
+              <i data-lucide="clock" class="text-secondary flex-shrink-0"></i>
+              <span>Senin – Sabtu: 08.00 – 17.00</span>
+            </li>
+          </ul>
         </div>
+        <div>
+          <h4 class="text-lg font-semibold mb-6 text-secondary">Tautan</h4>
+          <ul class="space-y-4 text-gray-400">
+            <li>
+              <a href="#galeri" class="hover:text-secondary transition-all"
+                >Galeri</a
+              >
+            </li>
+            <li>
+              <a href="#layanan" class="hover:text-secondary transition-all"
+                >Layanan</a
+              >
+            </li>
+            <li>
+              <a href="antrian.html" class="hover:text-secondary transition-all"
+                >Antrian</a
+              >
+            </li>
+            <li>
+              <a
+                href="pre-order.html"
+                class="hover:text-secondary transition-all"
+                >Mulai Pre-Order</a
+              >
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div
+        class="container mx-auto px-6 border-t border-white border-opacity-10 mt-16 pt-8 text-center text-gray-500 text-sm"
+      >
+        &copy; 2026 Dewi Tailor. All rights reserved.
+      </div>
     </footer>
 
     <!-- Firebase Scripts -->
     <script type="module">
-        import { db } from './js/firebase-config.js';
-        import { collection, query, where, getDocs, limit } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+      import { db } from "./js/firebase-config.js";
+      import {
+        collection,
+        query,
+        where,
+        getDocs,
+        limit,
+      } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-        // Initialize Lucide Icons
-        lucide.createIcons();
+      // Initialize Lucide Icons
+      lucide.createIcons();
 
-        // Mobile Menu Toggle
-        const btn = document.getElementById('mobile-menu-btn');
-        const menu = document.getElementById('mobile-menu');
-        btn.addEventListener('click', () => {
-            menu.classList.toggle('hidden');
-        });
+      // Mobile Menu Toggle
+      const btn = document.getElementById("mobile-menu-btn");
+      const menu = document.getElementById("mobile-menu");
+      btn.addEventListener("click", () => {
+        menu.classList.toggle("hidden");
+      });
 
-        // Load Gallery
-        async function loadGallery() {
-            const grid = document.getElementById('gallery-grid');
-            try {
-                const q = query(collection(db, 'gallery'), where('aktif', '==', true), limit(6));
-                const querySnapshot = await getDocs(q);
-                
-                if (querySnapshot.empty) {
-                    grid.innerHTML = '<p class="col-span-full text-center text-gray-500">Belum ada koleksi galeri.</p>';
-                    return;
-                }
+      // Load Gallery
+      async function loadGallery() {
+        const grid = document.getElementById("gallery-grid");
+        try {
+          const q = query(
+            collection(db, "gallery"),
+            where("aktif", "==", true),
+            limit(6),
+          );
+          const querySnapshot = await getDocs(q);
 
-                grid.innerHTML = '';
-                querySnapshot.forEach((doc) => {
-                    const data = doc.data();
-                    grid.innerHTML += `
+          if (querySnapshot.empty) {
+            grid.innerHTML =
+              '<p class="col-span-full text-center text-gray-500">Belum ada koleksi galeri.</p>';
+            return;
+          }
+
+          grid.innerHTML = "";
+          querySnapshot.forEach((doc) => {
+            const data = doc.data();
+            grid.innerHTML += `
                         <div class="gallery-item group relative overflow-hidden rounded-2xl bg-white shadow-sm border border-cream transition-all hover:-translate-y-1">
                             <div class="aspect-[4/5] overflow-hidden">
                                 <img src="${data.fotoURL}" alt="${data.namaModel}" class="w-full h-full object-cover transition-all duration-500 group-hover:scale-110">
@@ -385,13 +549,13 @@
                             </div>
                         </div>
                     `;
-                });
-            } catch (error) {
-                console.error("Error loading gallery:", error);
-            }
+          });
+        } catch (error) {
+          console.error("Error loading gallery:", error);
         }
+      }
 
-        loadGallery();
+      loadGallery();
     </script>
-</body>
+  </body>
 </html>
