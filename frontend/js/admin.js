@@ -1,4 +1,4 @@
-import { db, auth } from "./firebase-config.js";
+import { db, auth, storage } from "./firebase-config.js";
 import {
   collection, query, orderBy, onSnapshot, doc, updateDoc,
   getDoc, addDoc, deleteDoc, Timestamp, runTransaction,
@@ -6,6 +6,9 @@ import {
 import {
   signInWithEmailAndPassword, signOut, onAuthStateChanged,
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import {
+  ref, uploadBytesResumable, getDownloadURL,
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
 import {
   samarkanNama, formatTgl, formatTglPendek, statusBadge, statusBayarBadge,
   formatRupiah, formatNomorAntrian, isToday, generateToken,
@@ -392,6 +395,29 @@ window.openGalleryModal = function (itemId = null) {
     document.getElementById("g-aktif").checked = true;
   }
   document.getElementById("gallery-modal").style.display = "flex";
+  // Reset foto tab to URL mode
+  setFotoTab('url');
+  // File preview listener
+  document.getElementById('g-file')?.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const preview = document.getElementById('g-preview');
+    const placeholder = document.getElementById('upload-placeholder');
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      preview.src = ev.target.result;
+      preview.classList.remove('hidden');
+      placeholder.classList.add('hidden');
+    };
+    reader.readAsDataURL(file);
+  });
+};
+window.setFotoTab = function(tab) {
+  const isUrl = tab === 'url';
+  document.getElementById('foto-url-panel').classList.toggle('hidden', !isUrl);
+  document.getElementById('foto-file-panel').classList.toggle('hidden', isUrl);
+  document.getElementById('tab-url').className = `flex-1 py-2 rounded-xl text-xs font-bold transition-all ${isUrl ? 'bg-admin-accent text-white' : 'bg-admin-bg border border-admin-border text-admin-muted'}`;
+  document.getElementById('tab-file').className = `flex-1 py-2 rounded-xl text-xs font-bold transition-all ${!isUrl ? 'bg-admin-accent text-white' : 'bg-admin-bg border border-admin-border text-admin-muted'}`;
 };
 window.closeGalleryModal = function () { document.getElementById("gallery-modal").style.display = "none"; currentGalleryId = null; };
 
@@ -400,12 +426,36 @@ document.getElementById("gallery-form")?.addEventListener("submit", async (e) =>
   const btn = document.getElementById("gallery-save-btn");
   btn.disabled = true; btn.textContent = "Menyimpan...";
   try {
+    // Determine foto URL: file upload or manual URL
+    let fotoURL = document.getElementById("g-foto").value.trim();
+    const fileInput = document.getElementById('g-file');
+    const isFileMode = !document.getElementById('foto-file-panel').classList.contains('hidden');
+    if (isFileMode && fileInput?.files[0]) {
+      const file = fileInput.files[0];
+      if (file.size > 5 * 1024 * 1024) { showToast('File terlalu besar. Maks 5MB ❌'); btn.disabled=false; btn.textContent='Simpan'; return; }
+      btn.textContent = 'Mengupload foto...';
+      const storageRef = ref(storage, `gallery/${Date.now()}_${file.name}`);
+      const uploadTask = uploadBytesResumable(storageRef, file);
+      fotoURL = await new Promise((resolve, reject) => {
+        uploadTask.on('state_changed',
+          (snap) => {
+            const pct = Math.round(snap.bytesTransferred / snap.totalBytes * 100);
+            document.getElementById('upload-progress-bar').classList.remove('hidden');
+            document.getElementById('upload-bar').style.width = pct + '%';
+            document.getElementById('upload-pct').textContent = pct + '%';
+          },
+          reject,
+          async () => resolve(await getDownloadURL(uploadTask.snapshot.ref))
+        );
+      });
+    }
+    if (!fotoURL) { showToast('Masukkan URL atau upload foto ❌'); btn.disabled=false; btn.textContent='Simpan'; return; }
     const data = {
       namaModel: document.getElementById("g-nama").value,
       kategori: document.getElementById("g-kategori").value,
       deskripsi: document.getElementById("g-deskripsi").value,
       estimasiHarga: document.getElementById("g-harga").value,
-      fotoURL: document.getElementById("g-foto").value,
+      fotoURL,
       aktif: document.getElementById("g-aktif").checked,
     };
     if (currentGalleryId) await updateDoc(doc(db, "gallery", currentGalleryId), data);
