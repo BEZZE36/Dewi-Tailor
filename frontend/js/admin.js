@@ -1,0 +1,423 @@
+import { db, auth } from "./firebase-config.js";
+import {
+  collection, query, orderBy, onSnapshot, doc, updateDoc,
+  getDoc, addDoc, deleteDoc, Timestamp, runTransaction,
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import {
+  signInWithEmailAndPassword, signOut, onAuthStateChanged,
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import {
+  samarkanNama, formatTgl, formatTglPendek, statusBadge, statusBayarBadge,
+  formatRupiah, formatNomorAntrian, isToday, generateToken,
+} from "./utils.js";
+
+let unsubscribeOrders = null;
+let unsubscribeGallery = null;
+let allOrders = [];
+let allGallery = [];
+let currentEditOrderId = null;
+let currentQROrderId = null;
+let currentGalleryId = null;
+
+// ─── AUTH: Email + Password + PIN Verifikasi ─────────────────────────────────
+
+const LOGIN_PIN_KEY = "adminVerified";
+
+function initAuth() {
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      // Cek apakah sudah verifikasi PIN di sesi ini
+      if (sessionStorage.getItem(LOGIN_PIN_KEY) === "true") {
+        showDashboard();
+        initDashboard();
+      } else {
+        // User sudah login Firebase tapi belum verifikasi PIN
+        showPinVerification();
+      }
+    } else {
+      showLogin();
+    }
+  });
+}
+
+// Step 1: Email + Password
+document.getElementById("login-form")?.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const email = document.getElementById("login-email").value;
+  const password = document.getElementById("login-password").value;
+  const btn = document.getElementById("login-btn");
+  const err = document.getElementById("login-error");
+  btn.disabled = true;
+  btn.innerHTML = '<span class="animate-spin inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2"></span>Memproses...';
+  err.textContent = "";
+  try {
+    await signInWithEmailAndPassword(auth, email, password);
+    // onAuthStateChanged akan menangani kelanjutan
+  } catch (error) {
+    const msgs = {
+      "auth/user-not-found": "Email tidak terdaftar.",
+      "auth/wrong-password": "Password salah.",
+      "auth/invalid-credential": "Email atau password salah.",
+      "auth/too-many-requests": "Terlalu banyak percobaan. Tunggu sebentar.",
+    };
+    err.textContent = msgs[error.code] || "Login gagal. Coba lagi.";
+    btn.disabled = false;
+    btn.textContent = "Masuk";
+  }
+});
+
+// Step 2: PIN Verifikasi (4 digit, disimpan di Firestore config/adminPin)
+function showPinVerification() {
+  document.getElementById("login-step-1").style.display = "none";
+  document.getElementById("login-step-2").style.display = "block";
+  document.getElementById("login-overlay").style.display = "flex";
+  document.getElementById("dashboard-wrapper").style.display = "none";
+  // Focus PIN input
+  setTimeout(() => document.getElementById("pin-input")?.focus(), 100);
+}
+
+document.getElementById("pin-form")?.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const pin = document.getElementById("pin-input").value.trim();
+  const err = document.getElementById("login-error");
+  const btn = document.getElementById("pin-verify-btn");
+  btn.disabled = true;
+  btn.textContent = "Memverifikasi...";
+  err.textContent = "";
+  try {
+    const configSnap = await getDoc(doc(db, "config", "app"));
+    const storedPin = configSnap.exists() ? configSnap.data().adminPin : null;
+    if (!storedPin) {
+      // Jika PIN belum diset, langsung masuk dan arahkan untuk set PIN
+      sessionStorage.setItem(LOGIN_PIN_KEY, "true");
+      showDashboard();
+      initDashboard();
+      showToast("⚠️ PIN belum diset. Hubungi pengembang untuk setup PIN.");
+      return;
+    }
+    if (pin === String(storedPin)) {
+      sessionStorage.setItem(LOGIN_PIN_KEY, "true");
+      showDashboard();
+      initDashboard();
+    } else {
+      err.textContent = "Kode verifikasi salah. Coba lagi.";
+      document.getElementById("pin-input").value = "";
+      document.getElementById("pin-input").focus();
+    }
+  } catch (err2) {
+    console.error(err2);
+    err.textContent = "Gagal memverifikasi. Periksa koneksi.";
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "Verifikasi";
+  }
+});
+
+// Toggle show/hide password
+document.getElementById("toggle-password")?.addEventListener("click", () => {
+  const input = document.getElementById("login-password");
+  const btn = document.getElementById("toggle-password");
+  input.type = input.type === "password" ? "text" : "password";
+  btn.innerHTML = input.type === "password"
+    ? '<i data-lucide="eye" class="w-4 h-4"></i>'
+    : '<i data-lucide="eye-off" class="w-4 h-4"></i>';
+  if (window.lucide) lucide.createIcons();
+});
+
+function showLogin() {
+  document.getElementById("login-step-1").style.display = "block";
+  document.getElementById("login-step-2").style.display = "none";
+  document.getElementById("login-overlay").style.display = "flex";
+  document.getElementById("dashboard-wrapper").style.display = "none";
+  sessionStorage.removeItem(LOGIN_PIN_KEY);
+}
+
+function showDashboard() {
+  document.getElementById("login-overlay").style.display = "none";
+  document.getElementById("dashboard-wrapper").style.display = "block";
+}
+
+document.getElementById("logout-btn")?.addEventListener("click", async () => {
+  sessionStorage.removeItem(LOGIN_PIN_KEY);
+  if (unsubscribeOrders) unsubscribeOrders();
+  if (unsubscribeGallery) unsubscribeGallery();
+  await signOut(auth);
+});
+
+// ─── NAVIGATION ───────────────────────────────────────────────────────────────
+
+document.querySelectorAll("[data-section]").forEach((el) => {
+  el.addEventListener("click", () => {
+    navigateTo(el.getAttribute("data-section"));
+    document.getElementById("sidebar")?.classList.remove("open");
+  });
+});
+
+function navigateTo(section) {
+  document.querySelectorAll(".section-page").forEach((s) => (s.style.display = "none"));
+  const target = document.getElementById(`section-${section}`);
+  if (target) { target.style.display = "block"; target.style.animation = "fadeUp .4s ease"; }
+  document.querySelectorAll("[data-section]").forEach((el) =>
+    el.classList.toggle("active", el.getAttribute("data-section") === section)
+  );
+}
+
+document.getElementById("hamburger-btn")?.addEventListener("click", () => {
+  document.getElementById("sidebar")?.classList.toggle("open");
+});
+
+// ─── DASHBOARD ────────────────────────────────────────────────────────────────
+
+function initDashboard() {
+  navigateTo("overview");
+  initOrdersListener();
+  initGalleryListener();
+}
+
+function initOrdersListener() {
+  const q = query(collection(db, "orders"), orderBy("nomorAntrian", "asc"));
+  unsubscribeOrders = onSnapshot(q, (snapshot) => {
+    allOrders = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
+    renderOverview();
+    renderOrdersTable();
+  });
+}
+
+function initGalleryListener() {
+  const q = query(collection(db, "gallery"), orderBy("namaModel", "asc"));
+  unsubscribeGallery = onSnapshot(q, (snapshot) => {
+    allGallery = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
+    renderGalleryAdmin();
+  });
+}
+
+// ─── OVERVIEW ─────────────────────────────────────────────────────────────────
+
+function animateCounter(id, target) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const start = parseInt(el.textContent) || 0;
+  let startTime = null;
+  const step = (ts) => {
+    if (!startTime) startTime = ts;
+    const p = Math.min((ts - startTime) / 600, 1);
+    el.textContent = Math.floor(start + (target - start) * (1 - Math.pow(1 - p, 3)));
+    if (p < 1) requestAnimationFrame(step);
+    else el.textContent = target;
+  };
+  requestAnimationFrame(step);
+}
+
+function renderOverview() {
+  const now = new Date();
+  const twoDays = new Date(now.getTime() + 2 * 86400000);
+  animateCounter("stat-total-aktif", allOrders.filter((o) => o.status !== "selesai").length);
+  animateCounter("stat-selesai-hari-ini", allOrders.filter((o) => o.status === "selesai" && isToday(o.tanggalUpdate || o.tanggalMasuk)).length);
+  animateCounter("stat-deadline-dekat", allOrders.filter((o) => {
+    if (o.status === "selesai" || !o.estimasiSelesai) return false;
+    const d = o.estimasiSelesai.toDate ? o.estimasiSelesai.toDate() : new Date(o.estimasiSelesai);
+    return d <= twoDays && d >= now;
+  }).length);
+  animateCounter("stat-belum-estimasi", allOrders.filter((o) => !o.estimasiSelesai && o.status !== "selesai").length);
+}
+
+// ─── ORDERS TABLE ─────────────────────────────────────────────────────────────
+
+let filterStatus = "semua", sortMode = "terbaru", searchQuery = "";
+
+function getFilteredOrders() {
+  let orders = [...allOrders];
+  if (searchQuery) { const q = searchQuery.toLowerCase(); orders = orders.filter((o) => (o.nama||"").toLowerCase().includes(q) || (o.jenisPakaian||"").toLowerCase().includes(q)); }
+  if (filterStatus !== "semua") orders = orders.filter((o) => o.status === filterStatus);
+  const toDate = (v) => v ? (v.toDate ? v.toDate() : new Date(v)) : new Date("9999-12-31");
+  if (sortMode === "terbaru") orders.sort((a, b) => b.nomorAntrian - a.nomorAntrian);
+  else if (sortMode === "terlama") orders.sort((a, b) => a.nomorAntrian - b.nomorAntrian);
+  else if (sortMode === "estimasi") orders.sort((a, b) => toDate(a.estimasiSelesai) - toDate(b.estimasiSelesai));
+  return orders;
+}
+
+function renderOrdersTable() {
+  const orders = getFilteredOrders();
+  const tbody = document.getElementById("orders-tbody");
+  const cardList = document.getElementById("orders-cards");
+  if (orders.length === 0) {
+    if (tbody) tbody.innerHTML = `<tr><td colspan="9" class="text-center py-16 text-admin-muted italic">Tidak ada order</td></tr>`;
+    if (cardList) cardList.innerHTML = `<div class="text-center py-16 text-admin-muted italic p-8">Tidak ada order</div>`;
+    return;
+  }
+  if (tbody) {
+    tbody.innerHTML = orders.map((o, i) => `
+      <tr class="border-b border-admin-border hover:bg-white/5 transition-colors" style="animation:slideInRow .3s ease ${i*.04}s both">
+        <td class="px-5 py-4 font-bold text-admin-accent">#${formatNomorAntrian(o.nomorAntrian)}</td>
+        <td class="px-5 py-4"><div class="font-medium">${o.nama||"-"}</div><div class="text-xs text-admin-muted">${o.noHP||""}</div></td>
+        <td class="px-5 py-4 text-admin-muted">${o.jenisPakaian||"-"}</td>
+        <td class="px-5 py-4 text-admin-muted">${formatTglPendek(o.tanggalMasuk)}</td>
+        <td class="px-5 py-4 text-admin-muted">${formatTgl(o.estimasiSelesai)}</td>
+        <td class="px-5 py-4">${statusBadge(o.status)}</td>
+        <td class="px-5 py-4">${statusBayarBadge(o.statusBayar)}</td>
+        <td class="px-5 py-4"><button class="bg-admin-accent/10 text-admin-accent hover:bg-admin-accent hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all" onclick="openQRModal('${o.id}')">📱 QR</button></td>
+        <td class="px-5 py-4"><button class="bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-lg text-xs font-bold transition-all" onclick="openEditModal('${o.id}')">✏️ Edit</button></td>
+      </tr>`).join("");
+  }
+  if (cardList) {
+    cardList.innerHTML = orders.map((o, i) => `
+      <div class="p-6 border-b border-admin-border" style="animation:slideInRow .3s ease ${i*.04}s both">
+        <div class="flex justify-between items-start mb-2"><span class="font-bold text-admin-accent">#${formatNomorAntrian(o.nomorAntrian)}</span><div class="flex gap-2">${statusBadge(o.status)} ${statusBayarBadge(o.statusBayar)}</div></div>
+        <div class="font-semibold">${o.nama||"-"}</div>
+        <div class="text-sm text-admin-muted mb-3">✂️ ${o.jenisPakaian||"-"} · 📅 ${formatTgl(o.estimasiSelesai)}</div>
+        <div class="flex gap-3">
+          <button class="flex-1 bg-admin-accent/10 text-admin-accent border border-admin-accent/20 py-2 rounded-lg text-sm font-bold" onclick="openQRModal('${o.id}')">📱 QR</button>
+          <button class="flex-1 bg-white/10 py-2 rounded-lg text-sm font-bold" onclick="openEditModal('${o.id}')">✏️ Edit</button>
+        </div>
+      </div>`).join("");
+  }
+}
+
+document.getElementById("search-order")?.addEventListener("input", (e) => { searchQuery = e.target.value; renderOrdersTable(); });
+document.getElementById("filter-status")?.addEventListener("change", (e) => { filterStatus = e.target.value; renderOrdersTable(); });
+document.getElementById("sort-order")?.addEventListener("change", (e) => { sortMode = e.target.value; renderOrdersTable(); });
+
+// ─── EDIT MODAL ───────────────────────────────────────────────────────────────
+
+window.openEditModal = function (orderId) {
+  const order = allOrders.find((o) => o.id === orderId);
+  if (!order) return;
+  currentEditOrderId = orderId;
+  document.getElementById("edit-status").value = order.status || "menunggu";
+  document.getElementById("edit-status-bayar").value = order.statusBayar || "belum_lunas";
+  document.getElementById("edit-metode-bayar").value = order.metodeBayar || "tunai";
+  document.getElementById("edit-harga").value = order.harga || "";
+  document.getElementById("edit-catatan").value = order.catatan || "";
+  if (order.estimasiSelesai) {
+    const d = order.estimasiSelesai.toDate ? order.estimasiSelesai.toDate() : new Date(order.estimasiSelesai);
+    document.getElementById("edit-estimasi").value = d.toISOString().split("T")[0];
+  } else document.getElementById("edit-estimasi").value = "";
+  document.getElementById("edit-modal").style.display = "flex";
+};
+window.closeEditModal = function () { document.getElementById("edit-modal").style.display = "none"; currentEditOrderId = null; };
+
+document.getElementById("edit-form")?.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  if (!currentEditOrderId) return;
+  const btn = document.getElementById("edit-save-btn");
+  btn.disabled = true; btn.textContent = "Menyimpan...";
+  try {
+    const estimasiVal = document.getElementById("edit-estimasi").value;
+    const hargaVal = document.getElementById("edit-harga").value;
+    await updateDoc(doc(db, "orders", currentEditOrderId), {
+      status: document.getElementById("edit-status").value,
+      statusBayar: document.getElementById("edit-status-bayar").value,
+      metodeBayar: document.getElementById("edit-metode-bayar").value,
+      catatan: document.getElementById("edit-catatan").value,
+      harga: hargaVal ? Number(hargaVal) : null,
+      estimasiSelesai: estimasiVal ? Timestamp.fromDate(new Date(estimasiVal)) : null,
+      tanggalUpdate: Timestamp.now(),
+    });
+    closeEditModal(); showToast("Order berhasil diperbarui ✅");
+  } catch (err) { showToast("Gagal memperbarui ❌"); console.error(err); }
+  finally { btn.disabled = false; btn.textContent = "Simpan Perubahan"; }
+});
+
+// ─── QR MODAL ─────────────────────────────────────────────────────────────────
+
+window.openQRModal = function (orderId) {
+  const order = allOrders.find((o) => o.id === orderId);
+  if (!order) return;
+  currentQROrderId = orderId;
+  const qrUrl = `${window.location.origin}/update-status.html?id=${orderId}&token=${order.qrToken}`;
+  document.getElementById("qr-no-antrian").textContent = `#${formatNomorAntrian(order.nomorAntrian)}`;
+  document.getElementById("qr-nama").textContent = order.nama || "-";
+  document.getElementById("qr-jenis").textContent = order.jenisPakaian || "-";
+  document.getElementById("qr-estimasi").textContent = formatTgl(order.estimasiSelesai);
+  const canvas = document.getElementById("qr-canvas");
+  canvas.getContext("2d").clearRect(0, 0, canvas.width, canvas.height);
+  if (window.QRCode) QRCode.toCanvas(canvas, qrUrl, { width: 200, margin: 2 });
+  document.getElementById("qr-modal").style.display = "flex";
+};
+window.closeQRModal = function () { document.getElementById("qr-modal").style.display = "none"; currentQROrderId = null; };
+window.printLabel = function () { if (currentQROrderId) window.open(`/print-label.html?id=${currentQROrderId}`, "_blank"); };
+
+// ─── GALLERY ──────────────────────────────────────────────────────────────────
+
+function renderGalleryAdmin() {
+  const grid = document.getElementById("gallery-admin-grid");
+  if (!grid) return;
+  if (allGallery.length === 0) { grid.innerHTML = `<div class="col-span-full text-center py-20 text-admin-muted italic">Belum ada item galeri</div>`; return; }
+  grid.innerHTML = allGallery.map((item, i) => `
+    <div class="bg-admin-bg rounded-2xl border border-admin-border overflow-hidden hover:border-admin-accent transition-all hover:-translate-y-1" style="animation:fadeUp .4s ease ${i*.06}s both">
+      <div class="aspect-[4/3] overflow-hidden bg-admin-card relative">
+        <img src="${item.fotoURL||''}" alt="${item.namaModel}" class="w-full h-full object-cover ${!item.aktif?'opacity-30':''}" onerror="this.src='https://placehold.co/300x200/1E293B/94A3B8?text=No+Image'">
+        <span class="absolute top-3 left-3 bg-admin-accent text-white text-xs font-bold px-3 py-1 rounded-full">${item.kategori||""}</span>
+        ${!item.aktif?'<div class="absolute inset-0 flex items-center justify-center"><span class="bg-black/70 text-white text-xs font-bold px-3 py-1.5 rounded-full">NONAKTIF</span></div>':''}
+      </div>
+      <div class="p-5">
+        <div class="font-bold mb-1">${item.namaModel||"-"}</div>
+        <div class="text-admin-accent text-sm font-semibold mb-4">${item.estimasiHarga||"-"}</div>
+        <div class="flex items-center justify-between">
+          <label class="toggle-switch"><input type="checkbox" ${item.aktif?"checked":""} onchange="toggleGalleryAktif('${item.id}',this.checked)"><span class="slider"></span></label>
+          <div class="flex gap-2">
+            <button class="p-2 rounded-lg bg-white/5 hover:bg-admin-accent hover:text-white transition-all" onclick="openGalleryModal('${item.id}')">✏️</button>
+            <button class="p-2 rounded-lg bg-white/5 hover:bg-red-500 hover:text-white transition-all" onclick="deleteGalleryItem('${item.id}')">🗑️</button>
+          </div>
+        </div>
+      </div>
+    </div>`).join("");
+}
+
+window.toggleGalleryAktif = async (id, aktif) => await updateDoc(doc(db, "gallery", id), { aktif });
+window.deleteGalleryItem = async (id) => { if (!confirm("Hapus item ini?")) return; await deleteDoc(doc(db, "gallery", id)); showToast("Dihapus ✅"); };
+
+window.openGalleryModal = function (itemId = null) {
+  currentGalleryId = itemId;
+  document.getElementById("gallery-form").reset();
+  if (itemId) {
+    const item = allGallery.find((g) => g.id === itemId);
+    if (item) {
+      document.getElementById("g-nama").value = item.namaModel || "";
+      document.getElementById("g-kategori").value = item.kategori || "";
+      document.getElementById("g-deskripsi").value = item.deskripsi || "";
+      document.getElementById("g-harga").value = item.estimasiHarga || "";
+      document.getElementById("g-foto").value = item.fotoURL || "";
+      document.getElementById("g-aktif").checked = item.aktif !== false;
+    }
+    document.getElementById("gallery-modal-title").textContent = "Edit Item Galeri";
+  } else {
+    document.getElementById("gallery-modal-title").textContent = "Tambah Item Galeri";
+    document.getElementById("g-aktif").checked = true;
+  }
+  document.getElementById("gallery-modal").style.display = "flex";
+};
+window.closeGalleryModal = function () { document.getElementById("gallery-modal").style.display = "none"; currentGalleryId = null; };
+
+document.getElementById("gallery-form")?.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const btn = document.getElementById("gallery-save-btn");
+  btn.disabled = true; btn.textContent = "Menyimpan...";
+  try {
+    const data = {
+      namaModel: document.getElementById("g-nama").value,
+      kategori: document.getElementById("g-kategori").value,
+      deskripsi: document.getElementById("g-deskripsi").value,
+      estimasiHarga: document.getElementById("g-harga").value,
+      fotoURL: document.getElementById("g-foto").value,
+      aktif: document.getElementById("g-aktif").checked,
+    };
+    if (currentGalleryId) await updateDoc(doc(db, "gallery", currentGalleryId), data);
+    else await addDoc(collection(db, "gallery"), data);
+    closeGalleryModal(); showToast("Galeri berhasil disimpan ✅");
+  } catch (err) { showToast("Gagal menyimpan ❌"); console.error(err); }
+  finally { btn.disabled = false; btn.textContent = "Simpan"; }
+});
+
+// ─── TOAST ────────────────────────────────────────────────────────────────────
+
+function showToast(msg) {
+  const toast = document.getElementById("toast");
+  if (!toast) return;
+  toast.textContent = msg;
+  toast.classList.add("show");
+  setTimeout(() => toast.classList.remove("show"), 3000);
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+document.addEventListener("DOMContentLoaded", initAuth);

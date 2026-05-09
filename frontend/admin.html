@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — Dewi Tailor</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>tailwind.config={theme:{extend:{colors:{'admin-bg':'#0F172A','admin-card':'#1E293B','admin-border':'#334155','admin-accent':'#06B6D4','admin-text':'#F8FAFC','admin-muted':'#94A3B8'},fontFamily:{sans:['Inter','sans-serif']}}}}</script>
+<script src="https://unpkg.com/lucide@latest"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
+<style>
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes slideInRow{from{opacity:0;transform:translateX(-12px)}to{opacity:1;transform:translateX(0)}}
+body{background:#0F172A;color:#F8FAFC}
+.sidebar{background:#1E293B;border-right:1px solid #334155}
+.nav-item{transition:all .2s;color:#94A3B8;cursor:pointer}
+.nav-item.active{background:#06B6D4;color:#fff}
+.nav-item:hover:not(.active){background:rgba(6,182,212,.1);color:#06B6D4}
+.modal-overlay{background:rgba(15,23,42,.92);backdrop-filter:blur(6px)}
+.toggle-switch{position:relative;display:inline-block;width:48px;height:24px}
+.toggle-switch input{opacity:0;width:0;height:0}
+.slider{position:absolute;cursor:pointer;inset:0;background:#334155;transition:.4s;border-radius:24px}
+.slider:before{position:absolute;content:"";height:18px;width:18px;left:3px;bottom:3px;background:#fff;transition:.4s;border-radius:50%}
+input:checked+.slider{background:#06B6D4}
+input:checked+.slider:before{transform:translateX(24px)}
+#toast{visibility:hidden;background:#10B981;color:#fff;text-align:center;border-radius:12px;padding:16px 24px;position:fixed;z-index:200;right:24px;bottom:24px;font-weight:700;box-shadow:0 10px 25px rgba(0,0,0,.4);transition:all .3s}
+#toast.show{visibility:visible;animation:fadeUp .4s}
+.pin-box{width:52px;height:64px;font-size:1.75rem;font-weight:700;text-align:center;background:#0F172A;border:2px solid #334155;border-radius:12px;color:#F8FAFC;transition:border-color .2s}
+.pin-box:focus{border-color:#06B6D4;outline:none}
+@media(max-width:1024px){.sidebar{transform:translateX(-100%);transition:transform .3s;z-index:60;position:fixed;inset-y:0;left:0}.sidebar.open{transform:translateX(0)}}
+</style>
+</head>
+<body class="font-sans antialiased">
+
+<!-- ═══ LOGIN OVERLAY ═══ -->
+<div id="login-overlay" class="fixed inset-0 z-[100] bg-admin-bg flex items-center justify-center p-6">
+  <div class="bg-admin-card w-full max-w-md rounded-3xl border border-admin-border shadow-2xl overflow-hidden" style="animation:fadeUp .5s ease">
+
+    <!-- STEP 1: Email + Password -->
+    <div id="login-step-1">
+      <div class="p-10 border-b border-admin-border text-center bg-gradient-to-b from-admin-accent/10 to-transparent">
+        <div class="w-16 h-16 bg-admin-accent/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
+          <i data-lucide="lock" class="text-admin-accent w-8 h-8"></i>
+        </div>
+        <h2 class="text-2xl font-bold">Admin Dewi Tailor</h2>
+        <p class="text-admin-muted text-sm mt-2">Langkah 1 dari 2 — Masuk akun admin</p>
+      </div>
+      <form id="login-form" class="p-10 space-y-5">
+        <div>
+          <label class="block text-xs font-bold uppercase tracking-widest text-admin-muted mb-2">Email Admin</label>
+          <input type="email" id="login-email" required placeholder="admin@dewitailor.com"
+            class="w-full bg-admin-bg border border-admin-border rounded-xl p-4 focus:border-admin-accent focus:outline-none transition-all">
+        </div>
+        <div>
+          <label class="block text-xs font-bold uppercase tracking-widest text-admin-muted mb-2">Password</label>
+          <div class="relative">
+            <input type="password" id="login-password" required placeholder="••••••••"
+              class="w-full bg-admin-bg border border-admin-border rounded-xl p-4 pr-12 focus:border-admin-accent focus:outline-none transition-all">
+            <button type="button" id="toggle-password" class="absolute right-4 top-1/2 -translate-y-1/2 text-admin-muted hover:text-white transition-all">
+              <i data-lucide="eye" class="w-4 h-4"></i>
+            </button>
+          </div>
+        </div>
+        <p id="login-error" class="text-red-400 text-sm text-center min-h-5"></p>
+        <button type="submit" id="login-btn"
+          class="w-full bg-admin-accent text-white py-4 rounded-xl font-bold text-lg hover:brightness-110 transition-all shadow-lg shadow-admin-accent/20 flex items-center justify-center gap-2">
+          <i data-lucide="arrow-right" class="w-5 h-5"></i>
+          Lanjutkan
+        </button>
+      </form>
+    </div>
+
+    <!-- STEP 2: PIN Verifikasi -->
+    <div id="login-step-2" style="display:none">
+      <div class="p-10 border-b border-admin-border text-center bg-gradient-to-b from-emerald-500/10 to-transparent">
+        <div class="w-16 h-16 bg-emerald-500/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
+          <i data-lucide="shield-check" class="text-emerald-400 w-8 h-8"></i>
+        </div>
+        <h2 class="text-2xl font-bold">Verifikasi Identitas</h2>
+        <p class="text-admin-muted text-sm mt-2">Langkah 2 dari 2 — Masukkan kode PIN admin</p>
+      </div>
+      <form id="pin-form" class="p-10 space-y-8">
+        <div class="text-center">
+          <label class="block text-xs font-bold uppercase tracking-widest text-admin-muted mb-6">Kode PIN (4 Digit)</label>
+          <div class="flex justify-center gap-3">
+            <input class="pin-box" type="password" maxlength="1" inputmode="numeric" pattern="[0-9]">
+            <input class="pin-box" type="password" maxlength="1" inputmode="numeric" pattern="[0-9]">
+            <input class="pin-box" type="password" maxlength="1" inputmode="numeric" pattern="[0-9]">
+            <input class="pin-box" type="password" maxlength="1" inputmode="numeric" pattern="[0-9]">
+          </div>
+          <input type="hidden" id="pin-input">
+        </div>
+        <p id="pin-error" class="text-red-400 text-sm text-center min-h-5"></p>
+        <button type="submit" id="pin-verify-btn"
+          class="w-full bg-emerald-500 text-white py-4 rounded-xl font-bold text-lg hover:brightness-110 transition-all shadow-lg shadow-emerald-500/20">
+          Verifikasi & Masuk
+        </button>
+        <button type="button" id="back-to-login-btn" class="w-full text-admin-muted hover:text-white text-sm font-medium transition-all flex items-center justify-center gap-2">
+          <i data-lucide="arrow-left" class="w-4 h-4"></i> Kembali ke Login
+        </button>
+      </form>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══ DASHBOARD WRAPPER ═══ -->
+<div id="dashboard-wrapper" style="display:none;height:100vh;overflow:hidden">
+  <div class="flex h-full">
+
+    <!-- Sidebar -->
+    <aside id="sidebar" class="sidebar w-64 flex-shrink-0 overflow-y-auto">
+      <div class="p-8">
+        <div class="flex items-center gap-3 mb-10">
+          <div class="w-10 h-10 bg-admin-accent rounded-xl flex items-center justify-center">
+            <i data-lucide="scissors" class="text-white w-6 h-6"></i>
+          </div>
+          <span class="text-xl font-bold">Dewi Admin</span>
+        </div>
+        <nav class="space-y-2">
+          <button data-section="overview" class="nav-item flex items-center gap-3 w-full p-4 rounded-xl font-medium active"><i data-lucide="layout-dashboard" class="w-5 h-5"></i> Overview</button>
+          <button data-section="orders" class="nav-item flex items-center gap-3 w-full p-4 rounded-xl font-medium"><i data-lucide="list-todo" class="w-5 h-5"></i> Antrian & Order</button>
+          <button data-section="gallery" class="nav-item flex items-center gap-3 w-full p-4 rounded-xl font-medium"><i data-lucide="image" class="w-5 h-5"></i> Kelola Galeri</button>
+          <div class="pt-6 border-t border-admin-border mt-6">
+            <button id="logout-btn" class="nav-item flex items-center gap-3 w-full p-4 rounded-xl font-medium text-red-400 hover:!bg-red-500/10"><i data-lucide="log-out" class="w-5 h-5"></i> Logout</button>
+          </div>
+        </nav>
+      </div>
+    </aside>
+
+    <!-- Main -->
+    <main class="flex-grow overflow-y-auto bg-admin-bg">
+      <header class="lg:hidden bg-admin-card border-b border-admin-border p-4 flex justify-between items-center sticky top-0 z-50">
+        <div class="flex items-center gap-2 font-bold"><i data-lucide="scissors" class="text-admin-accent"></i> Dewi Admin</div>
+        <button id="hamburger-btn" class="p-2 text-admin-muted"><i data-lucide="menu"></i></button>
+      </header>
+
+      <div class="p-6 lg:p-12">
+        <!-- Overview -->
+        <div id="section-overview" class="section-page space-y-10">
+          <div><h1 class="text-3xl font-bold">Halo, Dewi! 👋</h1><p class="text-admin-muted mt-1">Ringkasan butik Anda hari ini.</p></div>
+          <div class="grid grid-cols-2 lg:grid-cols-4 gap-5">
+            <div class="bg-admin-card border border-admin-border p-8 rounded-3xl hover:border-blue-500/40 transition-all" style="animation:fadeUp .4s .1s both"><p class="text-admin-muted text-xs uppercase font-bold tracking-widest mb-4">Order Aktif</p><div class="flex items-end justify-between"><h3 id="stat-total-aktif" class="text-5xl font-bold">0</h3><div class="p-3 bg-blue-500/10 text-blue-400 rounded-2xl"><i data-lucide="layers"></i></div></div></div>
+            <div class="bg-admin-card border border-admin-border p-8 rounded-3xl hover:border-green-500/40 transition-all" style="animation:fadeUp .4s .15s both"><p class="text-admin-muted text-xs uppercase font-bold tracking-widest mb-4">Selesai Hari Ini</p><div class="flex items-end justify-between"><h3 id="stat-selesai-hari-ini" class="text-5xl font-bold">0</h3><div class="p-3 bg-green-500/10 text-green-400 rounded-2xl"><i data-lucide="check-circle-2"></i></div></div></div>
+            <div class="bg-admin-card border border-admin-border p-8 rounded-3xl hover:border-red-500/40 transition-all" style="animation:fadeUp .4s .2s both"><p class="text-admin-muted text-xs uppercase font-bold tracking-widest mb-4">Deadline Dekat</p><div class="flex items-end justify-between"><h3 id="stat-deadline-dekat" class="text-5xl font-bold">0</h3><div class="p-3 bg-red-500/10 text-red-400 rounded-2xl"><i data-lucide="clock"></i></div></div></div>
+            <div class="bg-admin-card border border-admin-border p-8 rounded-3xl hover:border-amber-500/40 transition-all" style="animation:fadeUp .4s .25s both"><p class="text-admin-muted text-xs uppercase font-bold tracking-widest mb-4">Belum Estimasi</p><div class="flex items-end justify-between"><h3 id="stat-belum-estimasi" class="text-5xl font-bold">0</h3><div class="p-3 bg-amber-500/10 text-amber-400 rounded-2xl"><i data-lucide="alert-circle"></i></div></div></div>
+          </div>
+        </div>
+
+        <!-- Orders -->
+        <div id="section-orders" class="section-page hidden space-y-8">
+          <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <h1 class="text-3xl font-bold">Manajemen Order</h1>
+            <div class="flex flex-wrap gap-3">
+              <div class="relative"><input id="search-order" type="text" placeholder="Cari nama..." class="bg-admin-card border border-admin-border rounded-xl px-4 py-2 pl-10 focus:border-admin-accent focus:outline-none text-sm w-48"><i data-lucide="search" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-admin-muted"></i></div>
+              <select id="filter-status" class="bg-admin-card border border-admin-border rounded-xl px-4 py-2 text-sm focus:outline-none"><option value="semua">Semua Status</option><option value="menunggu">Menunggu</option><option value="dikerjakan">Dikerjakan</option><option value="fitting">Fitting</option><option value="selesai">Selesai</option></select>
+              <select id="sort-order" class="bg-admin-card border border-admin-border rounded-xl px-4 py-2 text-sm focus:outline-none"><option value="terbaru">Terbaru</option><option value="terlama">Terlama</option><option value="estimasi">Estimasi Terdekat</option></select>
+            </div>
+          </div>
+          <div class="bg-admin-card border border-admin-border rounded-3xl overflow-hidden">
+            <div class="hidden lg:block overflow-x-auto">
+              <table class="w-full text-left">
+                <thead class="bg-admin-bg/50 border-b border-admin-border">
+                  <tr>
+                    <th class="px-5 py-4 text-xs font-bold text-admin-muted uppercase">No</th>
+                    <th class="px-5 py-4 text-xs font-bold text-admin-muted uppercase">Pelanggan</th>
+                    <th class="px-5 py-4 text-xs font-bold text-admin-muted uppercase">Jenis</th>
+                    <th class="px-5 py-4 text-xs font-bold text-admin-muted uppercase">Masuk</th>
+                    <th class="px-5 py-4 text-xs font-bold text-admin-muted uppercase">Estimasi</th>
+                    <th class="px-5 py-4 text-xs font-bold text-admin-muted uppercase">Status</th>
+                    <th class="px-5 py-4 text-xs font-bold text-admin-muted uppercase">Bayar</th>
+                    <th class="px-5 py-4 text-xs font-bold text-admin-muted uppercase">QR</th>
+                    <th class="px-5 py-4 text-xs font-bold text-admin-muted uppercase">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody id="orders-tbody" class="divide-y divide-admin-border"></tbody>
+              </table>
+            </div>
+            <div id="orders-cards" class="lg:hidden"></div>
+          </div>
+        </div>
+
+        <!-- Gallery -->
+        <div id="section-gallery" class="section-page hidden space-y-8">
+          <div class="flex justify-between items-center">
+            <h1 class="text-3xl font-bold">Kelola Galeri</h1>
+            <button onclick="openGalleryModal()" class="bg-admin-accent text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 hover:brightness-110 transition-all"><i data-lucide="plus" class="w-5 h-5"></i> Tambah</button>
+          </div>
+          <div id="gallery-admin-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6"></div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- Modal Edit Order -->
+<div id="edit-modal" class="modal-overlay fixed inset-0 z-[70] hidden items-center justify-center p-6">
+  <div class="bg-admin-card w-full max-w-lg rounded-3xl border border-admin-border shadow-2xl" style="animation:fadeUp .3s ease">
+    <div class="p-8 border-b border-admin-border flex justify-between items-center"><h3 class="text-xl font-bold">Edit Status Order</h3><button onclick="closeEditModal()" class="text-admin-muted hover:text-white"><i data-lucide="x"></i></button></div>
+    <form id="edit-form" class="p-8 space-y-5">
+      <div class="grid grid-cols-2 gap-5">
+        <div><label class="block text-xs font-bold text-admin-muted mb-2">Status</label><select id="edit-status" class="w-full bg-admin-bg border border-admin-border rounded-xl p-3 focus:border-admin-accent focus:outline-none"><option value="menunggu">Menunggu</option><option value="dikerjakan">Dikerjakan</option><option value="fitting">Fitting / Revisi</option><option value="selesai">Selesai</option></select></div>
+        <div><label class="block text-xs font-bold text-admin-muted mb-2">Estimasi Selesai</label><input type="date" id="edit-estimasi" class="w-full bg-admin-bg border border-admin-border rounded-xl p-3 focus:border-admin-accent focus:outline-none"></div>
+      </div>
+      <div class="grid grid-cols-2 gap-5">
+        <div><label class="block text-xs font-bold text-admin-muted mb-2">Harga (Rp)</label><input type="number" id="edit-harga" placeholder="250000" class="w-full bg-admin-bg border border-admin-border rounded-xl p-3 focus:border-admin-accent focus:outline-none"></div>
+        <div><label class="block text-xs font-bold text-admin-muted mb-2">Status Bayar</label><select id="edit-status-bayar" class="w-full bg-admin-bg border border-admin-border rounded-xl p-3 focus:border-admin-accent focus:outline-none"><option value="belum_lunas">Belum Lunas</option><option value="lunas">Lunas</option></select></div>
+      </div>
+      <div><label class="block text-xs font-bold text-admin-muted mb-2">Metode Bayar</label><select id="edit-metode-bayar" class="w-full bg-admin-bg border border-admin-border rounded-xl p-3 focus:border-admin-accent focus:outline-none"><option value="tunai">Tunai</option><option value="transfer">Transfer Bank</option><option value="qris">QRIS</option></select></div>
+      <div><label class="block text-xs font-bold text-admin-muted mb-2">Catatan Pelanggan</label><textarea id="edit-catatan" class="w-full bg-admin-bg border border-admin-border rounded-xl p-3 h-24 focus:border-admin-accent focus:outline-none resize-none" placeholder="Pesan untuk pelanggan di halaman cek status..."></textarea></div>
+      <div class="flex gap-4 pt-2"><button type="button" onclick="closeEditModal()" class="flex-1 p-4 rounded-xl border border-admin-border font-bold hover:bg-admin-bg transition-all">Batal</button><button type="submit" id="edit-save-btn" class="flex-1 p-4 rounded-xl bg-admin-accent text-white font-bold hover:brightness-110 transition-all">Simpan</button></div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal QR -->
+<div id="qr-modal" class="modal-overlay fixed inset-0 z-[80] hidden items-center justify-center p-6">
+  <div class="bg-white text-gray-900 w-full max-w-sm rounded-3xl shadow-2xl p-8" style="animation:fadeUp .3s ease">
+    <div class="flex justify-between items-center mb-6"><h3 class="text-lg font-bold">Label QR Pesanan</h3><button onclick="closeQRModal()" class="text-gray-400 hover:text-gray-600"><i data-lucide="x"></i></button></div>
+    <div class="flex flex-col items-center text-center">
+      <div class="font-bold text-lg italic flex items-center gap-2 mb-6">🧵 DEWI TAILOR</div>
+      <div class="bg-gray-50 p-4 rounded-2xl border mb-6"><canvas id="qr-canvas"></canvas></div>
+      <div class="space-y-1 mb-6"><p id="qr-no-antrian" class="text-2xl font-black">#0000</p><p id="qr-nama" class="font-bold">-</p><p id="qr-jenis" class="text-sm text-gray-500 italic">-</p><p id="qr-estimasi" class="text-xs font-semibold bg-gray-100 px-3 py-1 rounded-full mt-2 inline-block">-</p></div>
+      <button onclick="printLabel()" class="w-full bg-gray-900 text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-gray-700 transition-all"><i data-lucide="printer" class="w-5 h-5"></i> Print Label</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Gallery -->
+<div id="gallery-modal" class="modal-overlay fixed inset-0 z-[70] hidden items-center justify-center p-6">
+  <div class="bg-admin-card w-full max-w-2xl rounded-3xl border border-admin-border shadow-2xl" style="animation:fadeUp .3s ease">
+    <div class="p-8 border-b border-admin-border flex justify-between items-center"><h3 id="gallery-modal-title" class="text-xl font-bold">Tambah Item Galeri</h3><button onclick="closeGalleryModal()" class="text-admin-muted hover:text-white"><i data-lucide="x"></i></button></div>
+    <form id="gallery-form" class="p-8 grid grid-cols-1 md:grid-cols-2 gap-5">
+      <div class="md:col-span-2"><label class="block text-xs font-bold text-admin-muted mb-2">Nama Model</label><input type="text" id="g-nama" required class="w-full bg-admin-bg border border-admin-border rounded-xl p-3 focus:border-admin-accent focus:outline-none"></div>
+      <div><label class="block text-xs font-bold text-admin-muted mb-2">Kategori</label><input type="text" id="g-kategori" required placeholder="Kebaya, Dress, dll" class="w-full bg-admin-bg border border-admin-border rounded-xl p-3 focus:border-admin-accent focus:outline-none"></div>
+      <div><label class="block text-xs font-bold text-admin-muted mb-2">Estimasi Harga</label><input type="text" id="g-harga" required placeholder="Rp 250.000 – 400.000" class="w-full bg-admin-bg border border-admin-border rounded-xl p-3 focus:border-admin-accent focus:outline-none"></div>
+      <div class="md:col-span-2"><label class="block text-xs font-bold text-admin-muted mb-2">URL Foto</label><input type="text" id="g-foto" required placeholder="https://..." class="w-full bg-admin-bg border border-admin-border rounded-xl p-3 focus:border-admin-accent focus:outline-none"></div>
+      <div class="md:col-span-2"><label class="block text-xs font-bold text-admin-muted mb-2">Deskripsi</label><textarea id="g-deskripsi" required class="w-full bg-admin-bg border border-admin-border rounded-xl p-3 h-20 focus:border-admin-accent focus:outline-none resize-none"></textarea></div>
+      <div class="md:col-span-2 flex items-center justify-between p-4 bg-admin-bg rounded-xl border border-admin-border"><span class="font-medium">Tampilkan di Publik</span><label class="toggle-switch"><input type="checkbox" id="g-aktif" checked><span class="slider"></span></label></div>
+      <div class="md:col-span-2 flex gap-4"><button type="button" onclick="closeGalleryModal()" class="flex-1 p-4 rounded-xl border border-admin-border font-bold hover:bg-admin-bg transition-all">Batal</button><button type="submit" id="gallery-save-btn" class="flex-1 p-4 rounded-xl bg-admin-accent text-white font-bold hover:brightness-110 transition-all">Simpan</button></div>
+    </form>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// PIN box auto-advance
+document.addEventListener('DOMContentLoaded', () => {
+  if(window.lucide) lucide.createIcons();
+  const boxes = document.querySelectorAll('.pin-box');
+  boxes.forEach((box, i) => {
+    box.addEventListener('input', () => {
+      box.value = box.value.replace(/\D/g,'').slice(0,1);
+      if(box.value && i < boxes.length-1) boxes[i+1].focus();
+      document.getElementById('pin-input').value = [...boxes].map(b=>b.value).join('');
+    });
+    box.addEventListener('keydown', e => {
+      if(e.key==='Backspace' && !box.value && i > 0) { boxes[i-1].focus(); boxes[i-1].value=''; }
+    });
+  });
+  document.getElementById('back-to-login-btn')?.addEventListener('click', () => {
+    document.getElementById('login-step-2').style.display='none';
+    document.getElementById('login-step-1').style.display='block';
+    document.getElementById('login-error').textContent='';
+    boxes.forEach(b=>b.value='');
+    document.getElementById('pin-input').value='';
+  });
+});
+</script>
+<script type="module" src="./js/admin.js"></script>
+</body>
+</html>

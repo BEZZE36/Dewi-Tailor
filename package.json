@@ -1,0 +1,13 @@
+{
+  "name": "dewi-tailor",
+  "version": "1.0.0",
+  "description": "Website Manajemen Penjahit Dewi Tailor",
+  "main": "index.js",
+  "scripts": {
+    "dev": "npx serve frontend",
+    "start": "npx serve frontend"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Antrian Publik — Dewi Tailor</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>tailwind.config={theme:{extend:{colors:{primary:'#9B6B7A',secondary:'#C9A84C','warm-white':'#FDF8F5','dark-brown':'#2D1B1B','cream':'#E8D5C4'},fontFamily:{heading:['Playfair Display','serif'],body:['Poppins','sans-serif']}}}}</script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+      @keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+      @keyframes slideInRow{from{opacity:0;transform:translateX(-16px)}to{opacity:1;transform:translateX(0)}}
+      @keyframes pulseGreen{0%,100%{box-shadow:0 0 0 0 rgba(16,185,129,.5)}70%{box-shadow:0 0 0 8px rgba(16,185,129,0)}}
+      @keyframes spin{to{transform:rotate(360deg)}}
+      .animate-fadein{animation:fadeUp .6s ease both}
+      .live-dot{width:10px;height:10px;background:#10B981;border-radius:50%;display:inline-block;animation:pulseGreen 1.5s infinite}
+      .status-badge{padding:4px 14px;border-radius:9999px;font-size:.7rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase}
+      .card-enter{animation:fadeUp .4s ease both}
+      .row-enter{animation:slideInRow .3s ease both}
+      #realtime-indicator{transition:all .3s}
+      .shimmer{background:linear-gradient(90deg,#f0e6e0 25%,#fdf8f5 50%,#f0e6e0 75%);background-size:200% 100%;animation:shimmer 1.5s infinite}
+      @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+    </style>
+</head>
+<body class="bg-warm-white text-dark-brown font-body min-h-screen">
+
+  <header class="bg-white border-b border-cream py-4 sticky top-0 z-40 shadow-sm">
+    <nav class="container mx-auto px-6 flex justify-between items-center">
+      <a href="index.html" class="font-heading text-xl font-bold text-primary italic">Dewi Tailor</a>
+      <div class="flex items-center gap-4">
+        <div id="realtime-indicator" class="flex items-center gap-2 text-xs font-bold text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-full border border-emerald-100">
+          <span class="live-dot"></span> LIVE
+        </div>
+        <span id="last-refresh" class="text-xs text-gray-400 hidden md:block">—</span>
+        <a href="pre-order.html" class="bg-primary text-white px-5 py-2 rounded-full text-sm font-semibold hover:brightness-95 transition-all">Pre-Order</a>
+      </div>
+    </nav>
+  </header>
+
+  <main class="container mx-auto px-6 py-12">
+
+    <div class="text-center mb-12 animate-fadein">
+      <h1 class="font-heading text-4xl md:text-5xl font-bold mb-3">Antrian Pengerjaan</h1>
+      <p class="text-gray-500">Pantau posisi pesanan Anda secara <span class="text-emerald-600 font-semibold">real-time</span>.</p>
+    </div>
+
+    <!-- Banner Dikerjakan -->
+    <div class="bg-gradient-to-r from-primary to-[#7d4f5e] text-white rounded-3xl p-8 mb-10 shadow-xl relative overflow-hidden animate-fadein" style="animation-delay:.1s">
+      <div class="absolute -right-8 -top-8 opacity-10"><svg width="160" height="160" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="m6 3 6 6 6-6M6 21l6-6 6 6M3 6l6 6-6 6M21 6l-6 6 6 6"/></svg></div>
+      <p class="text-xs font-bold tracking-widest uppercase opacity-70 mb-4">✂️ Sedang Dikerjakan</p>
+      <div id="banner-content" class="flex flex-wrap items-center gap-6">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 bg-white/20 rounded-xl shimmer"></div>
+          <div class="space-y-2"><div class="w-28 h-4 bg-white/20 rounded shimmer"></div><div class="w-20 h-3 bg-white/20 rounded shimmer"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Statistik -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-5 mb-10">
+      <div class="bg-white p-6 rounded-2xl border border-cream shadow-sm text-center animate-fadein hover:-translate-y-1 transition-transform" style="animation-delay:.1s">
+        <p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Antrian Aktif</p>
+        <p id="stat-aktif" class="text-4xl font-bold text-primary">-</p>
+      </div>
+      <div class="bg-white p-6 rounded-2xl border border-cream shadow-sm text-center animate-fadein hover:-translate-y-1 transition-transform" style="animation-delay:.15s">
+        <p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Menunggu</p>
+        <p id="stat-menunggu" class="text-4xl font-bold text-amber-500">-</p>
+      </div>
+      <div class="bg-white p-6 rounded-2xl border border-cream shadow-sm text-center animate-fadein hover:-translate-y-1 transition-transform" style="animation-delay:.2s">
+        <p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Dikerjakan</p>
+        <p id="stat-dikerjakan" class="text-4xl font-bold text-cyan-500">-</p>
+      </div>
+      <div class="bg-white p-6 rounded-2xl border border-cream shadow-sm text-center animate-fadein hover:-translate-y-1 transition-transform" style="animation-delay:.25s">
+        <p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Update</p>
+        <p id="last-refresh-card" class="text-sm font-semibold text-gray-500 mt-2">—</p>
+      </div>
+    </div>
+
+    <!-- Tabel -->
+    <div class="bg-white rounded-3xl border border-cream shadow-sm overflow-hidden animate-fadein" style="animation-delay:.3s">
+      <!-- Desktop -->
+      <div class="hidden md:block overflow-x-auto">
+        <table class="w-full text-left">
+          <thead class="bg-warm-white border-b border-cream">
+            <tr>
+              <th class="px-8 py-5 text-xs font-bold text-gray-400 uppercase tracking-wider">No. Antrian</th>
+              <th class="px-8 py-5 text-xs font-bold text-gray-400 uppercase tracking-wider">Nama</th>
+              <th class="px-8 py-5 text-xs font-bold text-gray-400 uppercase tracking-wider">Jenis Pakaian</th>
+              <th class="px-8 py-5 text-xs font-bold text-gray-400 uppercase tracking-wider text-center">Status</th>
+              <th class="px-8 py-5 text-xs font-bold text-gray-400 uppercase tracking-wider">Estimasi Selesai</th>
+            </tr>
+          </thead>
+          <tbody id="antrian-tbody" class="divide-y divide-cream/60">
+            <tr><td colspan="5" class="text-center py-16 text-gray-400">
+              <div class="inline-block w-8 h-8 border-4 border-primary border-t-transparent rounded-full" style="animation:spin 1s linear infinite"></div>
+              <p class="mt-4">Memuat antrian...</p>
+            </td></tr>
+          </tbody>
+        </table>
+      </div>
+      <!-- Mobile Cards -->
+      <div id="antrian-cards" class="md:hidden">
+        <div class="text-center py-16 text-gray-400">
+          <div class="inline-block w-8 h-8 border-4 border-primary border-t-transparent rounded-full" style="animation:spin 1s linear infinite"></div>
+          <p class="mt-4">Memuat antrian...</p>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <footer class="py-10 text-center text-sm text-gray-400 border-t border-cream">
+    <div class="flex items-center justify-center gap-2 mb-2">
+      <span class="live-dot" style="width:8px;height:8px"></span>
+      <span>Data diperbarui secara <strong>real-time</strong> via Firebase</span>
+    </div>
+    &copy; 2026 Dewi Tailor.
+  </footer>
+
+  <script type="module" src="./js/antrian.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded',()=>{ if(window.lucide) lucide.createIcons(); });
+    // Sync last-refresh to card
+    const observer = new MutationObserver(()=>{
+      const v = document.getElementById('last-refresh')?.textContent;
+      const c = document.getElementById('last-refresh-card');
+      if(c && v) c.textContent = v;
+    });
+    const lr = document.getElementById('last-refresh');
+    if(lr) observer.observe(lr,{childList:true,subtree:true});
+  </script>
+</body>
+</html>

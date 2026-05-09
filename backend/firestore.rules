@@ -1,0 +1,26 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Config — baca publik, tulis hanya admin (via Functions atau admin SDK)
+    match /config/{document=**} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    // Orders — baca publik, tulis hanya authenticated user (admin)
+    // Pelanggan bisa membuat order baru (create), tapi tidak bisa edit/hapus
+    match /orders/{orderId} {
+      allow read: if true;
+      allow create: if true; // form pre-order publik tanpa login
+      allow update, delete: if request.auth != null;
+    }
+
+    // Gallery — baca publik, kelola hanya admin
+    match /gallery/{itemId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+  }
+}

@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Print Label — Dewi Tailor</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        heading: ['Playfair Display', 'serif'],
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- QR Code Library -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
+    
+    <style>
+        @media print {
+            .no-print { display: none; }
+            body { background: white; }
+            .label-box { 
+                border: 1px solid black !important;
+                box-shadow: none !important;
+                margin: 0 !important;
+            }
+        }
+        .label-box {
+            width: 6cm;
+            height: 8cm;
+            border: 1px solid #E8D5C4;
+            padding: 0.5cm;
+            background: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            text-align: center;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col items-center justify-center p-6">
+
+    <div class="no-print mb-8 text-center">
+        <h1 class="text-xl font-bold mb-4">Pratinjau Label</h1>
+        <div class="flex gap-4">
+            <button onclick="window.print()" class="bg-black text-white px-6 py-2 rounded-lg font-bold flex items-center gap-2">
+                <i data-lucide="printer" class="w-5 h-5"></i>
+                Cetak Sekarang
+            </button>
+            <button onclick="window.close()" class="bg-white border border-gray-300 px-6 py-2 rounded-lg font-bold">
+                Tutup
+            </button>
+        </div>
+    </div>
+
+    <!-- Label Container -->
+    <div id="label-container" class="label-box shadow-xl">
+        <div class="font-heading text-lg font-bold border-b border-black pb-2 w-full">
+            🧵 DEWI TAILOR
+        </div>
+        
+        <div class="my-4">
+            <canvas id="qr-canvas"></canvas>
+        </div>
+        
+        <div class="w-full space-y-1 font-sans">
+            <p id="view-no" class="text-2xl font-black">#0000</p>
+            <p id="view-nama" class="font-bold border-t border-gray-200 pt-1">Memuat...</p>
+            <p id="view-jenis" class="text-xs italic">-</p>
+            <div class="flex justify-between text-[10px] mt-4 uppercase font-bold text-gray-500">
+                <span>EST: <span id="view-est">-</span></span>
+            </div>
+        </div>
+    </div>
+
+    <p class="no-print text-gray-400 text-xs mt-8">Ukuran label: ~6cm x 8cm. Tempelkan pada plastik baju.</p>
+
+    <!-- Firebase Scripts -->
+    <script type="module">
+        import { db } from './js/firebase-config.js';
+        import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+        import { samarkanNama, formatTglPendek, formatNomorAntrian } from './js/utils.js';
+
+        lucide.createIcons();
+
+        const params = new URLSearchParams(window.location.search);
+        const orderId = params.get('id');
+
+        async function init() {
+            if (!orderId) {
+                alert("ID Order tidak ditemukan.");
+                return;
+            }
+
+            try {
+                const orderRef = doc(db, 'orders', orderId);
+                const snap = await getDoc(orderRef);
+
+                if (!snap.exists()) {
+                    alert("Order tidak ditemukan.");
+                    return;
+                }
+
+                const order = snap.data();
+                renderLabel(order);
+            } catch (err) {
+                console.error(err);
+                alert("Gagal memuat data.");
+            }
+        }
+
+        function renderLabel(order) {
+            document.getElementById('view-no').textContent = '#' + formatNomorAntrian(order.nomorAntrian);
+            document.getElementById('view-nama').textContent = samarkanNama(order.nama);
+            document.getElementById('view-jenis').textContent = order.jenisPakaian;
+            document.getElementById('view-est').textContent = formatTglPendek(order.estimasiSelesai);
+
+            const canvas = document.getElementById('qr-canvas');
+            const baseUrl = window.location.origin;
+            const qrUrl = `${baseUrl}/update-status.html?id=${orderId}&token=${order.qrToken}`;
+
+            if (window.QRCode) {
+                QRCode.toCanvas(canvas, qrUrl, { 
+                    width: 150, 
+                    margin: 1,
+                    color: {
+                        dark: '#000000',
+                        light: '#ffffff'
+                    }
+                }, (err) => {
+                    if (err) console.error(err);
+                    // Auto print if requested via param
+                    if (params.get('autoprint') === 'true') {
+                        setTimeout(() => window.print(), 500);
+                    }
+                });
+            }
+        }
+
+        init();
+    </script>
+</body>
+</html>

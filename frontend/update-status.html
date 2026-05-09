@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Update Status — Dewi Tailor</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#9B6B7A',
+                        secondary: '#C9A84C',
+                        'warm-white': '#FDF8F5',
+                        'dark-brown': '#2D1B1B',
+                        'cream': '#E8D5C4',
+                    },
+                    fontFamily: {
+                        heading: ['Playfair Display', 'serif'],
+                        body: ['Poppins', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-warm-white text-dark-brown font-body min-h-screen flex flex-col items-center justify-center p-6">
+
+    <div id="content-loading" class="text-center">
+        <i data-lucide="loader-2" class="w-12 h-12 animate-spin text-primary mx-auto"></i>
+        <p class="mt-4 text-gray-500">Memverifikasi pesanan...</p>
+    </div>
+
+    <div id="content-error" class="hidden text-center max-w-sm">
+        <div class="w-20 h-20 bg-red-50 text-red-400 rounded-full flex items-center justify-center mx-auto mb-6">
+            <i data-lucide="qr-code" class="w-10 h-10"></i>
+        </div>
+        <h2 class="text-2xl font-bold mb-2">QR Tidak Valid</h2>
+        <p id="error-message" class="text-gray-500 mb-8">Kode QR ini tidak dikenal atau sudah kedaluwarsa.</p>
+        <a href="index.html" class="bg-primary text-white px-8 py-3 rounded-full font-semibold block">Kembali</a>
+    </div>
+
+    <div id="content-valid" class="hidden w-full max-w-sm space-y-8 animate-in slide-in-from-bottom duration-500">
+        <div class="text-center mb-8">
+            <h1 class="font-heading text-2xl font-bold italic text-primary">Dewi Tailor</h1>
+            <p class="text-gray-500 text-sm">Update Status via QR</p>
+        </div>
+
+        <div class="bg-white rounded-3xl border border-cream shadow-xl overflow-hidden">
+            <div id="order-header" class="bg-primary text-white p-8 text-center">
+                <p class="text-xs uppercase tracking-widest opacity-70 mb-2">No. Antrian</p>
+                <h2 id="view-no-antrian" class="text-5xl font-heading font-bold">#0000</h2>
+            </div>
+            
+            <div class="p-8 space-y-6">
+                <div class="text-center">
+                    <h3 id="view-nama" class="text-2xl font-bold mb-1">-</h3>
+                    <p id="view-jenis" class="text-gray-500">-</p>
+                </div>
+
+                <div class="bg-warm-white p-4 rounded-xl border border-cream text-center">
+                    <p class="text-xs text-gray-400 uppercase font-bold mb-1">Status Saat Ini</p>
+                    <div id="view-status-badge"></div>
+                </div>
+
+                <div id="action-section">
+                    <!-- Dynamic based on status -->
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center">
+            <a href="admin.html" class="text-sm font-semibold text-gray-400 hover:text-primary transition-all flex items-center justify-center gap-2">
+                <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
+                Buka Dashboard Admin
+            </a>
+        </div>
+    </div>
+
+    <!-- Firebase Scripts -->
+    <script type="module">
+        import { db } from './js/firebase-config.js';
+        import { doc, getDoc, updateDoc, Timestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+        import { samarkanNama, statusBadge, formatNomorAntrian } from './js/utils.js';
+
+        lucide.createIcons();
+
+        const params = new URLSearchParams(window.location.search);
+        const orderId = params.get('id');
+        const token = params.get('token');
+
+        const loader = document.getElementById('content-loading');
+        const errorDiv = document.getElementById('content-error');
+        const validDiv = document.getElementById('content-valid');
+        const actionSection = document.getElementById('action-section');
+
+        async function init() {
+            if (!orderId || !token) {
+                showError("Link QR tidak lengkap.");
+                return;
+            }
+
+            try {
+                const orderRef = doc(db, 'orders', orderId);
+                const snap = await getDoc(orderRef);
+
+                if (!snap.exists()) {
+                    showError("Pesanan tidak ditemukan.");
+                    return;
+                }
+
+                const order = snap.data();
+                if (order.qrToken !== token) {
+                    showError("Token QR tidak valid.");
+                    return;
+                }
+
+                renderOrder(order);
+            } catch (err) {
+                console.error(err);
+                showError("Terjadi kesalahan sistem.");
+            }
+        }
+
+        function showError(msg) {
+            loader.classList.add('hidden');
+            errorDiv.classList.remove('hidden');
+            document.getElementById('error-message').textContent = msg;
+        }
+
+        function renderOrder(order) {
+            document.getElementById('view-no-antrian').textContent = '#' + formatNomorAntrian(order.nomorAntrian);
+            document.getElementById('view-nama').textContent = samarkanNama(order.nama);
+            document.getElementById('view-jenis').textContent = order.jenisPakaian;
+            document.getElementById('view-status-badge').innerHTML = statusBadge(order.status);
+
+            if (order.status !== 'selesai') {
+                actionSection.innerHTML = `
+                    <button id="btn-selesai" class="w-full bg-green-500 text-white py-5 rounded-2xl font-bold text-xl shadow-lg shadow-green-500/20 hover:brightness-110 active:scale-95 transition-all flex items-center justify-center gap-3">
+                        <i data-lucide="check-circle-2"></i>
+                        Tandai Selesai
+                    </button>
+                    <p class="text-center text-xs text-gray-400 mt-4">Ketuk tombol untuk menyelesaikan pesanan ini.</p>
+                `;
+                document.getElementById('btn-selesai').addEventListener('click', markAsFinished);
+            } else {
+                actionSection.innerHTML = `
+                    <div class="bg-green-50 p-6 rounded-2xl border border-green-100 text-center">
+                        <div class="w-12 h-12 bg-green-500 text-white rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i data-lucide="check"></i>
+                        </div>
+                        <p class="font-bold text-green-800">Sudah Selesai!</p>
+                        <p class="text-sm text-green-600">Pesanan ini sudah ditandai selesai.</p>
+                    </div>
+                `;
+            }
+
+            loader.classList.add('hidden');
+            validDiv.classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        async function markAsFinished() {
+            const btn = document.getElementById('btn-selesai');
+            btn.disabled = true;
+            btn.innerHTML = '<i data-lucide="loader-2" class="animate-spin"></i> Memproses...';
+            lucide.createIcons();
+
+            try {
+                const orderRef = doc(db, 'orders', orderId);
+                await updateDoc(orderRef, {
+                    status: 'selesai',
+                    tanggalUpdate: Timestamp.now()
+                });
+
+                location.reload(); // Refresh to show success state
+            } catch (err) {
+                console.error(err);
+                alert("Gagal mengupdate status.");
+                btn.disabled = false;
+                btn.innerHTML = '<i data-lucide="check-circle-2"></i> Tandai Selesai';
+                lucide.createIcons();
+            }
+        }
+
+        init();
+    </script>
+</body>
+</html>
