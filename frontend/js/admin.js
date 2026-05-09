@@ -13,11 +13,15 @@ import {
 
 let unsubscribeOrders = null;
 let unsubscribeGallery = null;
+let unsubscribeReviews = null;
 let allOrders = [];
 let allGallery = [];
+let allReviews = [];
 let currentEditOrderId = null;
 let currentQROrderId = null;
 let currentGalleryId = null;
+let currentReplyId = null;
+let reviewFilter = 'semua';
 
 // ─── AUTH: Email + Password + PIN Verifikasi ─────────────────────────────────
 
@@ -141,6 +145,7 @@ document.getElementById("logout-btn")?.addEventListener("click", async () => {
   sessionStorage.removeItem(LOGIN_PIN_KEY);
   if (unsubscribeOrders) unsubscribeOrders();
   if (unsubscribeGallery) unsubscribeGallery();
+  if (unsubscribeReviews) unsubscribeReviews();
   await signOut(auth);
 });
 
@@ -172,6 +177,7 @@ function initDashboard() {
   navigateTo("overview");
   initOrdersListener();
   initGalleryListener();
+  initReviewsListener();
 }
 
 function initOrdersListener() {
@@ -418,6 +424,113 @@ function showToast(msg) {
   toast.classList.add("show");
   setTimeout(() => toast.classList.remove("show"), 3000);
 }
+
+// ─── REVIEWS ──────────────────────────────────────────────────────────────────
+
+function initReviewsListener() {
+  const q = query(collection(db, "reviews"), orderBy("createdAt", "desc"));
+  unsubscribeReviews = onSnapshot(q, (snapshot) => {
+    allReviews = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
+    renderReviews();
+    updatePendingBadge();
+  });
+}
+
+function updatePendingBadge() {
+  const pending = allReviews.filter(r => r.status === 'pending').length;
+  const badge = document.getElementById('badge-pending');
+  if (!badge) return;
+  if (pending > 0) { badge.textContent = pending; badge.classList.remove('hidden'); }
+  else badge.classList.add('hidden');
+}
+
+function renderReviews() {
+  const list = document.getElementById('reviews-list');
+  if (!list) return;
+  let reviews = reviewFilter === 'semua' ? allReviews : allReviews.filter(r => r.status === reviewFilter);
+  if (reviews.length === 0) {
+    list.innerHTML = `<div class="text-center py-20 text-admin-muted italic">Belum ada ulasan</div>`;
+    return;
+  }
+  list.innerHTML = reviews.map((r, i) => {
+    const stars = '★'.repeat(r.rating || 5) + '☆'.repeat(5 - (r.rating || 5));
+    const sBadge = r.status === 'approved'
+      ? '<span class="bg-green-500/20 text-green-400 text-xs font-bold px-3 py-1 rounded-full">✓ Disetujui</span>'
+      : '<span class="bg-yellow-500/20 text-yellow-400 text-xs font-bold px-3 py-1 rounded-full">⏳ Pending</span>';
+    const tgl = r.createdAt?.toDate ? r.createdAt.toDate().toLocaleDateString('id-ID', {day:'numeric',month:'long',year:'numeric'}) : '-';
+    const replyHtml = r.balasan
+      ? `<div class="bg-admin-bg border border-admin-accent/30 rounded-xl p-4"><p class="text-xs font-bold text-admin-accent mb-1">💬 Balasan Admin</p><p class="text-sm">${r.balasan}</p></div>`
+      : '';
+    const approveBtn = r.status !== 'approved'
+      ? `<button onclick="approveReview('${r.id}')" class="bg-green-500/20 text-green-400 border border-green-500/30 px-4 py-2 rounded-lg text-sm font-bold hover:bg-green-500 hover:text-white transition-all">✓ Setujui</button>`
+      : `<button onclick="unapproveReview('${r.id}')" class="bg-white/5 text-admin-muted px-4 py-2 rounded-lg text-sm font-bold hover:bg-white/10 transition-all">Sembunyikan</button>`;
+    return `
+    <div class="bg-admin-card border border-admin-border rounded-2xl p-6 space-y-4" style="animation:fadeUp .3s ease ${i*.05}s both">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 rounded-full bg-admin-accent/20 flex items-center justify-center text-admin-accent font-bold text-lg">${(r.nama||'?')[0].toUpperCase()}</div>
+          <div>
+            <div class="font-bold">${r.nama || 'Anonim'}</div>
+            <div class="text-admin-muted text-xs">${tgl}</div>
+          </div>
+        </div>
+        <div class="flex items-center gap-3">${sBadge}<span class="text-yellow-400 font-bold tracking-widest text-sm">${stars}</span></div>
+      </div>
+      <p class="text-admin-muted leading-relaxed">"${r.komentar || ''}"</p>
+      ${replyHtml}
+      <div class="flex flex-wrap gap-3 pt-2 border-t border-admin-border">
+        ${approveBtn}
+        <button onclick="openReplyModal('${r.id}')" class="bg-admin-accent/20 text-admin-accent border border-admin-accent/30 px-4 py-2 rounded-lg text-sm font-bold hover:bg-admin-accent hover:text-white transition-all">💬 Balas</button>
+        <button onclick="deleteReview('${r.id}')" class="bg-red-500/10 text-red-400 border border-red-500/20 px-4 py-2 rounded-lg text-sm font-bold hover:bg-red-500 hover:text-white transition-all ml-auto">🗑️ Hapus</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+window.approveReview = async (id) => {
+  await updateDoc(doc(db, 'reviews', id), { status: 'approved' });
+  showToast('Ulasan disetujui & ditampilkan ✅');
+};
+window.unapproveReview = async (id) => {
+  await updateDoc(doc(db, 'reviews', id), { status: 'pending' });
+  showToast('Ulasan disembunyikan');
+};
+window.deleteReview = async (id) => {
+  if (!confirm('Hapus ulasan ini secara permanen?')) return;
+  await deleteDoc(doc(db, 'reviews', id));
+  showToast('Ulasan dihapus ✅');
+};
+window.openReplyModal = function(id) {
+  currentReplyId = id;
+  const r = allReviews.find(x => x.id === id);
+  if (!r) return;
+  document.getElementById('reply-preview').innerHTML = `
+    <div class="flex items-center gap-3 mb-3">
+      <div class="w-8 h-8 rounded-full bg-admin-accent/20 flex items-center justify-center text-admin-accent font-bold">${(r.nama||'?')[0].toUpperCase()}</div>
+      <div><div class="font-semibold text-sm">${r.nama || 'Anonim'}</div><div class="text-yellow-400 text-xs">${'★'.repeat(r.rating||5)}</div></div>
+    </div>
+    <p class="text-admin-muted text-sm italic">"${r.komentar}"</p>`;
+  document.getElementById('reply-text').value = r.balasan || '';
+  document.getElementById('reply-modal').style.display = 'flex';
+};
+window.closeReplyModal = function() { document.getElementById('reply-modal').style.display = 'none'; currentReplyId = null; };
+window.submitReply = async function() {
+  if (!currentReplyId) return;
+  const text = document.getElementById('reply-text').value.trim();
+  if (!text) { showToast('Tulis balasan terlebih dahulu'); return; }
+  const btn = document.getElementById('reply-save-btn');
+  btn.disabled = true; btn.textContent = 'Mengirim...';
+  try {
+    await updateDoc(doc(db, 'reviews', currentReplyId), { balasan: text, balasanAt: Timestamp.now() });
+    closeReplyModal(); showToast('Balasan berhasil dikirim ✅');
+  } catch(e) { showToast('Gagal mengirim ❌'); }
+  finally { btn.disabled = false; btn.textContent = 'Kirim Balasan'; }
+};
+
+document.getElementById('filter-review')?.addEventListener('change', (e) => {
+  reviewFilter = e.target.value;
+  renderReviews();
+});
 
 // ─── INIT ─────────────────────────────────────────────────────────────────────
 document.addEventListener("DOMContentLoaded", initAuth);

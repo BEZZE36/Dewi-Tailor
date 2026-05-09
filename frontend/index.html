@@ -438,10 +438,52 @@
             </div>
           </div>
         </div>
+        <!-- Dynamic reviews from Firestore -->
+        <div id="dynamic-reviews" class="grid grid-cols-1 md:grid-cols-3 gap-8 mt-8"></div>
+      </div>
+    </section>
+
+    <!-- Form Tulis Ulasan -->
+    <section class="py-20 bg-white">
+      <div class="container mx-auto px-6 max-w-2xl">
+        <div class="text-center mb-12 reveal">
+          <h2 class="font-heading text-3xl md:text-4xl mb-3">Bagikan Pengalaman Anda</h2>
+          <div class="w-16 h-1 bg-primary mx-auto mb-4"></div>
+          <p class="text-gray-500 text-sm">Ulasan Anda akan ditampilkan setelah disetujui oleh admin.</p>
+        </div>
+        <form id="review-form" class="bg-warm-white rounded-3xl p-8 shadow-sm border border-cream space-y-6 reveal">
+          <div>
+            <label class="block text-sm font-semibold mb-2 text-dark-brown">Nama Anda <span class="text-primary">*</span></label>
+            <input id="r-nama" type="text" required placeholder="Ibu Sari..."
+              class="w-full border border-cream rounded-xl px-4 py-3 bg-white focus:border-primary focus:outline-none transition-all">
+          </div>
+          <div>
+            <label class="block text-sm font-semibold mb-2 text-dark-brown">Penilaian <span class="text-primary">*</span></label>
+            <div class="flex gap-2" id="star-rating">
+              <button type="button" data-val="1" class="star-btn text-3xl text-gray-300 hover:text-secondary transition-all">★</button>
+              <button type="button" data-val="2" class="star-btn text-3xl text-gray-300 hover:text-secondary transition-all">★</button>
+              <button type="button" data-val="3" class="star-btn text-3xl text-gray-300 hover:text-secondary transition-all">★</button>
+              <button type="button" data-val="4" class="star-btn text-3xl text-gray-300 hover:text-secondary transition-all">★</button>
+              <button type="button" data-val="5" class="star-btn text-3xl text-gray-300 hover:text-secondary transition-all">★</button>
+            </div>
+            <input type="hidden" id="r-rating" value="0">
+          </div>
+          <div>
+            <label class="block text-sm font-semibold mb-2 text-dark-brown">Komentar <span class="text-primary">*</span></label>
+            <textarea id="r-komentar" required rows="4" placeholder="Ceritakan pengalaman jahit Anda di Dewi Tailor..."
+              class="w-full border border-cream rounded-xl px-4 py-3 bg-white focus:border-primary focus:outline-none transition-all resize-none"></textarea>
+          </div>
+          <p id="review-msg" class="text-sm text-center font-medium min-h-5"></p>
+          <button type="submit" id="review-submit-btn"
+            class="w-full bg-primary text-white py-4 rounded-full font-semibold text-lg hover:brightness-110 hover:scale-105 transition-all shadow-lg shadow-primary/20">
+            Kirim Ulasan
+          </button>
+        </form>
       </div>
     </section>
 
     <!-- Footer -->
+
     <footer class="bg-dark-brown text-white py-16">
       <div
         class="container mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-12"
@@ -525,11 +567,8 @@
     <script type="module">
       import { db } from "./js/firebase-config.js";
       import {
-        collection,
-        query,
-        where,
-        getDocs,
-        limit,
+        collection, query, where, getDocs, limit,
+        addDoc, orderBy, onSnapshot, Timestamp,
       } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
       // Initialize Lucide Icons
@@ -603,6 +642,78 @@
       }
 
       loadGallery();
+
+      // ── Load Approved Reviews ──────────────────────────────────
+      function loadReviews() {
+        const grid = document.getElementById('dynamic-reviews');
+        if (!grid) return;
+        const q = query(collection(db, 'reviews'), where('status', '==', 'approved'), orderBy('createdAt', 'desc'), limit(6));
+        onSnapshot(q, (snap) => {
+          if (snap.empty) { grid.innerHTML = ''; return; }
+          grid.innerHTML = snap.docs.map(d => {
+            const r = d.data();
+            const stars = '★'.repeat(r.rating||5) + '<span style="opacity:.25">' + '★'.repeat(5-(r.rating||5)) + '</span>';
+            const tgl = r.createdAt?.toDate ? r.createdAt.toDate().toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'}) : '';
+            const reply = r.balasan ? `<div class="mt-4 pt-4 border-t border-cream"><p class="text-xs font-bold text-primary mb-1">💬 Dewi Tailor</p><p class="text-sm text-gray-600 italic">${r.balasan}</p></div>` : '';
+            return `<div class="testi-card bg-white p-7 rounded-2xl shadow-sm border border-cream">
+              <div class="flex text-secondary mb-3 text-lg">${stars}</div>
+              <p class="text-gray-600 italic mb-5 leading-relaxed">"${r.komentar}"</p>
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                  <div class="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-sm">${(r.nama||'?')[0].toUpperCase()}</div>
+                  <div class="font-semibold text-sm">${r.nama}</div>
+                </div>
+                <span class="text-xs text-gray-400">${tgl}</span>
+              </div>
+              ${reply}
+            </div>`;
+          }).join('');
+        });
+      }
+      loadReviews();
+
+      // ── Review Form ────────────────────────────────────────────
+      let selectedRating = 0;
+      document.querySelectorAll('.star-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          selectedRating = parseInt(btn.dataset.val);
+          document.getElementById('r-rating').value = selectedRating;
+          document.querySelectorAll('.star-btn').forEach((b, i) => {
+            b.style.color = i < selectedRating ? '#C9A84C' : '#D1D5DB';
+          });
+        });
+        btn.addEventListener('mouseenter', () => {
+          const v = parseInt(btn.dataset.val);
+          document.querySelectorAll('.star-btn').forEach((b, i) => { b.style.color = i < v ? '#C9A84C' : '#D1D5DB'; });
+        });
+        btn.addEventListener('mouseleave', () => {
+          document.querySelectorAll('.star-btn').forEach((b, i) => { b.style.color = i < selectedRating ? '#C9A84C' : '#D1D5DB'; });
+        });
+      });
+
+      document.getElementById('review-form')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const msg = document.getElementById('review-msg');
+        const btn = document.getElementById('review-submit-btn');
+        const nama = document.getElementById('r-nama').value.trim();
+        const komentar = document.getElementById('r-komentar').value.trim();
+        if (selectedRating === 0) { msg.textContent = '⚠️ Pilih bintang penilaian terlebih dahulu.'; msg.style.color = '#ef4444'; return; }
+        btn.disabled = true; btn.textContent = 'Mengirim...';
+        try {
+          await addDoc(collection(db, 'reviews'), {
+            nama, komentar, rating: selectedRating,
+            status: 'pending', createdAt: Timestamp.now(),
+          });
+          msg.textContent = '✅ Terima kasih! Ulasan Anda sedang menunggu persetujuan admin.';
+          msg.style.color = '#10B981';
+          document.getElementById('review-form').reset();
+          selectedRating = 0;
+          document.querySelectorAll('.star-btn').forEach(b => b.style.color = '#D1D5DB');
+        } catch(err) {
+          msg.textContent = '❌ Gagal mengirim. Coba lagi.'; msg.style.color = '#ef4444';
+        } finally { btn.disabled = false; btn.textContent = 'Kirim Ulasan'; }
+      });
     </script>
+
   </body>
 </html>
