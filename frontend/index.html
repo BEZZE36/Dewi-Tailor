@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="id">
+<html lang="id" class="">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -116,9 +116,28 @@
       /* Testimonial card */
       .testi-card { transition: transform 0.3s, box-shadow 0.3s; }
       .testi-card:hover { transform: translateY(-4px); box-shadow: 0 12px 28px rgba(155,107,122,0.12); }
+      /* Dark Mode */
+      html.dark body { background:#1a1014; color:#f0e8ec; }
+      html.dark .glass-nav { background:rgba(30,18,22,0.92); border-color:#3d2535; }
+      html.dark section.bg-white { background:#231519 !important; }
+      html.dark section.bg-warm-white { background:#1e1215 !important; }
+      html.dark .bg-warm-white { background:#2a1a1f !important; }
+      html.dark .bg-white { background:#2e1c22 !important; }
+      html.dark .text-gray-600 { color:#c9a8b5 !important; }
+      html.dark .text-gray-500 { color:#a8828f !important; }
+      html.dark .text-gray-400 { color:#a08088 !important; }
+      html.dark .border-cream { border-color:#3d2535 !important; }
+      html.dark .text-dark-brown { color:#f0e8ec; }
+      html.dark footer { background:#0f080b !important; }
+      html.dark .shadow-sm { box-shadow:0 2px 12px rgba(0,0,0,0.4); }
+      html.dark tbody tr:hover { background:#2e1c22 !important; }
+      html.dark table thead { background:#2a1a1f !important; }
+      /* Dark mode toggle button */
+      #dark-toggle { transition: transform 0.3s; }
+      #dark-toggle:hover { transform: scale(1.15); }
     </style>
   </head>
-  <body class="bg-warm-white text-dark-brown font-body">
+  <body class="bg-warm-white text-dark-brown font-body transition-colors duration-300">
     <!-- Header / Nav -->
     <header class="fixed top-0 w-full z-50 glass-nav">
       <nav
@@ -135,23 +154,25 @@
           <a href="#beranda" class="nav-link relative font-medium">Beranda</a>
           <a href="#galeri" class="nav-link relative font-medium">Galeri</a>
           <a href="#layanan" class="nav-link relative font-medium">Layanan</a>
-          <a href="antrian.html" class="nav-link relative font-medium"
-            >Antrian</a
-          >
-          <a href="cek-status.html" class="nav-link relative font-medium"
-            >Cek Order</a
-          >
-          <a
-            href="pre-order.html"
-            class="bg-primary text-white px-6 py-2 rounded-full font-semibold hover:bg-opacity-90 transition-all"
-            >Pre-Order</a
-          >
+          <a href="antrian.html" class="nav-link relative font-medium">Antrian</a>
+          <a href="cek-status.html" class="nav-link relative font-medium">Cek Order</a>
+          <button id="dark-toggle" title="Toggle Mode Gelap" class="w-9 h-9 rounded-full border border-cream flex items-center justify-center text-primary hover:bg-primary hover:text-white transition-all">
+            <i data-lucide="moon" id="icon-moon" class="w-4 h-4"></i>
+            <i data-lucide="sun" id="icon-sun" class="w-4 h-4 hidden"></i>
+          </button>
+          <a href="pre-order.html" class="bg-primary text-white px-6 py-2 rounded-full font-semibold hover:bg-opacity-90 transition-all">Pre-Order</a>
         </div>
 
         <!-- Mobile Toggle -->
-        <button id="mobile-menu-btn" class="lg:hidden text-primary">
-          <i data-lucide="menu"></i>
-        </button>
+        <div class="flex items-center gap-3 lg:hidden">
+          <button id="dark-toggle-mobile" title="Mode Gelap" class="w-8 h-8 rounded-full border border-cream flex items-center justify-center text-primary">
+            <i data-lucide="moon" id="icon-moon-m" class="w-4 h-4"></i>
+            <i data-lucide="sun" id="icon-sun-m" class="w-4 h-4 hidden"></i>
+          </button>
+          <button id="mobile-menu-btn" class="text-primary">
+            <i data-lucide="menu"></i>
+          </button>
+        </div>
       </nav>
 
       <!-- Mobile Nav Menu -->
@@ -208,7 +229,7 @@
           <h2 class="font-heading text-3xl md:text-4xl mb-3">Mengapa Memilih Kami?</h2>
           <div class="w-16 h-1 bg-primary mx-auto"></div>
         </div>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-10 max-w-2xl mx-auto">
           <div class="text-center space-y-4 card-hover bg-warm-white p-8 rounded-3xl reveal delay-1">
             <div class="w-16 h-16 bg-white shadow rounded-full flex items-center justify-center mx-auto text-primary text-3xl">
               <i data-lucide="scissors"></i>
@@ -222,13 +243,6 @@
             </div>
             <h3 class="font-heading text-2xl font-semibold">Fitting di Tempat</h3>
             <p class="text-gray-600 leading-relaxed">Setiap pelanggan wajib datang untuk pengukuran presisi demi hasil jahitan yang sempurna.</p>
-          </div>
-          <div class="text-center space-y-4 card-hover bg-warm-white p-8 rounded-3xl reveal delay-3">
-            <div class="w-16 h-16 bg-white shadow rounded-full flex items-center justify-center mx-auto text-primary text-3xl">
-              <i data-lucide="heart"></i>
-            </div>
-            <h3 class="font-heading text-2xl font-semibold">Kain dari Pelanggan</h3>
-            <p class="text-gray-600 leading-relaxed">Anda bebas memilih bahan favorit, kami fokus pada kualitas jahitan terbaik untuk Anda.</p>
           </div>
         </div>
       </div>
@@ -536,6 +550,18 @@
         entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible'); });
       }, { threshold: 0.12 });
       document.querySelectorAll('.reveal, .reveal-left, .reveal-right').forEach(el => observer.observe(el));
+
+      // Dark Mode
+      function applyDark(on) {
+        document.documentElement.classList.toggle('dark', on);
+        ['icon-moon','icon-moon-m'].forEach(id => document.getElementById(id)?.classList.toggle('hidden', on));
+        ['icon-sun','icon-sun-m'].forEach(id => document.getElementById(id)?.classList.toggle('hidden', !on));
+        localStorage.setItem('dewi-dark', on ? '1' : '0');
+      }
+      const savedDark = localStorage.getItem('dewi-dark') === '1';
+      applyDark(savedDark);
+      document.getElementById('dark-toggle')?.addEventListener('click', () => applyDark(!document.documentElement.classList.contains('dark')));
+      document.getElementById('dark-toggle-mobile')?.addEventListener('click', () => applyDark(!document.documentElement.classList.contains('dark')));
 
       // Load Gallery
       async function loadGallery() {
