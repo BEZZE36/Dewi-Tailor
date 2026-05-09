@@ -720,7 +720,9 @@
               await signOut(auth);
             });
           } else {
-            window.location.href = 'login-user.html?redirect=index.html';
+            // User logged in via Firebase but no profile yet → show login prompt
+            form.classList.add('hidden');
+            prompt.classList.remove('hidden');
           }
         } else {
           form.classList.add('hidden');

@@ -26,7 +26,7 @@
 <main class="container mx-auto px-6 py-12 max-w-lg">
   <div class="text-center mb-10 animate-fadein">
     <h1 class="font-heading text-4xl font-bold mb-3">Cek Status Pesanan</h1>
-    <p class="text-gray-500">Verifikasi nomor HP Anda untuk melihat status pesanan.</p>
+    <p class="text-gray-500">Lihat status pesanan Anda secara real-time.</p>
   </div>
 
   <!-- STEP 1: Input HP -->
@@ -94,15 +94,14 @@
 
 <script type="module">
 import { db, auth } from './js/firebase-config.js';
-import { collection, query, where, onSnapshot, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-import { RecaptchaVerifier, signInWithPhoneNumber } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { collection, query, onSnapshot, orderBy, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { RecaptchaVerifier, signInWithPhoneNumber, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import { formatTgl, statusBadge, statusBayarBadge, formatNomorAntrian, posisiAntrian } from './js/utils.js';
 
 lucide.createIcons();
 
 let confirmationResult = null;
 let recaptchaVerifier = null;
-let verifiedPhone = null;
 let unsubscribe = null;
 
 function formatPhone(raw) {
@@ -112,11 +111,26 @@ function formatPhone(raw) {
   return '+' + p;
 }
 
-function initRecaptcha() {
-  if(recaptchaVerifier) return;
-  recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', { size:'invisible', callback:()=>{} });
-}
+// ── Check existing session first ─────────────────────────────────────────────
+onAuthStateChanged(auth, async (user) => {
+  if (user && user.phoneNumber) {
+    const snap = await getDoc(doc(db, 'users', user.uid));
+    if (snap.exists()) {
+      document.getElementById('step-phone').innerHTML = `
+        <div class="bg-white rounded-3xl border border-cream shadow-sm p-8 text-center space-y-3">
+          <div class="w-14 h-14 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto">
+            <i data-lucide="user-check" class="w-7 h-7 text-primary"></i>
+          </div>
+          <p class="font-semibold text-lg">Halo, <span class="text-primary">${snap.data().username}</span>!</p>
+          <p class="text-gray-400 text-sm">Sedang memuat pesanan Anda...</p>
+        </div>`;
+      lucide.createIcons();
+      loadOrdersByPhone(user.phoneNumber);
+    }
+  }
+});
 
+// ── Send OTP ─────────────────────────────────────────────────────────────────
 document.getElementById('send-otp-btn').addEventListener('click', async () => {
   const raw = document.getElementById('phone-input').value;
   const err = document.getElementById('phone-error');
@@ -127,16 +141,22 @@ document.getElementById('send-otp-btn').addEventListener('click', async () => {
   btn.disabled = true;
   btn.innerHTML = '<div class="w-5 h-5 border-2 border-white border-t-transparent rounded-full" style="animation:spin 1s linear infinite"></div> Mengirim...';
   try {
-    initRecaptcha();
+    if(!recaptchaVerifier) {
+      recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', { size:'invisible' });
+      await recaptchaVerifier.render();
+    }
     confirmationResult = await signInWithPhoneNumber(auth, phone, recaptchaVerifier);
-    verifiedPhone = phone;
     document.getElementById('otp-hint').textContent = `Kode OTP dikirim ke ${raw}`;
     document.getElementById('step-phone').classList.add('hidden');
     document.getElementById('step-otp').classList.remove('hidden');
     startTimer();
     document.getElementById('otp-input').focus();
   } catch(e) {
-    const msgs = { 'auth/invalid-phone-number':'Nomor HP tidak valid.', 'auth/too-many-requests':'Terlalu banyak percobaan. Tunggu sebentar.' };
+    const msgs = {
+      'auth/invalid-phone-number':'Nomor HP tidak valid.',
+      'auth/too-many-requests':'Terlalu banyak percobaan. Tunggu sebentar.',
+      'auth/billing-not-enabled':'Phone Auth belum diaktifkan. Hubungi admin.',
+    };
     err.textContent = msgs[e.code] || 'Gagal mengirim OTP: ' + e.message;
     btn.disabled = false;
     btn.innerHTML = '<i data-lucide="send" class="w-5 h-5"></i> Kirim Kode OTP';
@@ -145,6 +165,7 @@ document.getElementById('send-otp-btn').addEventListener('click', async () => {
   }
 });
 
+// ── Verify OTP ───────────────────────────────────────────────────────────────
 document.getElementById('verify-otp-btn').addEventListener('click', async () => {
   const code = document.getElementById('otp-input').value.trim();
   const err = document.getElementById('otp-error');
@@ -154,9 +175,8 @@ document.getElementById('verify-otp-btn').addEventListener('click', async () => 
   btn.disabled = true;
   btn.innerHTML = '<div class="w-5 h-5 border-2 border-white border-t-transparent rounded-full" style="animation:spin 1s linear infinite"></div> Memverifikasi...';
   try {
-    await confirmationResult.confirm(code);
-    // Verified! Now load orders by phone
-    loadOrdersByPhone(verifiedPhone);
+    const result = await confirmationResult.confirm(code);
+    loadOrdersByPhone(result.user.phoneNumber);
   } catch(e) {
     err.textContent = e.code === 'auth/invalid-verification-code' ? 'Kode OTP salah.' : 'Verifikasi gagal.';
     btn.disabled = false;
@@ -169,39 +189,32 @@ document.getElementById('back-btn').addEventListener('click', () => {
   document.getElementById('step-otp').classList.add('hidden');
   document.getElementById('step-phone').classList.remove('hidden');
   if(recaptchaVerifier) { recaptchaVerifier.clear(); recaptchaVerifier = null; }
-  const btn = document.getElementById('send-otp-btn');
-  btn.disabled = false;
-  btn.innerHTML = '<i data-lucide="send" class="w-5 h-5"></i> Kirim Kode OTP';
+  document.getElementById('send-otp-btn').disabled = false;
+  document.getElementById('send-otp-btn').innerHTML = '<i data-lucide="send" class="w-5 h-5"></i> Kirim Kode OTP';
   lucide.createIcons();
 });
 
 function startTimer() {
   let s = 60;
   const el = document.getElementById('otp-timer');
-  const interval = setInterval(() => {
-    s--;
-    el.textContent = `Kirim ulang dalam ${s}s`;
-    if(s <= 0) { clearInterval(interval); el.textContent = ''; }
-  }, 1000);
+  const iv = setInterval(() => { el.textContent = `Kirim ulang dalam ${--s}s`; if(s<=0){clearInterval(iv);el.textContent='';} }, 1000);
 }
 
+// ── Load Orders ───────────────────────────────────────────────────────────────
 function loadOrdersByPhone(phone) {
+  document.getElementById('step-phone').classList.add('hidden');
   document.getElementById('step-otp').classList.add('hidden');
   const result = document.getElementById('step-result');
   result.innerHTML = '<div class="text-center py-12"><div class="w-10 h-10 border-4 border-primary border-t-transparent rounded-full mx-auto" style="animation:spin 1s linear infinite"></div><p class="mt-4 text-gray-500">Memuat pesanan...</p></div>';
   result.classList.remove('hidden');
-
-  // Search by noHP (store normalized format)
   const rawNorm = phone.replace('+62','0');
-  const allQ = query(collection(db, 'orders'), orderBy('nomorAntrian','asc'));
-  unsubscribe = onSnapshot(allQ, (snap) => {
+  unsubscribe = onSnapshot(query(collection(db,'orders'), orderBy('nomorAntrian','asc')), (snap) => {
     const all = snap.docs.map(d => ({id:d.id,...d.data()}));
-    // Match by noHP - check various formats
     const orders = all.filter(o => {
       const hp = (o.noHP||'').replace(/\D/g,'');
-      const target = phone.replace('+','').replace(/\D/g,'');
-      const target2 = rawNorm.replace(/\D/g,'');
-      return hp === target || hp === target2 || hp === target.slice(2) || '0'+hp.slice(2) === rawNorm.replace(/\D/g,'');
+      const t1 = phone.replace('+','').replace(/\D/g,'');
+      const t2 = rawNorm.replace(/\D/g,'');
+      return hp===t1 || hp===t2 || hp===t1.slice(2) || '0'+hp.slice(2)===t2;
     });
     renderOrders(orders, all);
   });
@@ -209,11 +222,7 @@ function loadOrdersByPhone(phone) {
 
 function renderOrders(orders, allOrders) {
   const result = document.getElementById('step-result');
-  if(orders.length === 0) {
-    result.classList.add('hidden');
-    document.getElementById('not-found').classList.remove('hidden');
-    return;
-  }
+  if(orders.length===0) { result.classList.add('hidden'); document.getElementById('not-found').classList.remove('hidden'); return; }
   result.innerHTML = `
     <div class="flex items-center justify-between mb-2">
       <h2 class="font-heading text-2xl font-bold">Pesanan Anda</h2>
@@ -221,14 +230,10 @@ function renderOrders(orders, allOrders) {
     </div>
     ${orders.map(o => {
       const pos = posisiAntrian(allOrders, o.id);
-      return `
-      <div class="bg-white rounded-3xl border border-cream shadow-sm overflow-hidden">
+      return `<div class="bg-white rounded-3xl border border-cream shadow-sm overflow-hidden mb-4">
         <div class="bg-primary text-white p-6 flex justify-between items-center">
-          <div>
-            <p class="text-xs opacity-70 uppercase tracking-wider mb-1">No. Antrian</p>
-            <h3 class="text-3xl font-heading font-bold">#${formatNomorAntrian(o.nomorAntrian)}</h3>
-          </div>
-          <div class="text-right">${statusBadge(o.status)}</div>
+          <div><p class="text-xs opacity-70 uppercase tracking-wider mb-1">No. Antrian</p><h3 class="text-3xl font-heading font-bold">#${formatNomorAntrian(o.nomorAntrian)}</h3></div>
+          <div>${statusBadge(o.status)}</div>
         </div>
         <div class="p-6 space-y-4">
           <div class="flex justify-between"><span class="text-gray-500 text-sm">Jenis Pakaian</span><span class="font-semibold">${o.jenisPakaian||'-'}</span></div>
@@ -239,8 +244,7 @@ function renderOrders(orders, allOrders) {
           ${o.catatan?`<div class="p-3 bg-amber-50 rounded-xl border border-amber-100 text-sm text-amber-800 italic">📝 ${o.catatan}</div>`:''}
         </div>
       </div>`;
-    }).join('')}
-  `;
+    }).join('')}`;
   lucide.createIcons();
 }
 
