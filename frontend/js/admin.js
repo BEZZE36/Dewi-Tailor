@@ -1,4 +1,4 @@
-import { db, auth, storage } from "./firebase-config.js";
+import { db, auth } from "./firebase-config.js";
 import {
   collection, query, orderBy, onSnapshot, doc, updateDoc,
   getDoc, addDoc, deleteDoc, Timestamp, runTransaction,
@@ -7,12 +7,11 @@ import {
   signInWithEmailAndPassword, signOut, onAuthStateChanged,
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import {
-  ref, uploadBytesResumable, getDownloadURL,
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
-import {
   samarkanNama, formatTgl, formatTglPendek, statusBadge, statusBayarBadge,
   formatRupiah, formatNomorAntrian, isToday, generateToken,
 } from "./utils.js";
+
+const IMGBB_KEY = "7e8ec6b8394b0c43f47ed50e2e57af2e";
 
 let unsubscribeOrders = null;
 let unsubscribeGallery = null;
@@ -426,30 +425,48 @@ document.getElementById("gallery-form")?.addEventListener("submit", async (e) =>
   const btn = document.getElementById("gallery-save-btn");
   btn.disabled = true; btn.textContent = "Menyimpan...";
   try {
-    // Determine foto URL: file upload or manual URL
     let fotoURL = document.getElementById("g-foto").value.trim();
     const fileInput = document.getElementById('g-file');
     const isFileMode = !document.getElementById('foto-file-panel').classList.contains('hidden');
+
     if (isFileMode && fileInput?.files[0]) {
       const file = fileInput.files[0];
-      if (file.size > 5 * 1024 * 1024) { showToast('File terlalu besar. Maks 5MB ❌'); btn.disabled=false; btn.textContent='Simpan'; return; }
+      if (file.size > 5 * 1024 * 1024) {
+        showToast('File terlalu besar. Maks 5MB ❌');
+        btn.disabled = false; btn.textContent = 'Simpan'; return;
+      }
       btn.textContent = 'Mengupload foto...';
-      const storageRef = ref(storage, `gallery/${Date.now()}_${file.name}`);
-      const uploadTask = uploadBytesResumable(storageRef, file);
-      fotoURL = await new Promise((resolve, reject) => {
-        uploadTask.on('state_changed',
-          (snap) => {
-            const pct = Math.round(snap.bytesTransferred / snap.totalBytes * 100);
-            document.getElementById('upload-progress-bar').classList.remove('hidden');
-            document.getElementById('upload-bar').style.width = pct + '%';
-            document.getElementById('upload-pct').textContent = pct + '%';
-          },
-          reject,
-          async () => resolve(await getDownloadURL(uploadTask.snapshot.ref))
-        );
+      // Show progress bar (simulated for ImgBB)
+      const progressBar = document.getElementById('upload-progress-bar');
+      const bar = document.getElementById('upload-bar');
+      const pct = document.getElementById('upload-pct');
+      progressBar?.classList.remove('hidden');
+      // Simulate progress
+      let progress = 0;
+      const sim = setInterval(() => {
+        progress = Math.min(progress + 10, 90);
+        if (bar) bar.style.width = progress + '%';
+        if (pct) pct.textContent = progress + '%';
+      }, 200);
+      // Upload to ImgBB
+      const formData = new FormData();
+      formData.append('image', file);
+      const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_KEY}`, {
+        method: 'POST', body: formData,
       });
+      clearInterval(sim);
+      if (bar) bar.style.width = '100%';
+      if (pct) pct.textContent = '100%';
+      if (!res.ok) throw new Error('ImgBB upload failed');
+      const json = await res.json();
+      fotoURL = json.data?.url || json.data?.display_url;
+      if (!fotoURL) throw new Error('URL tidak diterima dari ImgBB');
     }
-    if (!fotoURL) { showToast('Masukkan URL atau upload foto ❌'); btn.disabled=false; btn.textContent='Simpan'; return; }
+
+    if (!fotoURL) {
+      showToast('Masukkan URL atau upload foto ❌');
+      btn.disabled = false; btn.textContent = 'Simpan'; return;
+    }
     const data = {
       namaModel: document.getElementById("g-nama").value,
       kategori: document.getElementById("g-kategori").value,
@@ -461,7 +478,7 @@ document.getElementById("gallery-form")?.addEventListener("submit", async (e) =>
     if (currentGalleryId) await updateDoc(doc(db, "gallery", currentGalleryId), data);
     else await addDoc(collection(db, "gallery"), data);
     closeGalleryModal(); showToast("Galeri berhasil disimpan ✅");
-  } catch (err) { showToast("Gagal menyimpan ❌"); console.error(err); }
+  } catch (err) { showToast("Gagal menyimpan: " + err.message + " ❌"); console.error(err); }
   finally { btn.disabled = false; btn.textContent = "Simpan"; }
 });
 
