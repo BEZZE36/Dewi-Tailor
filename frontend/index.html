@@ -45,37 +45,77 @@
 
     <style>
       .glass-nav {
-        background: rgba(253, 248, 245, 0.8);
-        backdrop-filter: blur(10px);
+        background: rgba(253, 248, 245, 0.92);
+        backdrop-filter: blur(12px);
         border-bottom: 1px solid #e8d5c4;
+        transition: box-shadow 0.3s;
       }
+      .glass-nav.scrolled { box-shadow: 0 4px 24px rgba(155,107,122,0.10); }
       .hero-gradient {
         background:
-          linear-gradient(rgba(45, 27, 27, 0.6), rgba(45, 27, 27, 0.6)),
+          linear-gradient(rgba(45, 27, 27, 0.55), rgba(45, 27, 27, 0.55)),
           url("https://images.unsplash.com/photo-1555529771-835f59fc5efe?q=80&w=2000&auto=format&fit=crop");
         background-size: cover;
         background-position: center;
+        background-attachment: fixed;
       }
+      .card-hover { transition: transform 0.3s, box-shadow 0.3s; }
       .card-hover:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 20px rgba(155, 107, 122, 0.1);
+        transform: translateY(-6px);
+        box-shadow: 0 16px 32px rgba(155, 107, 122, 0.15);
       }
-      .gallery-item:hover .overlay {
-        opacity: 1;
-      }
+      .gallery-item:hover .overlay { opacity: 1; }
       .nav-link::after {
         content: "";
         position: absolute;
-        width: 0;
-        height: 2px;
-        bottom: -4px;
-        left: 0;
+        width: 0; height: 2px;
+        bottom: -4px; left: 0;
         background-color: #9b6b7a;
         transition: width 0.3s ease;
       }
-      .nav-link:hover::after {
-        width: 100%;
+      .nav-link:hover::after { width: 100%; }
+      /* Scroll animations */
+      .reveal {
+        opacity: 0;
+        transform: translateY(32px);
+        transition: opacity 0.7s ease, transform 0.7s ease;
       }
+      .reveal.visible {
+        opacity: 1;
+        transform: translateY(0);
+      }
+      .reveal-left {
+        opacity: 0;
+        transform: translateX(-32px);
+        transition: opacity 0.7s ease, transform 0.7s ease;
+      }
+      .reveal-left.visible { opacity: 1; transform: translateX(0); }
+      .reveal-right {
+        opacity: 0;
+        transform: translateX(32px);
+        transition: opacity 0.7s ease, transform 0.7s ease;
+      }
+      .reveal-right.visible { opacity: 1; transform: translateX(0); }
+      .delay-1 { transition-delay: 0.1s; }
+      .delay-2 { transition-delay: 0.2s; }
+      .delay-3 { transition-delay: 0.35s; }
+      /* Hero text animation */
+      @keyframes heroFadeUp {
+        from { opacity:0; transform:translateY(30px); }
+        to   { opacity:1; transform:translateY(0); }
+      }
+      .hero-title { animation: heroFadeUp 1s ease 0.2s both; }
+      .hero-sub   { animation: heroFadeUp 1s ease 0.5s both; }
+      .hero-btns  { animation: heroFadeUp 1s ease 0.8s both; }
+      /* Table row hover */
+      tbody tr { transition: background 0.2s; }
+      tbody tr:hover { background: #fdf8f5; }
+      /* Step number pulse on hover */
+      .step-num { transition: transform 0.3s, box-shadow 0.3s; }
+      .step-num:hover { transform: scale(1.1); box-shadow: 0 8px 24px rgba(155,107,122,0.25); }
+      /* Testimonial card */
+      .testi-card { transition: transform 0.3s, box-shadow 0.3s; }
+      .testi-card:hover { transform: translateY(-4px); box-shadow: 0 12px 28px rgba(155,107,122,0.12); }
     </style>
   </head>
   <body class="bg-warm-white text-dark-brown font-body">
@@ -138,25 +178,25 @@
       class="hero-gradient h-screen flex items-center justify-center text-center text-white px-6 pt-20"
     >
       <div class="max-w-4xl">
-        <h1 class="font-heading text-6xl md:text-8xl mb-6 tracking-tight">
+        <p class="hero-sub text-xs tracking-[0.4em] uppercase text-white/60 mb-4 font-medium">Butik Penjahit Khusus Wanita</p>
+        <h1 class="hero-title font-heading text-6xl md:text-8xl mb-6 tracking-tight">
           DEWI TAILOR
         </h1>
-        <p
-          class="text-xl md:text-2xl font-light mb-10 tracking-widest italic opacity-90"
-        >
+        <p class="hero-sub text-xl md:text-2xl font-light mb-10 tracking-widest italic opacity-90">
           "Jahitan Presisi, Keanggunan yang Berbicara"
         </p>
-        <div class="flex flex-col md:flex-row justify-center gap-4">
-          <a
-            href="pre-order.html"
-            class="bg-primary text-white px-8 py-4 rounded-full text-lg font-semibold hover:bg-opacity-90 transition-all"
-            >Pre-Order Sekarang</a
-          >
-          <a
-            href="#galeri"
-            class="bg-transparent border-2 border-white text-white px-8 py-4 rounded-full text-lg font-semibold hover:bg-white hover:text-primary transition-all"
-            >Lihat Galeri</a
-          >
+        <div class="hero-btns flex flex-col md:flex-row justify-center gap-4">
+          <a href="pre-order.html"
+            class="bg-primary text-white px-8 py-4 rounded-full text-lg font-semibold hover:brightness-110 hover:scale-105 transition-all shadow-lg shadow-primary/30"
+            >Pre-Order Sekarang</a>
+          <a href="#galeri"
+            class="bg-white/10 backdrop-blur border-2 border-white text-white px-8 py-4 rounded-full text-lg font-semibold hover:bg-white hover:text-primary transition-all"
+            >Lihat Galeri</a>
+        </div>
+        <div class="hero-btns mt-12 flex justify-center">
+          <a href="#beranda" class="animate-bounce text-white/50 hover:text-white transition-all">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+          </a>
         </div>
       </div>
     </section>
@@ -164,36 +204,32 @@
     <!-- 3 Keunggulan Section -->
     <section class="py-24 bg-white">
       <div class="container mx-auto px-6">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-12">
-          <div class="text-center space-y-4">
-            <div
-              class="w-16 h-16 bg-warm-white rounded-full flex items-center justify-center mx-auto text-primary text-3xl"
-            >
+        <div class="text-center mb-14 reveal">
+          <h2 class="font-heading text-3xl md:text-4xl mb-3">Mengapa Memilih Kami?</h2>
+          <div class="w-16 h-1 bg-primary mx-auto"></div>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
+          <div class="text-center space-y-4 card-hover bg-warm-white p-8 rounded-3xl reveal delay-1">
+            <div class="w-16 h-16 bg-white shadow rounded-full flex items-center justify-center mx-auto text-primary text-3xl">
               <i data-lucide="scissors"></i>
             </div>
-            <h3 class="font-heading text-2xl font-semibold">
-              Khusus Wanita & Anak
-            </h3>
-            <p class="text-gray-600 leading-relaxed">
-              Kami hanya melayani pakaian wanita dewasa dan anak perempuan
-              dengan keahlian spesialis.
-            </p>
+            <h3 class="font-heading text-2xl font-semibold">Khusus Wanita & Anak</h3>
+            <p class="text-gray-600 leading-relaxed">Kami hanya melayani pakaian wanita dewasa dan anak perempuan dengan keahlian spesialis.</p>
           </div>
-          <div class="text-center space-y-4">
-            <div
-              class="w-16 h-16 bg-warm-white rounded-full flex items-center justify-center mx-auto text-primary text-3xl"
-            >
+          <div class="text-center space-y-4 card-hover bg-warm-white p-8 rounded-3xl reveal delay-2">
+            <div class="w-16 h-16 bg-white shadow rounded-full flex items-center justify-center mx-auto text-primary text-3xl">
               <i data-lucide="ruler"></i>
             </div>
-            <h3 class="font-heading text-2xl font-semibold">
-              Fitting di Tempat
-            </h3>
-            <p class="text-gray-600 leading-relaxed">
-              Setiap pelanggan wajib datang untuk pengukuran presisi demi hasil
-              jahitan yang sempurna.
-            </p>
+            <h3 class="font-heading text-2xl font-semibold">Fitting di Tempat</h3>
+            <p class="text-gray-600 leading-relaxed">Setiap pelanggan wajib datang untuk pengukuran presisi demi hasil jahitan yang sempurna.</p>
           </div>
-          
+          <div class="text-center space-y-4 card-hover bg-warm-white p-8 rounded-3xl reveal delay-3">
+            <div class="w-16 h-16 bg-white shadow rounded-full flex items-center justify-center mx-auto text-primary text-3xl">
+              <i data-lucide="heart"></i>
+            </div>
+            <h3 class="font-heading text-2xl font-semibold">Kain dari Pelanggan</h3>
+            <p class="text-gray-600 leading-relaxed">Anda bebas memilih bahan favorit, kami fokus pada kualitas jahitan terbaik untuk Anda.</p>
+          </div>
         </div>
       </div>
     </section>
@@ -295,13 +331,10 @@
             </tbody>
           </table>
         </div>
-        <p class="text-center mt-8 text-gray-500 italic text-sm">
-    <p>     * Harga di atas di luar bahan
-            * Harga adalah estimasi ongkos jahit. Harga pasti ditentukan setelah
-          konsultasi fitting.
-          </p>
-        
-        </p>
+        <div class="text-center mt-8 space-y-1">
+          <p class="text-gray-500 italic text-sm">* Harga di atas di luar bahan kain.</p>
+          <p class="text-gray-500 italic text-sm">* Harga adalah estimasi ongkos jahit. Harga pasti ditentukan setelah konsultasi fitting.</p>
+        </div>
       </div>
     </section>
 
@@ -355,51 +388,40 @@
     <!-- Testimoni Section -->
     <section class="py-24 bg-warm-white">
       <div class="container mx-auto px-6">
-        <h2 class="font-heading text-4xl text-center mb-16">
-          Pelanggan Bahagia
-        </h2>
+        <div class="text-center mb-14 reveal">
+          <h2 class="font-heading text-4xl">Pelanggan Bahagia</h2>
+          <div class="w-16 h-1 bg-primary mx-auto mt-4"></div>
+        </div>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div class="bg-white p-8 rounded-2xl shadow-sm border border-cream">
-            <div class="flex text-secondary mb-4">
-              <i data-lucide="star" class="fill-current"></i>
-              <i data-lucide="star" class="fill-current"></i>
-              <i data-lucide="star" class="fill-current"></i>
-              <i data-lucide="star" class="fill-current"></i>
-              <i data-lucide="star" class="fill-current"></i>
+          <div class="testi-card bg-white p-8 rounded-2xl shadow-sm border border-cream reveal delay-1">
+            <div class="flex text-secondary mb-4 gap-0.5">
+              <i data-lucide="star" class="fill-current w-4 h-4"></i><i data-lucide="star" class="fill-current w-4 h-4"></i><i data-lucide="star" class="fill-current w-4 h-4"></i><i data-lucide="star" class="fill-current w-4 h-4"></i><i data-lucide="star" class="fill-current w-4 h-4"></i>
             </div>
-            <p class="text-gray-600 italic mb-6">
-              "Hasil jahitannya sangat rapi dan pas sekali di badan. Benar-benar
-              presisi seperti namanya!"
-            </p>
-            <div class="font-semibold">— Ibu Rina S.</div>
+            <p class="text-gray-600 italic mb-6 leading-relaxed">"Hasil jahitannya sangat rapi dan pas sekali di badan. Benar-benar presisi seperti namanya!"</p>
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-sm">R</div>
+              <div class="font-semibold text-sm">Ibu Rina S.</div>
+            </div>
           </div>
-          <div class="bg-white p-8 rounded-2xl shadow-sm border border-cream">
-            <div class="flex text-secondary mb-4">
-              <i data-lucide="star" class="fill-current"></i>
-              <i data-lucide="star" class="fill-current"></i>
-              <i data-lucide="star" class="fill-current"></i>
-              <i data-lucide="star" class="fill-current"></i>
-              <i data-lucide="star" class="fill-current"></i>
+          <div class="testi-card bg-white p-8 rounded-2xl shadow-sm border border-cream reveal delay-2">
+            <div class="flex text-secondary mb-4 gap-0.5">
+              <i data-lucide="star" class="fill-current w-4 h-4"></i><i data-lucide="star" class="fill-current w-4 h-4"></i><i data-lucide="star" class="fill-current w-4 h-4"></i><i data-lucide="star" class="fill-current w-4 h-4"></i><i data-lucide="star" class="fill-current w-4 h-4"></i>
             </div>
-            <p class="text-gray-600 italic mb-6">
-              "Kebaya yang dibuat sangat anggun. Banyak yang memuji saat dipakai
-              ke pernikahan teman."
-            </p>
-            <div class="font-semibold">— Siti M.</div>
+            <p class="text-gray-600 italic mb-6 leading-relaxed">"Kebaya yang dibuat sangat anggun. Banyak yang memuji saat dipakai ke pernikahan teman."</p>
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-sm">S</div>
+              <div class="font-semibold text-sm">Siti M.</div>
+            </div>
           </div>
-          <div class="bg-white p-8 rounded-2xl shadow-sm border border-cream">
-            <div class="flex text-secondary mb-4">
-              <i data-lucide="star" class="fill-current"></i>
-              <i data-lucide="star" class="fill-current"></i>
-              <i data-lucide="star" class="fill-current"></i>
-              <i data-lucide="star" class="fill-current"></i>
-              <i data-lucide="star" class="fill-current"></i>
+          <div class="testi-card bg-white p-8 rounded-2xl shadow-sm border border-cream reveal delay-3">
+            <div class="flex text-secondary mb-4 gap-0.5">
+              <i data-lucide="star" class="fill-current w-4 h-4"></i><i data-lucide="star" class="fill-current w-4 h-4"></i><i data-lucide="star" class="fill-current w-4 h-4"></i><i data-lucide="star" class="fill-current w-4 h-4"></i><i data-lucide="star" class="fill-current w-4 h-4"></i>
             </div>
-            <p class="text-gray-600 italic mb-6">
-              "Gamis untuk anak saya sangat nyaman dipakai seharian. Jahitannya
-              kuat dan detailnya cantik."
-            </p>
-            <div class="font-semibold">— Ibu Maya</div>
+            <p class="text-gray-600 italic mb-6 leading-relaxed">"Gamis untuk anak saya sangat nyaman dipakai seharian. Jahitannya kuat dan detailnya cantik."</p>
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-sm">M</div>
+              <div class="font-semibold text-sm">Ibu Maya</div>
+            </div>
           </div>
         </div>
       </div>
@@ -502,9 +524,18 @@
       // Mobile Menu Toggle
       const btn = document.getElementById("mobile-menu-btn");
       const menu = document.getElementById("mobile-menu");
-      btn.addEventListener("click", () => {
-        menu.classList.toggle("hidden");
+      btn.addEventListener("click", () => { menu.classList.toggle("hidden"); });
+
+      // Navbar scroll shadow
+      window.addEventListener('scroll', () => {
+        document.querySelector('header').classList.toggle('scrolled', window.scrollY > 20);
       });
+
+      // Scroll reveal animation
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible'); });
+      }, { threshold: 0.12 });
+      document.querySelectorAll('.reveal, .reveal-left, .reveal-right').forEach(el => observer.observe(el));
 
       // Load Gallery
       async function loadGallery() {
