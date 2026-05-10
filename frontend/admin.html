@@ -8,26 +8,10 @@
 <script>tailwind.config={theme:{extend:{colors:{'admin-bg':'#0F172A','admin-card':'#1E293B','admin-border':'#334155','admin-accent':'#06B6D4','admin-text':'#F8FAFC','admin-muted':'#94A3B8'},fontFamily:{sans:['Inter','sans-serif']}}}}</script>
 <script src="https://unpkg.com/lucide@latest"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
-<style>
-@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
-@keyframes slideInRow{from{opacity:0;transform:translateX(-12px)}to{opacity:1;transform:translateX(0)}}
-body{background:#0F172A;color:#F8FAFC}
-.sidebar{background:#1E293B;border-right:1px solid #334155}
-.nav-item{transition:all .2s;color:#94A3B8;cursor:pointer}
-.nav-item.active{background:#06B6D4;color:#fff}
-.nav-item:hover:not(.active){background:rgba(6,182,212,.1);color:#06B6D4}
-.modal-overlay{background:rgba(15,23,42,.92);backdrop-filter:blur(6px)}
-.toggle-switch{position:relative;display:inline-block;width:48px;height:24px}
-.toggle-switch input{opacity:0;width:0;height:0}
-.slider{position:absolute;cursor:pointer;inset:0;background:#334155;transition:.4s;border-radius:24px}
-.slider:before{position:absolute;content:"";height:18px;width:18px;left:3px;bottom:3px;background:#fff;transition:.4s;border-radius:50%}
-input:checked+.slider{background:#06B6D4}
-input:checked+.slider:before{transform:translateX(24px)}
-#toast{visibility:hidden;background:#10B981;color:#fff;text-align:center;border-radius:12px;padding:16px 24px;position:fixed;z-index:200;right:24px;bottom:24px;font-weight:700;box-shadow:0 10px 25px rgba(0,0,0,.4);transition:all .3s}
-#toast.show{visibility:visible;animation:fadeUp .4s}
-.pin-box{width:52px;height:64px;font-size:1.75rem;font-weight:700;text-align:center;background:#0F172A;border:2px solid #334155;border-radius:12px;color:#F8FAFC;transition:border-color .2s}
-.pin-box:focus{border-color:#06B6D4;outline:none}
-@media(max-width:1024px){.sidebar{transform:translateX(-100%);transition:transform .3s;z-index:60;position:fixed;top:0;bottom:0;left:0}.sidebar.open{transform:translateX(0)}}
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+  <script>emailjs.init("bPfZl31p5UPdtbBHV");</script>
+  <style>
+/* ... existing styles ... */
 </style>
 </head>
 <body class="font-sans antialiased">
@@ -36,59 +20,50 @@ input:checked+.slider:before{transform:translateX(24px)}
 <div id="login-overlay" class="fixed inset-0 z-[100] bg-admin-bg flex items-center justify-center p-6">
   <div class="bg-admin-card w-full max-w-md rounded-3xl border border-admin-border shadow-2xl overflow-hidden" style="animation:fadeUp .5s ease">
 
-    <!-- STEP 1: Email + Password -->
+    <!-- STEP 1: Email Input -->
     <div id="login-step-1">
       <div class="p-10 border-b border-admin-border text-center bg-gradient-to-b from-admin-accent/10 to-transparent">
         <div class="w-16 h-16 bg-admin-accent/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
-          <i data-lucide="lock" class="text-admin-accent w-8 h-8"></i>
+          <i data-lucide="shield-check" class="text-admin-accent w-8 h-8"></i>
         </div>
         <h2 class="text-2xl font-bold">Admin Dewi Tailor</h2>
-        <p class="text-admin-muted text-sm mt-2">Langkah 1 dari 2 — Masuk akun admin</p>
+        <p class="text-admin-muted text-sm mt-2">Masuk ke dashboard dengan email admin</p>
       </div>
-      <form id="login-form" class="p-10 space-y-5">
+      <form id="login-form" class="p-10 space-y-6">
         <div>
           <label class="block text-xs font-bold uppercase tracking-widest text-admin-muted mb-2">Email Admin</label>
           <input type="email" id="login-email" required placeholder="admin@dewitailor.com"
             class="w-full bg-admin-bg border border-admin-border rounded-xl p-4 focus:border-admin-accent focus:outline-none transition-all">
-        </div>
-        <div>
-          <label class="block text-xs font-bold uppercase tracking-widest text-admin-muted mb-2">Password</label>
-          <div class="relative">
-            <input type="password" id="login-password" required placeholder="••••••••"
-              class="w-full bg-admin-bg border border-admin-border rounded-xl p-4 pr-12 focus:border-admin-accent focus:outline-none transition-all">
-            <button type="button" id="toggle-password" class="absolute right-4 top-1/2 -translate-y-1/2 text-admin-muted hover:text-white transition-all">
-              <i data-lucide="eye" class="w-4 h-4"></i>
-            </button>
-          </div>
+          <p class="text-[10px] text-admin-muted mt-2 italic">Kode OTP akan dikirim ke email ini untuk verifikasi.</p>
         </div>
         <p id="login-error" class="text-red-400 text-sm text-center min-h-5"></p>
         <button type="submit" id="login-btn"
           class="w-full bg-admin-accent text-white py-4 rounded-xl font-bold text-lg hover:brightness-110 transition-all shadow-lg shadow-admin-accent/20 flex items-center justify-center gap-2">
-          <i data-lucide="arrow-right" class="w-5 h-5"></i>
-          Lanjutkan
+          Kirim Kode OTP
         </button>
       </form>
     </div>
 
-    <!-- STEP 2: PIN Verifikasi -->
+    <!-- STEP 2: OTP Input -->
     <div id="login-step-2" style="display:none">
       <div class="p-10 border-b border-admin-border text-center bg-gradient-to-b from-emerald-500/10 to-transparent">
         <div class="w-16 h-16 bg-emerald-500/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
-          <i data-lucide="shield-check" class="text-emerald-400 w-8 h-8"></i>
+          <i data-lucide="mail-warning" class="text-emerald-400 w-8 h-8"></i>
         </div>
-        <h2 class="text-2xl font-bold">Verifikasi Identitas</h2>
-        <p class="text-admin-muted text-sm mt-2">Langkah 2 dari 2 — Masukkan kode PIN admin</p>
+        <h2 class="text-2xl font-bold">Verifikasi OTP</h2>
+        <p id="otp-hint-admin" class="text-admin-muted text-sm mt-2">Kode dikirim ke email Anda</p>
       </div>
       <form id="pin-form" class="p-10 space-y-8">
         <div class="text-center">
-          <label class="block text-xs font-bold uppercase tracking-widest text-admin-muted mb-6">Kode PIN (4 Digit)</label>
-          <div class="flex justify-center gap-3">
-            <input class="pin-box" type="password" maxlength="1" inputmode="numeric" pattern="[0-9]">
-            <input class="pin-box" type="password" maxlength="1" inputmode="numeric" pattern="[0-9]">
-            <input class="pin-box" type="password" maxlength="1" inputmode="numeric" pattern="[0-9]">
-            <input class="pin-box" type="password" maxlength="1" inputmode="numeric" pattern="[0-9]">
+          <label class="block text-xs font-bold uppercase tracking-widest text-admin-muted mb-6">Masukkan 6 Digit Kode</label>
+          <div class="flex justify-center gap-2">
+            <input class="pin-box otp-admin" type="text" maxlength="1" inputmode="numeric">
+            <input class="pin-box otp-admin" type="text" maxlength="1" inputmode="numeric">
+            <input class="pin-box otp-admin" type="text" maxlength="1" inputmode="numeric">
+            <input class="pin-box otp-admin" type="text" maxlength="1" inputmode="numeric">
+            <input class="pin-box otp-admin" type="text" maxlength="1" inputmode="numeric">
+            <input class="pin-box otp-admin" type="text" maxlength="1" inputmode="numeric">
           </div>
-          <input type="hidden" id="pin-input">
         </div>
         <p id="pin-error" class="text-red-400 text-sm text-center min-h-5"></p>
         <button type="submit" id="pin-verify-btn"
@@ -96,10 +71,11 @@ input:checked+.slider:before{transform:translateX(24px)}
           Verifikasi & Masuk
         </button>
         <button type="button" id="back-to-login-btn" class="w-full text-admin-muted hover:text-white text-sm font-medium transition-all flex items-center justify-center gap-2">
-          <i data-lucide="arrow-left" class="w-4 h-4"></i> Kembali ke Login
+          <i data-lucide="arrow-left" class="w-4 h-4"></i> Ganti Email
         </button>
       </form>
     </div>
+
 
   </div>
 </div>

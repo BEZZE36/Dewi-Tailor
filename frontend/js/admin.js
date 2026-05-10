@@ -12,6 +12,8 @@ import {
 } from "./utils.js";
 
 const IMGBB_KEY = "7e8ec6b8394b0c43f47ed50e2e57af2e";
+const SERVICE_ID = "service_iem0a2q";
+const TEMPLATE_ID = "template_ko5cbn5";
 
 let unsubscribeOrders = null;
 let unsubscribeGallery = null;
@@ -24,21 +26,31 @@ let currentQROrderId = null;
 let currentGalleryId = null;
 let currentReplyId = null;
 let reviewFilter = 'semua';
+let adminEmail = "";
 
-// ─── AUTH: Email + Password + PIN Verifikasi ─────────────────────────────────
+// ─── AUTH: Email OTP Verifikasi ─────────────────────────────────────────────
 
-const LOGIN_PIN_KEY = "adminVerified";
+const ADMIN_SESSION_KEY = "adminVerified";
 
 function initAuth() {
-  onAuthStateChanged(auth, (user) => {
+  onAuthStateChanged(auth, async (user) => {
     if (user) {
-      // Cek apakah sudah verifikasi PIN di sesi ini
-      if (sessionStorage.getItem(LOGIN_PIN_KEY) === "true") {
+      // Cek apakah user ini adalah admin di Firestore users collection dengan role 'admin'
+      const userSnap = await getDoc(doc(db, "users", user.uid));
+      const isAdmin = userSnap.exists() && userSnap.data().role === 'admin';
+      
+      // Jika session storage sudah diverifikasi atau admin memang login
+      if (sessionStorage.getItem(ADMIN_SESSION_KEY) === "true" && isAdmin) {
         showDashboard();
         initDashboard();
+      } else if (isAdmin) {
+        // Admin login Firebase tapi sesi verifikasi lokal belum ada
+        showOTPStep();
       } else {
-        // User sudah login Firebase tapi belum verifikasi PIN
-        showPinVerification();
+        // Bukan admin, paksa logout
+        await signOut(auth);
+        showLogin();
+        alert("Akses Ditolak: Anda bukan admin.");
       }
     } else {
       showLogin();
@@ -46,76 +58,112 @@ function initAuth() {
   });
 }
 
-// Step 1: Email + Password
-document.getElementById("login-form")?.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const email = document.getElementById("login-email").value;
-  const password = document.getElementById("login-password").value;
-  const btn = document.getElementById("login-btn");
-  const err = document.getElementById("login-error");
-  btn.disabled = true;
-  btn.innerHTML = '<span class="animate-spin inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2"></span>Memproses...';
-  err.textContent = "";
-  try {
-    await signInWithEmailAndPassword(auth, email, password);
-    // onAuthStateChanged akan menangani kelanjutan
-  } catch (error) {
-    const msgs = {
-      "auth/user-not-found": "Email tidak terdaftar.",
-      "auth/wrong-password": "Password salah.",
-      "auth/invalid-credential": "Email atau password salah.",
-      "auth/too-many-requests": "Terlalu banyak percobaan. Tunggu sebentar.",
-    };
-    err.textContent = msgs[error.code] || "Login gagal. Coba lagi.";
-    btn.disabled = false;
-    btn.textContent = "Masuk";
-  }
-});
+function showLogin() {
+  document.getElementById("login-step-1").style.display = "block";
+  document.getElementById("login-step-2").style.display = "none";
+  document.getElementById("login-overlay").style.display = "flex";
+  document.getElementById("dashboard-wrapper").style.display = "none";
+}
 
-// Step 2: PIN Verifikasi (4 digit, disimpan di Firestore config/adminPin)
-function showPinVerification() {
+function showOTPStep() {
   document.getElementById("login-step-1").style.display = "none";
   document.getElementById("login-step-2").style.display = "block";
   document.getElementById("login-overlay").style.display = "flex";
   document.getElementById("dashboard-wrapper").style.display = "none";
-  // Focus PIN input
-  setTimeout(() => document.getElementById("pin-input")?.focus(), 100);
+  document.getElementById("otp-hint-admin").textContent = `Kode dikirim ke email admin`;
+  setupOTPAdmin();
 }
 
+// Step 1: Kirim OTP
+document.getElementById("login-form")?.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const email = document.getElementById("login-email").value.trim();
+  const btn = document.getElementById("login-btn");
+  const err = document.getElementById("login-error");
+  
+  btn.disabled = true;
+  btn.innerHTML = '<span class="animate-spin inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2"></span>Mengirim...';
+  err.textContent = "";
+
+  try {
+    adminEmail = email;
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+    // 1. Simpan OTP ke Firestore mail_otps
+    await setDoc(doc(db, "mail_otps", email), {
+      otp: otp,
+      createdAt: Timestamp.now(),
+      expiresAt: new Timestamp(Math.floor(Date.now()/1000) + 600, 0)
+    });
+
+    // 2. Kirim via EmailJS
+    await emailjs.send(SERVICE_ID, TEMPLATE_ID, {
+      to_email: email,
+      to_name: "Admin Dewi Tailor",
+      otp: otp
+    });
+
+    showOTPStep();
+  } catch (error) {
+    err.textContent = "Gagal mengirim OTP. Pastikan EmailJS aktif.";
+    console.error(error);
+    btn.disabled = false;
+    btn.textContent = "Kirim Kode OTP";
+  }
+});
+
+// Step 2: Verifikasi OTP
 document.getElementById("pin-form")?.addEventListener("submit", async (e) => {
   e.preventDefault();
-  const pin = document.getElementById("pin-input").value.trim();
-  const err = document.getElementById("login-error");
+  const otpInput = [...document.querySelectorAll('.otp-admin')].map(i => i.value).join('');
+  const err = document.getElementById("pin-error");
   const btn = document.getElementById("pin-verify-btn");
+  
+  if (otpInput.length < 6) { err.textContent = "Masukkan 6 digit kode."; return; }
+
   btn.disabled = true;
   btn.textContent = "Memverifikasi...";
   err.textContent = "";
+
   try {
-    const configSnap = await getDoc(doc(db, "config", "app"));
-    const storedPin = configSnap.exists() ? configSnap.data().adminPin : null;
-    if (!storedPin) {
-      // Jika PIN belum diset, langsung masuk dan arahkan untuk set PIN
-      sessionStorage.setItem(LOGIN_PIN_KEY, "true");
-      showDashboard();
-      initDashboard();
-      showToast("⚠️ PIN belum diset. Hubungi pengembang untuk setup PIN.");
-      return;
+    const snap = await getDoc(doc(db, "mail_otps", adminEmail));
+    if (!snap.exists()) throw new Error("OTP tidak ditemukan. Kirim ulang.");
+    
+    const data = snap.data();
+    if (data.otp !== otpInput) throw new Error("Kode OTP salah.");
+    if (data.expiresAt.toDate() < new Date()) throw new Error("Kode kadaluarsa.");
+
+    // OTP Valid!
+    await deleteDoc(doc(db, "mail_otps", adminEmail));
+
+    // Login ke Firebase (Admin harus sudah terdaftar di Firebase Auth)
+    const adminPass = "DewiTailorAdmin123!"; 
+    
+    try {
+      await signInWithEmailAndPassword(auth, adminEmail, adminPass);
+    } catch(authErr) {
+      if(authErr.code === 'auth/user-not-found') {
+        await createUserWithEmailAndPassword(auth, adminEmail, adminPass);
+      } else { throw authErr; }
     }
-    if (pin === String(storedPin)) {
-      sessionStorage.setItem(LOGIN_PIN_KEY, "true");
-      showDashboard();
-      initDashboard();
-    } else {
-      err.textContent = "Kode verifikasi salah. Coba lagi.";
-      document.getElementById("pin-input").value = "";
-      document.getElementById("pin-input").focus();
-    }
-  } catch (err2) {
-    console.error(err2);
-    err.textContent = "Gagal memverifikasi. Periksa koneksi.";
-  } finally {
+
+    sessionStorage.setItem(ADMIN_SESSION_KEY, "true");
+    
+    // Perbarui profil admin di Firestore
+    const user = auth.currentUser;
+    await setDoc(doc(db, "users", user.uid), {
+      username: "Admin",
+      email: adminEmail,
+      role: "admin",
+      uid: user.uid
+    }, { merge: true });
+
+    showDashboard();
+    initDashboard();
+  } catch (error) {
+    err.textContent = error.message;
     btn.disabled = false;
-    btn.textContent = "Verifikasi";
+    btn.textContent = "Verifikasi & Masuk";
   }
 });
 
