@@ -39,18 +39,12 @@ function initAuth() {
       const userSnap = await getDoc(doc(db, "users", user.uid));
       const isAdmin = userSnap.exists() && userSnap.data().role === 'admin';
       
-      // Jika session storage sudah diverifikasi atau admin memang login
-      if (sessionStorage.getItem(ADMIN_SESSION_KEY) === "true" && isAdmin) {
+      if (sessionStorage.getItem(ADMIN_SESSION_KEY) === "true") {
         showDashboard();
         initDashboard();
-      } else if (isAdmin) {
-        // Admin login Firebase tapi sesi verifikasi lokal belum ada
-        showOTPStep();
       } else {
-        // Bukan admin, paksa logout
-        await signOut(auth);
-        showLogin();
-        alert("Akses Ditolak: Anda bukan admin.");
+        // Tampilkan OTP jika belum verifikasi sesi ini
+        showOTPStep();
       }
     } else {
       showLogin();
@@ -149,7 +143,7 @@ document.getElementById("pin-form")?.addEventListener("submit", async (e) => {
 
     sessionStorage.setItem(ADMIN_SESSION_KEY, "true");
     
-    // Perbarui profil admin di Firestore
+    // Paksa set role admin di Firestore
     const user = auth.currentUser;
     await setDoc(doc(db, "users", user.uid), {
       username: "Admin",

@@ -160,7 +160,7 @@
             <i data-lucide="moon" id="icon-moon" class="w-4 h-4"></i>
             <i data-lucide="sun" id="icon-sun" class="w-4 h-4 hidden"></i>
           </button>
-          <a href="pre-order.html" class="bg-primary text-white px-6 py-2 rounded-full font-semibold hover:bg-opacity-90 transition-all">Pre-Order</a>
+          <button onclick="checkAuthBeforePreOrder()" class="bg-primary text-white px-6 py-2 rounded-full font-semibold hover:bg-opacity-90 transition-all">Pre-Order</button>
         </div>
 
         <!-- Mobile Toggle -->
@@ -185,11 +185,10 @@
         <a href="#layanan" class="block font-medium">Layanan</a>
         <a href="antrian.html" class="block font-medium">Antrian</a>
         <a href="cek-status.html" class="block font-medium">Cek Order</a>
-        <a
-          href="pre-order.html"
-          class="block bg-primary text-white text-center py-3 rounded-lg font-semibold"
-          >Pre-Order</a
-        >
+        <button
+          onclick="checkAuthBeforePreOrder()"
+          class="block w-full bg-primary text-white text-center py-3 rounded-lg font-semibold"
+          >Pre-Order</button>
       </div>
     </header>
 
@@ -771,6 +770,13 @@
           showToast('Gagal mengirim. Coba lagi.', false);
         } finally { btn.disabled = false; btn.textContent = 'Kirim Ulasan'; }
       });
+      window.checkAuthBeforePreOrder = function() {
+        if (currentUser && currentUserProfile) {
+          window.location.href = 'pre-order.html';
+        } else {
+          window.location.href = 'login-user.html?redirect=pre-order.html';
+        }
+      };
     </script>
   </body>
 </html>
