@@ -123,11 +123,10 @@
             if (btn) btn.disabled = true;
 
             try {
-                // Query Firestore mencari pesanan berdasarkan email
+                // Query Firestore mencari pesanan berdasarkan email (Hapus orderBy untuk hindari error index)
                 const q = query(
                     collection(db, "orders"), 
-                    where("email", "==", email),
-                    orderBy("createdAt", "desc")
+                    where("email", "==", email)
                 );
                 
                 const querySnapshot = await getDocs(q);
@@ -139,8 +138,12 @@
                             <p class="text-gray-400">Tidak ada pesanan ditemukan untuk email ini.</p>
                         </div>`;
                 } else {
-                    querySnapshot.forEach((doc) => {
-                        const data = doc.data();
+                    // Sortir manual di JS (Terbaru di atas)
+                    const orders = [];
+                    querySnapshot.forEach(doc => orders.push({id: doc.id, ...doc.data()}));
+                    orders.sort((a,b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+
+                    orders.forEach((data) => {
                         resultsSection.innerHTML += renderOrderCard(data);
                     });
                 }
