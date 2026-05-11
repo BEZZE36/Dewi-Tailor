@@ -443,5 +443,74 @@
       const observer = new IntersectionObserver((es) => es.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible'); }), { threshold: 0.1 });
       document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
     </script>
-  </body>
+      <!-- Live Notification Container -->
+    <div id="live-notif" class="fixed bottom-6 right-6 z-50 pointer-events-none"></div>
+
+    <style>
+        .notif-enter { animation: slideInNotif 0.5s ease forwards; }
+        .notif-exit { animation: slideOutNotif 0.5s ease forwards; }
+        @keyframes slideInNotif { from { opacity: 0; transform: translateY(100px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideOutNotif { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateX(100px); } }
+        
+        /* Auto Slider Layout */
+        .testimonial-slider { display: flex; transition: transform 0.5s ease-in-out; }
+        .testimonial-item { min-width: 100%; padding: 0 10px; }
+        @media (min-width: 768px) { .testimonial-item { min-width: 50%; } }
+        @media (min-width: 1024px) { .testimonial-item { min-width: 33.333%; } }
+    </style>
+
+    <script type="module">
+        import { db, auth } from "./js/firebase-config.js";
+        import { collection, query, orderBy, limit, onSnapshot, where } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+        // --- LIVE NOTIFICATION SYSTEM ---
+        const notifContainer = document.getElementById('live-notif');
+        let firstLoad = true;
+
+        const qNotif = query(collection(db, "orders"), orderBy("tanggalMasuk", "desc"), limit(1));
+        onSnapshot(qNotif, (snapshot) => {
+            if (firstLoad) { firstLoad = false; return; } // Skip historical data
+            snapshot.docChanges().forEach((change) => {
+                if (change.type === "added") {
+                    const data = change.doc.data();
+                    showNotif(data.nama, data.jenisPakaian);
+                }
+            });
+        });
+
+        function showNotif(name, type) {
+            const maskedName = name.split(' ')[0].substring(0, 3) + '...';
+            const div = document.createElement('div');
+            div.className = "notif-enter bg-white dark:bg-dark-brown shadow-2xl border border-cream dark:border-gray-800 rounded-2xl p-4 mb-3 flex items-center gap-4 pointer-events-auto max-w-xs";
+            div.innerHTML = `
+                <div class="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center text-primary">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+                </div>
+                <div>
+                    <p class="text-xs font-bold text-primary uppercase tracking-tighter">Order Baru!</p>
+                    <p class="text-[11px] text-gray-500 dark:text-gray-300">Si <b>${maskedName}</b> baru saja memesan <b>${type}</b>.</p>
+                </div>
+            `;
+            notifContainer.appendChild(div);
+            setTimeout(() => {
+                div.classList.replace('notif-enter', 'notif-exit');
+                setTimeout(() => div.remove(), 500);
+            }, 5000);
+        }
+
+        // --- AUTO SLIDER FOR REVIEWS ---
+        let sliderIndex = 0;
+        const slider = document.getElementById('testimonial-slider');
+        const items = document.querySelectorAll('.testimonial-item');
+        
+        function autoSlide() {
+            if (!slider) return;
+            const itemWidth = items[0].offsetWidth;
+            sliderIndex++;
+            if (sliderIndex >= items.length) sliderIndex = 0;
+            slider.style.transform = `translateX(-${sliderIndex * itemWidth}px)`;
+        }
+        setInterval(autoSlide, 4000);
+    </script>
+</body>
 </html>
