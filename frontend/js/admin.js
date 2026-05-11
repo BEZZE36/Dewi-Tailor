@@ -33,28 +33,29 @@ let adminEmail = "";
 const ADMIN_SESSION_KEY = "adminVerified";
 
 function initAuth() {
-  onAuthStateChanged(auth, async (user) => {
-    // Jika sudah ada session dari halaman rahasia, langsung buka
-    if (sessionStorage.getItem(ADMIN_SESSION_KEY) === "true") {
-      showDashboard();
-      initDashboard();
-      return;
-    }
+  // Jika sudah ada session dari halaman rahasia, langsung inisialisasi data
+  if (sessionStorage.getItem(ADMIN_SESSION_KEY) === "true") {
+    initDashboard();
+    // Tetap jalankan listener auth di latar belakang untuk sync
+    onAuthStateChanged(auth, (user) => {
+      if (!user) { sessionStorage.removeItem(ADMIN_SESSION_KEY); window.location.href = "index.html"; }
+    });
+    return;
+  }
 
+  onAuthStateChanged(auth, async (user) => {
     if (user) {
       const userSnap = await getDoc(doc(db, "users", user.uid));
-      const isAdmin = userSnap.exists() && userSnap.data().role === 'admin';
-      
-      if (isAdmin) {
+      if (userSnap.exists() && userSnap.data().role === 'admin') {
         sessionStorage.setItem(ADMIN_SESSION_KEY, "true");
         showDashboard();
         initDashboard();
       } else {
         await signOut(auth);
-        showLogin();
+        window.location.href = "index.html";
       }
     } else {
-      showLogin();
+      window.location.href = "index.html";
     }
   });
 }

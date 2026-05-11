@@ -23,9 +23,15 @@
 </div>
 
 <script>
-  // SECURITY REDIRECT: Hanya bisa masuk lewat halaman rahasia
+  // SECURITY REDIRECT & FAST PASS
   if (sessionStorage.getItem('adminVerified') !== 'true') {
     window.location.href = "index.html";
+  } else {
+    // Jalur Kilat: Langsung sembunyikan loading jika sudah oke
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById("loading-overlay").style.display = "none";
+      document.getElementById("dashboard-wrapper").style.display = "block";
+    });
   }
 </script>
 
