@@ -37,11 +37,12 @@
 
         /* Dark Mode Premium Support */
         html.dark body { background: #0f090b; color: #f0e8ec; }
-        html.dark .glass-card { background: rgba(26, 16, 20, 0.85); border-color: #3d2535; }
+        html.dark .glass-card { background: rgba(26, 16, 20, 0.85); border-color: #3d2535; color: #f0e8ec; }
         html.dark .bg-white { background: #1a1014 !important; border-color: #3d2535 !important; }
         html.dark .text-gray-500, html.dark .text-gray-400 { color: #c9a8b5 !important; }
         html.dark input { background: #231519 !important; border-color: #3d2535 !important; color: white !important; }
         html.dark .border-cream { border-color: #3d2535 !important; }
+        html.dark .font-bold { color: #ffffff !important; } /* Memastikan nilai font-bold putih terang */
     </style>
 </head>
 <body class="font-body text-dark-brown min-h-screen transition-colors duration-300 bg-warm-white">
@@ -66,7 +67,7 @@
 
         <div id="filter-section" class="mb-8 hidden">
             <div class="relative">
-                <input type="text" id="filter-input" placeholder="Filter riwayat..." 
+                <input type="text" id="filter-input" placeholder="Cari jenis pakaian atau tanggal..." 
                     class="w-full bg-white border border-cream rounded-2xl px-12 py-4 shadow-sm focus:border-primary outline-none transition-all">
                 <svg class="w-5 h-5 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
             </div>
@@ -74,18 +75,18 @@
 
         <div id="auth-loading" class="py-20 text-center">
             <div class="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-            <p class="text-gray-400 text-xs tracking-widest uppercase font-bold">Verifikasi Autentikasi...</p>
+            <p class="text-gray-400 text-[10px] tracking-widest uppercase font-bold">Sinkronisasi Data...</p>
         </div>
 
         <div id="login-prompt" class="hidden glass-card rounded-3xl p-10 text-center space-y-6">
             <div class="w-16 h-16 bg-primary/10 text-primary rounded-full flex items-center justify-center mx-auto">
                 <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
             </div>
-            <p class="text-gray-600 font-medium">Anda belum login.</p>
-            <a href="login-user.html?redirect=cek-status.html" class="bg-primary text-white px-10 py-4 rounded-full font-bold inline-block">Login</a>
+            <p class="text-gray-600 font-medium">Sesi berakhir. Silakan login kembali.</p>
+            <a href="login-user.html?redirect=cek-status.html" class="bg-primary text-white px-10 py-4 rounded-full font-bold inline-block shadow-lg">Login</a>
         </div>
 
-        <div id="results-section" class="grid grid-cols-1 gap-4"></div>
+        <div id="results-section" class="grid grid-cols-1 gap-5"></div>
         <div id="history-loading" class="hidden py-10 text-center">
             <div class="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto"></div>
         </div>
@@ -102,10 +103,11 @@
             if (user) {
                 document.getElementById('login-prompt').classList.add('hidden');
                 document.getElementById('filter-section').classList.remove('hidden');
-                document.getElementById('sub-title').textContent = `Menampilkan pesanan untuk: ${user.email}`;
+                document.getElementById('sub-title').textContent = `Riwayat untuk: ${user.email}`;
                 loadHistory(user.email);
             } else {
                 document.getElementById('login-prompt').classList.remove('hidden');
+                document.getElementById('sub-title').textContent = "Akses Terbatas";
             }
         });
 
@@ -119,7 +121,7 @@
                 const snap = await getDocs(q);
                 loading.classList.add('hidden');
                 if (snap.empty) {
-                    results.innerHTML = `<div class="text-center py-16 bg-white rounded-3xl border border-dashed border-cream"><p class="text-gray-400 text-sm">Belum ada pesanan.</p></div>`;
+                    results.innerHTML = `<div class="text-center py-16 bg-white rounded-3xl border border-dashed border-cream"><p class="text-gray-400 text-sm italic">Belum ada riwayat jahitan.</p></div>`;
                 } else {
                     allOrders = [];
                     snap.forEach(doc => allOrders.push({id: doc.id, ...doc.data()}));
@@ -128,28 +130,34 @@
                 }
             } catch (e) {
                 loading.classList.add('hidden');
-                results.innerHTML = `<p class="text-center text-red-500">Gagal memuat data.</p>`;
+                results.innerHTML = `<p class="text-center text-red-500 font-bold">Error: Gagal sinkronisasi database.</p>`;
             }
         }
 
         function renderOrders(orders) {
             const results = document.getElementById('results-section');
             results.innerHTML = orders.map(order => {
-                const date = order.tanggalMasuk ? order.tanggalMasuk.toDate().toLocaleDateString('id-ID', {day:'numeric', month:'short', year:'numeric'}) : '-';
+                const date = order.tanggalMasuk ? order.tanggalMasuk.toDate().toLocaleDateString('id-ID', {day:'numeric', month:'long', year:'numeric'}) : '-';
+                const sLabels = { 'menunggu': 'Menunggu', 'proses': 'Dijahit', 'selesai': 'Selesai', 'diambil': 'Diambil' };
                 const sClass = `status-${order.status || 'menunggu'}`;
+                
                 return `
-                    <div class="glass-card rounded-3xl p-6 shadow-sm border-l-4 border-l-primary hover:translate-x-1 transition-all">
-                        <div class="flex justify-between items-start mb-4">
-                            <div><p class="text-[10px] text-gray-400 font-bold tracking-widest uppercase mb-1">ID Antrian</p><h3 class="font-bold text-xl">#${String(order.nomorAntrian || 0).padStart(4,'0')}</h3></div>
-                            <span class="status-badge ${sClass}">${order.status || 'Menunggu'}</span>
+                    <div class="glass-card rounded-3xl p-7 shadow-sm border-l-4 border-l-primary hover:translate-x-1 transition-all">
+                        <div class="flex justify-between items-start mb-5">
+                            <div><p class="text-[10px] text-gray-400 font-bold tracking-widest uppercase mb-1">No. Antrian</p><h3 class="font-bold text-2xl">#${String(order.nomorAntrian || 0).padStart(4,'0')}</h3></div>
+                            <span class="status-badge ${sClass}">${sLabels[order.status] || 'Menunggu'}</span>
                         </div>
-                        <div class="grid grid-cols-2 gap-4 text-xs">
-                            <div><p class="text-gray-400 mb-1">Jenis</p><p class="font-bold">${order.jenisPakaian || '-'}</p></div>
-                            <div><p class="text-gray-400 mb-1">Tanggal</p><p class="font-bold">${date}</p></div>
+                        <div class="grid grid-cols-2 gap-6 text-sm mb-5">
+                            <div><p class="text-gray-400 mb-1">Jenis Pakaian</p><p class="font-bold text-dark-brown">${order.jenisPakaian || '-'}</p></div>
+                            <div><p class="text-gray-400 mb-1">Tanggal Pesan</p><p class="font-bold text-dark-brown">${date}</p></div>
                         </div>
-                        <div class="mt-5 pt-4 border-t border-cream flex justify-between items-center text-xs">
-                            <span class="text-gray-400 italic">Estimasi: ${order.estimasiSelesai || 'Tunggu Fitting'}</span>
-                            <p class="text-primary font-bold">${order.harga ? 'Rp ' + order.harga.toLocaleString('id-ID') : 'Rp -'}</p>
+                        <div class="bg-primary/5 p-4 rounded-2xl mb-5">
+                            <p class="text-gray-400 text-[10px] uppercase font-bold mb-1 tracking-wider">Deskripsi Model</p>
+                            <p class="text-xs italic text-dark-brown leading-relaxed">${order.deskripsi || 'Tidak ada deskripsi'}</p>
+                        </div>
+                        <div class="pt-4 border-t border-cream flex justify-between items-center text-xs">
+                            <span class="text-gray-400 italic">Estimasi: ${order.estimasiSelesai || 'Konfirmasi saat fitting'}</span>
+                            <p class="text-primary font-bold text-base">${order.harga ? 'Rp ' + order.harga.toLocaleString('id-ID') : 'Rp -'}</p>
                         </div>
                     </div>`;
             }).join('');
@@ -157,7 +165,10 @@
 
         document.getElementById('filter-input').oninput = (e) => {
             const val = e.target.value.toLowerCase();
-            renderOrders(allOrders.filter(o => (o.jenisPakaian||'').toLowerCase().includes(val)));
+            renderOrders(allOrders.filter(o => 
+                (o.jenisPakaian||'').toLowerCase().includes(val) || 
+                (o.tanggalMasuk ? o.tanggalMasuk.toDate().toLocaleDateString('id-ID').toLowerCase() : '').includes(val)
+            ));
         };
     </script>
 </body>
