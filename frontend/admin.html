@@ -226,7 +226,6 @@
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
   import { getFirestore, collection, query, orderBy, onSnapshot, doc, updateDoc, getDoc, addDoc, deleteDoc, Timestamp, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
   import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-  import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
 
   // --- FIREBASE CONFIG ---
   const firebaseConfig = {
@@ -240,7 +239,6 @@
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
   const auth = getAuth(app);
-  const storage = getStorage(app);
 
   // --- UTILS ---
   const formatTgl = (t) => {
@@ -380,13 +378,18 @@
   };
   window.closeEditModal = () => document.getElementById("edit-modal").style.display = "none";
 
-  // --- UPLOAD FOTO via Firebase Storage ---
+  // --- UPLOAD FOTO via ImgBB ---
+  const IMGBB_KEY = "7e8ec6b8394b0c43f47ed50e2e57af2e";
+  
   const uploadFoto = async (file) => {
-    const ext = file.name.split('.').pop();
-    const path = `gallery/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
-    const fileRef = storageRef(storage, path);
-    await uploadBytes(fileRef, file);
-    const url = await getDownloadURL(fileRef);
+    const formData = new FormData();
+    formData.append("image", file);
+    const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_KEY}`, { method: "POST", body: formData });
+    if (!res.ok) throw new Error("Upload gagal: HTTP " + res.status);
+    const json = await res.json();
+    if (!json.success) throw new Error("Upload ditolak ImgBB");
+    const url = json.data?.url || json.data?.display_url || json.data?.image?.url;
+    if (!url) throw new Error("URL tidak diterima dari ImgBB");
     return url;
   };
   // --- GALLERY MODAL ---
