@@ -234,6 +234,20 @@ document.getElementById("hamburger-btn")?.addEventListener("click", () => {
 // ─── DASHBOARD ────────────────────────────────────────────────────────────────
 
 function initDashboard() {
+  // Hubungkan tombol navigasi secara eksplisit
+  document.querySelectorAll("[data-section]").forEach((el) => {
+    el.onclick = () => {
+      navigateTo(el.getAttribute("data-section"));
+      document.getElementById("sidebar")?.classList.remove("open");
+    };
+  });
+
+  document.getElementById("hamburger-btn")?.addEventListener("click", () => {
+    document.getElementById("sidebar")?.classList.toggle("open");
+  });
+
+  if (window.lucide) lucide.createIcons();
+
   navigateTo("overview");
   initOrdersListener();
   initGalleryListener();
