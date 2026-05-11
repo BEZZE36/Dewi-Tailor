@@ -359,6 +359,7 @@
         <div class="p-4 bg-admin-card">
           <p class="font-bold text-sm truncate">${item.namaModel || '-'}</p>
           <p class="text-[10px] text-admin-muted capitalize">${item.kategori || '-'} • Rp ${Number(item.harga || 0).toLocaleString('id-ID')}</p>
+          <a href="${item.fotoURL}" target="_blank" class="text-[9px] text-blue-500 truncate block mt-1">Lihat URL Asli</a>
         </div>
       </div>`).join("");
   };
