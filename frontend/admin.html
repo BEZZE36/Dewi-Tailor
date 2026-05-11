@@ -43,9 +43,22 @@
 </div>
 
 <script>
-  // SECURITY REDIRECT
-  if (sessionStorage.getItem('adminVerified') !== 'true') {
+  // SECURITY REDIRECT & FAIL-SAFE
+  const ADMIN_KEY = 'adminVerified';
+  if (sessionStorage.getItem(ADMIN_KEY) !== 'true') {
     window.location.href = "index.html";
+  } else {
+    // FAIL-SAFE: Jika JS utama macet, paksa buka dalam 5 detik
+    setTimeout(() => {
+      const loading = document.getElementById("loading-overlay");
+      const wrapper = document.getElementById("dashboard-wrapper");
+      if (loading && loading.style.display !== 'none') {
+        console.warn("Fail-safe triggered: Force revealing dashboard");
+        loading.style.display = "none";
+        wrapper.style.display = "block";
+        if (window.initDashboard) window.initDashboard();
+      }
+    }, 5000);
   }
 </script>
 

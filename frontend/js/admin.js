@@ -670,14 +670,18 @@ document.getElementById('filter-review')?.addEventListener('change', (e) => {
 });
 
 // ─── INIT ─────────────────────────────────────────────────────────────────────
+console.log("Admin JS: Script execution started.");
+
 window.addEventListener("load", () => {
+  console.log("Admin JS: window.load fired.");
   initAuth();
 });
 
 // Backup: Cek jika sudah verified, paksa muncul
 if (sessionStorage.getItem(ADMIN_SESSION_KEY) === "true") {
+  console.log("Admin JS: Session verified, starting fast track...");
   setTimeout(() => {
     showDashboard();
     initDashboard();
-  }, 100);
+  }, 50);
 }
