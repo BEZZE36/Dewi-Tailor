@@ -1,10 +1,10 @@
 import { db, auth } from "./firebase-config.js";
 import {
   collection, query, orderBy, onSnapshot, doc, updateDoc,
-  getDoc, addDoc, deleteDoc, Timestamp, runTransaction,
+  getDoc, addDoc, deleteDoc, Timestamp, runTransaction, setDoc
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import {
-  signInWithEmailAndPassword, signOut, onAuthStateChanged,
+  signInWithEmailAndPassword, signOut, onAuthStateChanged, createUserWithEmailAndPassword
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import {
   samarkanNama, formatTgl, formatTglPendek, statusBadge, statusBayarBadge,
@@ -98,9 +98,11 @@ document.getElementById("login-form")?.addEventListener("submit", async (e) => {
 window.requestAdminOTP = async () => {
   const email = document.getElementById("login-email").value.trim();
   const err = document.getElementById("login-error");
+  const btn = document.querySelector('button[onclick="requestAdminOTP()"]');
   if (!email) { err.textContent = "Masukkan email dulu."; return; }
 
   try {
+    if(btn) { btn.disabled = true; btn.textContent = 'Mengirim...'; }
     adminEmail = email;
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     await setDoc(doc(db, "mail_otps", email), {
@@ -113,6 +115,8 @@ window.requestAdminOTP = async () => {
   } catch (error) {
     err.textContent = "Gagal kirim OTP.";
     console.error(error);
+  } finally {
+    if(btn) { btn.disabled = false; btn.textContent = 'Minta OTP'; }
   }
 };
 
@@ -187,7 +191,7 @@ function showLogin() {
   document.getElementById("login-step-2").style.display = "none";
   document.getElementById("login-overlay").style.display = "flex";
   document.getElementById("dashboard-wrapper").style.display = "none";
-  sessionStorage.removeItem(LOGIN_PIN_KEY);
+  sessionStorage.removeItem(ADMIN_SESSION_KEY);
 }
 
 function showDashboard() {
@@ -196,7 +200,7 @@ function showDashboard() {
 }
 
 document.getElementById("logout-btn")?.addEventListener("click", async () => {
-  sessionStorage.removeItem(LOGIN_PIN_KEY);
+  sessionStorage.removeItem(ADMIN_SESSION_KEY);
   if (unsubscribeOrders) unsubscribeOrders();
   if (unsubscribeGallery) unsubscribeGallery();
   if (unsubscribeReviews) unsubscribeReviews();
