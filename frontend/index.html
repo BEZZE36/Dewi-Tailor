@@ -293,7 +293,7 @@
     <script type="module">
       import { auth, db } from "./js/firebase-config.js";
       import { onAuthStateChanged, signOut, updatePassword, verifyBeforeUpdateEmail } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-      import { collection, query, where, getDocs, limit, addDoc, onSnapshot, Timestamp, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+      import { collection, query, where, getDocs, limit, addDoc, onSnapshot, Timestamp, doc, getDoc, setDoc, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
       lucide.createIcons();
       let currentUser = null;
