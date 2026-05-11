@@ -670,4 +670,14 @@ document.getElementById('filter-review')?.addEventListener('change', (e) => {
 });
 
 // ─── INIT ─────────────────────────────────────────────────────────────────────
-document.addEventListener("DOMContentLoaded", initAuth);
+window.addEventListener("load", () => {
+  initAuth();
+});
+
+// Backup: Cek jika sudah verified, paksa muncul
+if (sessionStorage.getItem(ADMIN_SESSION_KEY) === "true") {
+  setTimeout(() => {
+    showDashboard();
+    initDashboard();
+  }, 100);
+}

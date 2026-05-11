@@ -43,20 +43,9 @@
 </div>
 
 <script>
-  // SECURITY REDIRECT & FAST PASS
+  // SECURITY REDIRECT
   if (sessionStorage.getItem('adminVerified') !== 'true') {
     window.location.href = "index.html";
-  } else {
-    // Jalur Kilat: Langsung sembunyikan loading & inisialisasi
-    document.addEventListener('DOMContentLoaded', () => {
-      document.getElementById("loading-overlay").style.display = "none";
-      document.getElementById("dashboard-wrapper").style.display = "block";
-      // Tunggu admin.js siap lalu inisialisasi
-      setTimeout(() => {
-        if (window.initDashboard) window.initDashboard();
-        else console.error("Admin JS not ready");
-      }, 500);
-    });
   }
 </script>
 
