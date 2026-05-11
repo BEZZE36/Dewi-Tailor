@@ -30,13 +30,12 @@
     <style>
         .glass-card { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(12px); border: 1px solid rgba(232, 213, 196, 0.5); }
         .status-badge { padding: 4px 12px; border-radius: 99px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; }
-        
-        /* Status Colors Fixed */
         .status-menunggu, .status-pending { background: #FEF3C7; color: #92400E; }
         .status-proses { background: #DBEAFE; color: #1E40AF; }
         .status-selesai { background: #D1FAE5; color: #065F46; }
         .status-diambil { background: #F3F4F6; color: #374151; }
 
+        /* Dark Mode Support (No Button, Auto-Follow Index) */
         html.dark body { background: #1a1014; color: #f0e8ec; }
         html.dark .glass-card { background: rgba(46, 28, 34, 0.8); border-color: #3d2535; }
         html.dark .bg-white { background: #231519 !important; border-color: #3d2535 !important; }
@@ -45,6 +44,12 @@
     </style>
 </head>
 <body class="font-body text-dark-brown min-h-screen transition-colors duration-300 bg-warm-white">
+    <script>
+        // AUTO FOLLOW DARK MODE FROM INDEX
+        if (localStorage.getItem('dewi-dark') === '1') {
+            document.documentElement.classList.add('dark');
+        }
+    </script>
 
     <nav class="p-6">
         <div class="container mx-auto flex justify-between items-center">
@@ -52,22 +57,16 @@
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
                 Dewi Tailor
             </a>
-            <div class="flex items-center gap-4">
-                <button id="dark-toggle" class="w-9 h-9 rounded-full border border-cream flex items-center justify-center text-primary">
-                    <svg id="icon-moon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
-                    <svg id="icon-sun" class="w-4 h-4 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 9H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
-                </button>
-            </div>
+            <!-- Button Mode Malam Dihapus Sesuai Instruksi -->
         </div>
     </nav>
 
     <main class="container mx-auto px-6 py-8 max-w-3xl">
         <div class="text-center mb-10">
             <h1 class="font-heading text-4xl font-bold mb-3">Riwayat Pesanan</h1>
-            <p id="sub-title" class="text-gray-500 text-sm">Masuk untuk melihat semua riwayat jahitan Anda.</p>
+            <p id="sub-title" class="text-gray-500 text-sm">Sedang memverifikasi akun...</p>
         </div>
 
-        <!-- Filter Area -->
         <div id="filter-section" class="mb-8 hidden">
             <div class="relative">
                 <input type="text" id="filter-input" placeholder="Cari berdasarkan jenis pakaian atau tanggal..." 
@@ -76,20 +75,26 @@
             </div>
         </div>
 
-        <!-- Login Prompt (jika belum login) -->
-        <div id="login-prompt" class="glass-card rounded-3xl p-10 text-center space-y-6">
+        <!-- Section Loading Awal -->
+        <div id="auth-loading" class="py-20 text-center">
+            <div class="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <p class="text-gray-400 text-sm">Menghubungkan ke akun Anda...</p>
+        </div>
+
+        <!-- Login Prompt (Hidden by default) -->
+        <div id="login-prompt" class="hidden glass-card rounded-3xl p-10 text-center space-y-6">
             <div class="w-16 h-16 bg-primary/10 text-primary rounded-full flex items-center justify-center mx-auto">
                 <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
             </div>
-            <p class="text-gray-600">Silakan login untuk melihat riwayat pesanan Anda secara otomatis.</p>
+            <p class="text-gray-600 font-medium">Anda belum login. Silakan login untuk melihat riwayat pesanan.</p>
             <a href="login-user.html?redirect=cek-status.html" class="bg-primary text-white px-10 py-4 rounded-full font-bold inline-block shadow-lg">Login Sekarang</a>
         </div>
 
         <div id="results-section" class="grid grid-cols-1 gap-4"></div>
 
-        <div id="loading-state" class="hidden py-20 text-center">
-            <div class="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-            <p class="text-gray-400 text-sm">Memuat riwayat...</p>
+        <div id="history-loading" class="hidden py-10 text-center">
+            <div class="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <p class="text-gray-400 text-xs tracking-widest uppercase font-bold">Mengambil data...</p>
         </div>
     </main>
 
@@ -100,29 +105,22 @@
 
         let allOrders = [];
 
-        // --- DARK MODE ---
-        function applyDark(on) {
-            document.documentElement.classList.toggle('dark', on);
-            document.getElementById('icon-moon')?.classList.toggle('hidden', on);
-            document.getElementById('icon-sun')?.classList.toggle('hidden', !on);
-            localStorage.setItem('dewi-dark', on ? '1' : '0');
-        }
-        applyDark(localStorage.getItem('dewi-dark') === '1');
-        document.getElementById('dark-toggle')?.onclick = () => applyDark(!document.documentElement.classList.contains('dark'));
-
-        // --- AUTH OBSERVER ---
         onAuthStateChanged(auth, (user) => {
+            document.getElementById('auth-loading').classList.add('hidden');
             if (user) {
                 document.getElementById('login-prompt').classList.add('hidden');
                 document.getElementById('filter-section').classList.remove('hidden');
-                document.getElementById('sub-title').textContent = `Menampilkan pesanan untuk ${user.email}`;
+                document.getElementById('sub-title').textContent = `Menampilkan pesanan untuk: ${user.email}`;
                 loadHistory(user.email);
+            } else {
+                document.getElementById('login-prompt').classList.remove('hidden');
+                document.getElementById('sub-title').textContent = "Silakan login untuk mengakses fitur ini.";
             }
         });
 
         async function loadHistory(email) {
             const results = document.getElementById('results-section');
-            const loading = document.getElementById('loading-state');
+            const loading = document.getElementById('history-loading');
             results.innerHTML = '';
             loading.classList.remove('hidden');
 
@@ -132,17 +130,16 @@
                 loading.classList.add('hidden');
 
                 if (snap.empty) {
-                    results.innerHTML = `<div class="text-center py-16 bg-white rounded-3xl border border-dashed border-cream"><p class="text-gray-400 text-sm">Belum ada riwayat pesanan.</p></div>`;
+                    results.innerHTML = `<div class="text-center py-16 bg-white rounded-3xl border border-dashed border-cream shadow-sm"><p class="text-gray-400 text-sm italic">Belum ada riwayat pesanan yang ditemukan.</p></div>`;
                 } else {
                     allOrders = [];
                     snap.forEach(doc => allOrders.push({id: doc.id, ...doc.data()}));
-                    // Urutkan terbaru
                     allOrders.sort((a,b) => (b.tanggalMasuk?.seconds || 0) - (a.tanggalMasuk?.seconds || 0));
                     renderOrders(allOrders);
                 }
             } catch (e) {
                 loading.classList.add('hidden');
-                results.innerHTML = `<p class="text-center text-red-500 font-bold">Gagal memuat data.</p>`;
+                results.innerHTML = `<p class="text-center text-red-500 font-bold p-10 bg-white rounded-3xl border border-red-100">Gagal memuat riwayat. Silakan refresh halaman.</p>`;
             }
         }
 
@@ -154,10 +151,10 @@
                 const sClass = `status-${order.status || 'menunggu'}`;
                 
                 return `
-                    <div class="glass-card rounded-3xl p-6 shadow-sm border-l-4 border-l-primary hover:scale-[1.01] transition-all">
+                    <div class="glass-card rounded-3xl p-6 shadow-sm border-l-4 border-l-primary hover:translate-x-1 transition-all">
                         <div class="flex justify-between items-start mb-4">
                             <div>
-                                <p class="text-[10px] text-gray-400 font-bold tracking-widest uppercase">No. Antrian</p>
+                                <p class="text-[10px] text-gray-400 font-bold tracking-widest uppercase mb-1">No. Antrian</p>
                                 <h3 class="font-bold text-xl">#${String(order.nomorAntrian || 0).padStart(4,'0')}</h3>
                             </div>
                             <span class="status-badge ${sClass}">${statusLabels[order.status] || 'Menunggu'}</span>
@@ -167,18 +164,14 @@
                             <div><p class="text-gray-400 mb-1">Tanggal Pesan</p><p class="font-bold text-dark-brown">${date}</p></div>
                         </div>
                         <div class="mt-5 pt-4 border-t border-cream flex justify-between items-center">
-                            <div class="flex items-center gap-2">
-                                <div class="w-2 h-2 rounded-full bg-primary animate-pulse"></div>
-                                <span class="text-[10px] text-gray-500 italic">${order.estimasiSelesai || 'Estimasi akan dikonfirmasi'}</span>
-                            </div>
-                            <p class="text-primary font-bold">${order.harga ? 'Rp ' + order.harga.toLocaleString('id-ID') : 'Menunggu Fitting'}</p>
+                            <span class="text-[10px] text-gray-400 italic">Estimasi: ${order.estimasiSelesai || 'Konfirmasi saat fitting'}</span>
+                            <p class="text-primary font-bold text-sm">${order.harga ? 'Rp ' + order.harga.toLocaleString('id-ID') : 'Menunggu Fitting'}</p>
                         </div>
                     </div>
                 `;
             }).join('');
         }
 
-        // --- FILTER LOGIC ---
         document.getElementById('filter-input').addEventListener('input', (e) => {
             const val = e.target.value.toLowerCase();
             const filtered = allOrders.filter(o => 
