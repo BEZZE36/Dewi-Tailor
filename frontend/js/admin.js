@@ -33,39 +33,39 @@ let adminEmail = "";
 const ADMIN_SESSION_KEY = "adminVerified";
 
 function initAuth() {
+  // Jika sudah ada session dari halaman rahasia, langsung inisialisasi data
+  if (sessionStorage.getItem(ADMIN_SESSION_KEY) === "true") {
+    showDashboard();
+    initDashboard();
+    // Tetap jalankan listener auth di latar belakang untuk sync
+    onAuthStateChanged(auth, (user) => {
+      if (!user) { sessionStorage.removeItem(ADMIN_SESSION_KEY); window.location.href = "index.html"; }
+    });
+    return;
+  }
+
   onAuthStateChanged(auth, async (user) => {
     if (user) {
-      // Cek apakah user ini adalah admin di Firestore
       const userSnap = await getDoc(doc(db, "users", user.uid));
-      const isAdmin = userSnap.exists() && userSnap.data().role === 'admin';
-      
-      if (isAdmin || sessionStorage.getItem(ADMIN_SESSION_KEY) === "true") {
+      if (userSnap.exists() && userSnap.data().role === 'admin') {
         sessionStorage.setItem(ADMIN_SESSION_KEY, "true");
         showDashboard();
         initDashboard();
       } else {
         await signOut(auth);
-        showLogin();
+        window.location.href = "index.html";
       }
     } else {
-      showLogin();
+      window.location.href = "index.html";
     }
   });
 }
 
 function showLogin() {
-  const loginOverlay = document.getElementById("login-overlay");
-  const dashboard = document.getElementById("dashboard-wrapper");
-  if (loginOverlay) loginOverlay.style.display = "flex";
-  if (dashboard) dashboard.style.display = "none";
-  sessionStorage.removeItem(ADMIN_SESSION_KEY);
-}
-
-function showDashboard() {
-  const loginOverlay = document.getElementById("login-overlay");
-  const dashboard = document.getElementById("dashboard-wrapper");
-  if (loginOverlay) loginOverlay.style.display = "none";
-  if (dashboard) dashboard.style.display = "block";
+  document.getElementById("login-step-1").style.display = "block";
+  document.getElementById("login-step-2").style.display = "none";
+  document.getElementById("login-overlay").style.display = "flex";
+  document.getElementById("dashboard-wrapper").style.display = "none";
 }
 
 function showOTPStep() {
@@ -80,9 +80,9 @@ function showOTPStep() {
 // Step 1: Login dengan Password
 document.getElementById("login-form")?.addEventListener("submit", async (e) => {
   e.preventDefault();
-  const email = document.getElementById("email").value.trim();
-  const password = document.getElementById("password").value.trim();
-  const btn = document.getElementById("btn-login");
+  const email = document.getElementById("login-email").value.trim();
+  const password = document.getElementById("login-password").value.trim();
+  const btn = document.getElementById("login-btn");
   const err = document.getElementById("login-error");
   
   btn.disabled = true;
@@ -235,20 +235,6 @@ document.getElementById("hamburger-btn")?.addEventListener("click", () => {
 // ─── DASHBOARD ────────────────────────────────────────────────────────────────
 
 function initDashboard() {
-  // Hubungkan tombol navigasi secara eksplisit
-  document.querySelectorAll("[data-section]").forEach((el) => {
-    el.onclick = () => {
-      navigateTo(el.getAttribute("data-section"));
-      document.getElementById("sidebar")?.classList.remove("open");
-    };
-  });
-
-  document.getElementById("hamburger-btn")?.addEventListener("click", () => {
-    document.getElementById("sidebar")?.classList.toggle("open");
-  });
-
-  if (window.lucide) lucide.createIcons();
-
   navigateTo("overview");
   initOrdersListener();
   initGalleryListener();
