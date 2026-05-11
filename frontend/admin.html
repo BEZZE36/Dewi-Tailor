@@ -347,7 +347,7 @@
     grid.innerHTML = allGallery.map(item => `
       <div class="bg-admin-card rounded-2xl border border-admin-border overflow-hidden group">
         <div class="relative">
-          <img src="${item.fotoURL}" class="w-full h-52 object-cover" onerror="this.src='https://placehold.co/400x300/1e293b/94a3b8?text=No+Image'">
+          <img src="${item.fotoURL}" class="w-full h-52 object-cover" onerror="this.src='https://placehold.co/400x300/1e293b/475569?text=%F0%9F%93%B7+No+Image'">
           <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
             <button onclick="window.openGalleryModal('${item.id}')" class="bg-admin-accent text-white px-4 py-2 rounded-xl font-bold text-sm">Edit</button>
             <button onclick="window.deleteGalleryItem('${item.id}')" class="bg-red-500 text-white px-4 py-2 rounded-xl font-bold text-sm">Hapus</button>
@@ -492,9 +492,11 @@
       };
 
       if (currentGalleryEditId) {
+        console.log("Updating gallery item:", currentGalleryEditId, data);
         await updateDoc(doc(db, "gallery", currentGalleryEditId), data);
         showToast("✅ Galeri berhasil diperbarui!");
       } else {
+        console.log("Adding new gallery item:", data);
         data.createdAt = Timestamp.now();
         await addDoc(collection(db, "gallery"), data);
         showToast("✅ Item galeri berhasil ditambahkan!");
