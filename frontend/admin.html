@@ -345,18 +345,20 @@
       lucide.createIcons(); return;
     }
     grid.innerHTML = allGallery.map(item => `
-      <div class="bg-admin-card rounded-2xl border border-admin-border overflow-hidden group">
-        <div class="relative">
-          <img src="${item.fotoURL}" class="w-full h-52 object-cover" onerror="this.src='https://placehold.co/400x300/1e293b/475569?text=%F0%9F%93%B7+No+Image'">
-          <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
-            <button onclick="window.openGalleryModal('${item.id}')" class="bg-admin-accent text-white px-4 py-2 rounded-xl font-bold text-sm">Edit</button>
-            <button onclick="window.deleteGalleryItem('${item.id}')" class="bg-red-500 text-white px-4 py-2 rounded-xl font-bold text-sm">Hapus</button>
+      <div class="bg-admin-card rounded-2xl border border-admin-border overflow-hidden relative">
+        <div class="relative group">
+          <img src="${item.fotoURL}" class="w-full h-52 object-cover" onerror="this.src='https://placehold.co/400x300/1e293b/475569?text=%E2%9A%A0%EF%B8%8F+DATA+RUSAK'">
+          <div class="absolute inset-0 bg-black/40 flex flex-col items-center justify-center gap-3 p-4">
+             <div class="flex gap-2">
+                <button onclick="window.openGalleryModal('${item.id}')" class="bg-admin-accent text-white px-4 py-2 rounded-xl font-bold text-sm shadow-lg hover:scale-105 transition-transform flex items-center gap-2"><i data-lucide="edit-3" class="w-4 h-4"></i> Edit</button>
+                <button onclick="window.deleteGalleryItem('${item.id}')" class="bg-red-500 text-white px-4 py-2 rounded-xl font-bold text-sm shadow-lg hover:scale-105 transition-transform flex items-center gap-2"><i data-lucide="trash-2" class="w-4 h-4"></i> Hapus</button>
+             </div>
           </div>
-          ${item.aktif === false ? '<span class="absolute top-2 right-2 bg-gray-700 text-gray-300 text-xs px-2 py-1 rounded-lg">Disembunyikan</span>' : ''}
+          ${item.aktif === false ? '<span class="absolute top-2 left-2 bg-gray-700 text-gray-300 text-[10px] px-2 py-1 rounded-lg">Hidden</span>' : ''}
         </div>
-        <div class="p-4">
-          <p class="font-bold">${item.namaModel || '-'}</p>
-          <p class="text-xs text-admin-muted capitalize">${item.kategori || '-'} ${item.harga ? '• Rp ' + Number(item.harga).toLocaleString('id-ID') : ''}</p>
+        <div class="p-4 bg-admin-card">
+          <p class="font-bold text-sm truncate">${item.namaModel || '-'}</p>
+          <p class="text-[10px] text-admin-muted capitalize">${item.kategori || '-'} • Rp ${Number(item.harga || 0).toLocaleString('id-ID')}</p>
         </div>
       </div>`).join("");
   };
