@@ -32,24 +32,29 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     
     <style>
-        .step-inactive { opacity: 0.3; }
-        .step-active { opacity: 1; border-color: #9B6B7A; color: #9B6B7A; }
-        .step-completed { background-color: #9B6B7A; color: white; border-color: #9B6B7A; }
+        .step-circle { background: #fff; border-color: #E8D5C4; color: #9B6B7A; transition: all 0.3s; }
+        .step-circle.active { border-color: #9B6B7A; color: #9B6B7A; box-shadow: 0 0 15px rgba(155,107,122,0.2); }
+        .step-circle.completed { background: #9B6B7A; color: white; border-color: #9B6B7A; }
 
         /* Dark Mode Premium UI */
         html.dark body { background: #0f090b; color: #f0e8ec; }
         html.dark .bg-white { background: #1a1014 !important; border-color: #3d2535 !important; }
         html.dark .bg-warm-white { background: #150d10 !important; }
-        html.dark .border-cream { border-color: #3d2535 !important; }
+        html.dark .border-cream, html.dark .border-dashed { border-color: #3d2535 !important; }
         html.dark .text-gray-500, html.dark .text-gray-400 { color: #c9a8b5 !important; }
         html.dark input, html.dark textarea, html.dark select { background: #231519 !important; border-color: #3d2535 !important; color: white !important; }
         html.dark .step-circle { background: #231519; border-color: #3d2535; color: #c9a8b5; }
-        html.dark .step-circle.active { border-color: #9B6B7A; color: #9B6B7A; }
-        html.dark .step-circle.completed { background: #9B6B7A; color: white; border-color: #9B6B7A; }
+        
+        /* Calendar Icon Fix */
+        html.dark input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: invert(1) brightness(1.5);
+            cursor: pointer;
+        }
 
-        /* Validation Feedback */
         .error-field { border-color: #ef4444 !important; animation: shake 0.3s ease-in-out; }
         @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+        
+        .preview-img { width: 60px; height: 60px; object-cover: cover; border-radius: 8px; border: 2px solid #E8D5C4; }
     </style>
 </head>
 <body class="bg-warm-white text-dark-brown font-body min-h-screen flex flex-col transition-colors duration-300">
@@ -63,39 +68,37 @@
                 <i data-lucide="chevron-left" class="w-5 h-5"></i>
                 Dewi Tailor
             </a>
-            <span class="font-medium text-gray-500 hidden sm:inline text-xs tracking-widest uppercase">Form Pre-Order</span>
+            <span class="font-medium text-gray-500 text-[10px] tracking-widest uppercase">Form Pre-Order</span>
         </nav>
     </header>
 
     <main class="flex-grow flex items-center justify-center py-12 px-6">
         <div class="max-w-2xl w-full bg-white rounded-3xl shadow-xl border border-cream overflow-hidden">
             
-            <!-- Progress Bar -->
             <div class="px-8 pt-10 pb-6 border-b border-cream bg-warm-white/50">
                 <div class="flex justify-between relative">
                     <div class="absolute top-5 left-0 w-full h-0.5 bg-cream -z-10 opacity-30"></div>
                     <div id="step-1-indicator" class="flex flex-col items-center gap-2 z-10">
-                        <div class="step-circle active w-10 h-10 rounded-full border-2 flex items-center justify-center font-bold transition-all">1</div>
-                        <span class="text-[10px] font-bold uppercase tracking-tighter">Pakaian</span>
+                        <div class="step-circle active w-10 h-10 rounded-full border-2 flex items-center justify-center font-bold">1</div>
+                        <span class="text-[9px] font-bold uppercase tracking-tighter">Pakaian</span>
                     </div>
                     <div id="step-2-indicator" class="flex flex-col items-center gap-2 z-10 opacity-30">
-                        <div class="step-circle w-10 h-10 rounded-full border-2 flex items-center justify-center font-bold transition-all">2</div>
-                        <span class="text-[10px] font-bold uppercase tracking-tighter">Detail</span>
+                        <div class="step-circle w-10 h-10 rounded-full border-2 flex items-center justify-center font-bold">2</div>
+                        <span class="text-[9px] font-bold uppercase tracking-tighter">Detail</span>
                     </div>
                     <div id="step-3-indicator" class="flex flex-col items-center gap-2 z-10 opacity-30">
-                        <div class="step-circle w-10 h-10 rounded-full border-2 flex items-center justify-center font-bold transition-all">3</div>
-                        <span class="text-[10px] font-bold uppercase tracking-tighter">Kontak</span>
+                        <div class="step-circle w-10 h-10 rounded-full border-2 flex items-center justify-center font-bold">3</div>
+                        <span class="text-[9px] font-bold uppercase tracking-tighter">Kontak</span>
                     </div>
                     <div id="step-4-indicator" class="flex flex-col items-center gap-2 z-10 opacity-30">
-                        <div class="step-circle w-10 h-10 rounded-full border-2 flex items-center justify-center font-bold transition-all">4</div>
-                        <span class="text-[10px] font-bold uppercase tracking-tighter">Selesai</span>
+                        <div class="step-circle w-10 h-10 rounded-full border-2 flex items-center justify-center font-bold">4</div>
+                        <span class="text-[9px] font-bold uppercase tracking-tighter">Selesai</span>
                     </div>
                 </div>
             </div>
 
             <form id="pre-order-form" class="p-8 md:p-12" novalidate>
                 
-                <!-- Step 1 -->
                 <div id="step-1" class="space-y-8">
                     <h2 class="text-3xl font-heading font-bold text-center">Pilih Jenis Pakaian</h2>
                     <div class="space-y-6">
@@ -123,49 +126,55 @@
                     </div>
                 </div>
 
-                <!-- Step 2 -->
                 <div id="step-2" class="hidden space-y-8">
                     <h2 class="text-3xl font-heading font-bold text-center text-primary">Detail Pesanan</h2>
                     <div class="space-y-6">
                         <div>
                             <label class="block text-xs font-bold uppercase text-gray-400 mb-2">Deskripsi Model <span class="text-red-500">*</span></label>
-                            <textarea name="deskripsi" required placeholder="Contoh: Dress A-line, kerah v-neck..." class="w-full border-2 border-cream rounded-xl p-4 h-32 focus:border-primary focus:outline-none transition-all"></textarea>
+                            <textarea name="deskripsi" required placeholder="Contoh: Dress A-line, kerah v-neck..." class="w-full border-2 border-cream rounded-xl p-4 h-32 focus:border-primary outline-none transition-all bg-transparent"></textarea>
                         </div>
+                        
                         <div>
-                            <label class="block text-xs font-bold uppercase text-gray-400 mb-2">Upload Referensi (Foto)</label>
-                            <div class="border-2 border-dashed border-cream rounded-2xl p-6 text-center bg-warm-white/20">
-                                <input type="file" id="image-upload" accept="image/*" class="hidden">
-                                <label for="image-upload" class="cursor-pointer text-xs font-bold text-primary">Pilih Gambar</label>
-                                <div id="image-preview" class="hidden mt-4 mx-auto w-32 h-32 rounded-xl overflow-hidden"><img class="w-full h-full object-cover"></div>
+                            <label class="block text-xs font-bold uppercase text-gray-400 mb-2">Upload Referensi (Maks 5 Foto)</label>
+                            <div class="border-2 border-dashed border-cream rounded-2xl p-6 text-center bg-warm-white/5">
+                                <input type="file" id="image-upload" accept="image/*" multiple class="hidden">
+                                <label for="image-upload" class="cursor-pointer flex flex-col items-center gap-2">
+                                    <i data-lucide="camera" class="text-primary w-8 h-8"></i>
+                                    <span class="text-[10px] font-bold text-primary uppercase">Klik untuk Tambah Foto</span>
+                                </label>
+                                <div id="preview-container" class="flex flex-wrap gap-2 mt-4 justify-center"></div>
                             </div>
                         </div>
+
                         <div>
                             <label class="block text-xs font-bold uppercase text-gray-400 mb-2">Jumlah</label>
                             <div class="flex items-center gap-4">
-                                <button type="button" id="minus-btn" class="w-10 h-10 border-2 border-cream rounded-xl">-</button>
+                                <button type="button" id="minus-btn" class="w-10 h-10 border-2 border-cream rounded-xl font-bold">-</button>
                                 <input type="number" name="jumlah" value="1" min="1" class="w-16 text-center font-bold bg-transparent">
-                                <button type="button" id="plus-btn" class="w-10 h-10 border-2 border-cream rounded-xl">+</button>
+                                <button type="button" id="plus-btn" class="w-10 h-10 border-2 border-cream rounded-xl font-bold">+</button>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Step 3 -->
                 <div id="step-3" class="hidden space-y-8">
                     <h2 class="text-3xl font-heading font-bold text-center">Informasi Kontak</h2>
                     <div class="space-y-6">
-                        <div><label class="block text-xs font-bold uppercase text-gray-400 mb-2">Nama Lengkap *</label><input type="text" name="nama" id="form-nama" required class="w-full border-2 border-cream rounded-xl p-4 focus:border-primary outline-none"></div>
-                        <div><label class="block text-xs font-bold uppercase text-gray-400 mb-2">Email *</label><input type="email" name="email" id="form-email" required class="w-full border-2 border-cream rounded-xl p-4 focus:border-primary outline-none"></div>
-                        <div><label class="block text-xs font-bold uppercase text-gray-400 mb-2">Nomor WhatsApp *</label><input type="tel" name="noHP" id="form-nohp" required placeholder="Contoh: 08123456789" class="w-full border-2 border-cream rounded-xl p-4 focus:border-primary outline-none"></div>
-                        <div><label class="block text-xs font-bold uppercase text-gray-400 mb-2">Rencana Fitting *</label><input type="date" name="tanggalFitting" id="form-tanggal" required class="w-full border-2 border-cream rounded-xl p-4 focus:border-primary outline-none"></div>
+                        <div><label class="block text-xs font-bold uppercase text-gray-400 mb-2">Nama Lengkap *</label><input type="text" name="nama" id="form-nama" required class="w-full border-2 border-cream rounded-xl p-4 focus:border-primary outline-none bg-transparent"></div>
+                        <div><label class="block text-xs font-bold uppercase text-gray-400 mb-2">Email *</label><input type="email" name="email" id="form-email" required class="w-full border-2 border-cream rounded-xl p-4 focus:border-primary outline-none bg-transparent"></div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-gray-400 mb-2">Nomor WhatsApp *</label>
+                            <input type="tel" name="noHP" id="form-nohp" required placeholder="Contoh: 08123456789" class="w-full border-2 border-cream rounded-xl p-4 focus:border-primary outline-none bg-transparent">
+                            <p id="nohp-error" class="text-[10px] text-red-500 mt-1 hidden font-bold">Gunakan format 08... yang valid!</p>
+                        </div>
+                        <div><label class="block text-xs font-bold uppercase text-gray-400 mb-2">Rencana Fitting *</label><input type="date" name="tanggalFitting" id="form-tanggal" required class="w-full border-2 border-cream rounded-xl p-4 focus:border-primary outline-none bg-transparent"></div>
                     </div>
                 </div>
 
-                <!-- Step 4 -->
                 <div id="step-4" class="hidden space-y-8 text-center">
                     <h2 class="text-3xl font-heading font-bold">Konfirmasi</h2>
-                    <div id="summary-cards" class="bg-primary/5 p-6 rounded-3xl border border-primary/10 text-left"></div>
-                    <p class="text-xs text-gray-500 italic">"Pastikan data Anda sudah benar sebelum mengirim."</p>
+                    <div id="summary-cards" class="bg-primary/5 p-6 rounded-3xl border border-primary/10 text-left space-y-2 text-sm"></div>
+                    <p class="text-xs text-gray-500 italic">"Pastikan data sudah benar sebelum mengirim."</p>
                 </div>
 
                 <div class="flex justify-between mt-12 gap-4">
@@ -177,9 +186,9 @@
             </form>
 
             <div id="success-screen" class="hidden p-12 text-center space-y-8 animate-fadein">
-                <div class="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto shadow-inner"><i data-lucide="check" class="w-10 h-10"></i></div>
-                <h2 class="text-3xl font-heading font-bold">Pendaftaran Berhasil!</h2>
-                <div class="bg-warm-white p-8 rounded-3xl border border-cream"><p class="text-xs text-gray-400 uppercase font-bold tracking-widest mb-2">Nomor Antrian</p><div id="result-no-antrian" class="text-5xl font-heading font-bold text-primary">#0000</div></div>
+                <div class="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto"><i data-lucide="check" class="w-10 h-10"></i></div>
+                <h2 class="text-3xl font-heading font-bold">Berhasil!</h2>
+                <div class="bg-warm-white p-8 rounded-3xl border border-cream"><p class="text-[10px] text-gray-400 font-bold tracking-widest mb-2 uppercase">Nomor Antrian</p><div id="result-no-antrian" class="text-5xl font-heading font-bold text-primary">#0000</div></div>
                 <a href="index.html" class="bg-primary text-white px-10 py-4 rounded-full font-bold inline-block">Selesai</a>
             </div>
         </div>
@@ -198,6 +207,7 @@
         const form = document.getElementById('pre-order-form');
         const nextBtn = document.getElementById('next-btn');
         const prevBtn = document.getElementById('prev-btn');
+        let uploadedImages = [];
 
         onAuthStateChanged(auth, async (u) => { 
             if(u) { 
@@ -207,13 +217,40 @@
             }
         });
 
+        // MULTI IMAGE UPLOAD LOGIC
+        document.getElementById('image-upload').onchange = (e) => {
+            const files = Array.from(e.target.files);
+            if (uploadedImages.length + files.length > 5) {
+                alert("Maksimal 5 foto saja!"); return;
+            }
+            files.forEach(file => {
+                const reader = new FileReader();
+                reader.onload = (re) => {
+                    uploadedImages.push(re.target.result);
+                    renderPreviews();
+                };
+                reader.readAsDataURL(file);
+            });
+        };
+
+        function renderPreviews() {
+            const container = document.getElementById('preview-container');
+            container.innerHTML = uploadedImages.map((img, i) => `
+                <div class="relative group">
+                    <img src="${img}" class="preview-img">
+                    <button type="button" onclick="window.removeImg(${i})" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-[10px] shadow-lg">×</button>
+                </div>
+            `).join('');
+        }
+        window.removeImg = (i) => { uploadedImages.splice(i, 1); renderPreviews(); };
+
         const choices = { wanita_dewasa: ['Dress', 'Kebaya', 'Gamis', 'Blouse', 'Rok', 'Celana', 'Lainnya'], anak_perempuan: ['Dress Anak', 'Gamis Anak', 'Baju Pesta', 'Lainnya'] };
         const updateGrid = () => {
             const k = form.kategori.value;
             document.getElementById('jenis-grid').innerHTML = choices[k].map(c => `
                 <label class="cursor-pointer">
                     <input type="radio" name="jenisPakaian" value="${c}" class="hidden peer" ${c===choices[k][0]?'checked':''}>
-                    <div class="border-2 border-cream rounded-xl p-3 text-center text-[10px] font-bold uppercase peer-checked:border-primary peer-checked:bg-primary peer-checked:text-white transition-all">${c}</div>
+                    <div class="border-2 border-cream rounded-xl p-3 text-center text-[10px] font-bold uppercase peer-checked:border-primary peer-checked:bg-primary peer-checked:text-white transition-all shadow-sm">${c}</div>
                 </label>`).join('');
         };
         form.kategori.forEach(r => r.onchange = updateGrid);
@@ -225,16 +262,27 @@
         function validate() {
             let ok = true;
             const fields = document.getElementById(`step-${currentStep}`).querySelectorAll('[required]');
+            document.getElementById('nohp-error').classList.add('hidden');
+
             fields.forEach(f => {
                 f.classList.remove('error-field');
                 if(!f.value.trim()) { f.classList.add('error-field'); ok = false; }
-                // WA Validation
-                if(f.id==='form-nohp' && !/^\d{10,14}$/.test(f.value)) { f.classList.add('error-field'); ok = false; alert("Nomor WA tidak valid (minimal 10 digit angka)"); }
-                // Date Validation
+                
+                // NO WA VALIDATION (Starts with 08, 10-13 digits)
+                if(f.id==='form-nohp') {
+                    const waRegex = /^08[1-9][0-9]{7,10}$/;
+                    if(!waRegex.test(f.value)) {
+                        f.classList.add('error-field');
+                        document.getElementById('nohp-error').classList.remove('hidden');
+                        ok = false;
+                    }
+                }
+                
+                // DATE VALIDATION
                 if(f.id==='form-tanggal') {
                     const selected = new Date(f.value); selected.setHours(0,0,0,0);
                     const today = new Date(); today.setHours(0,0,0,0);
-                    if(selected < today) { f.classList.add('error-field'); ok = false; alert("Tanggal fitting tidak boleh di masa lalu!"); }
+                    if(selected < today) { f.classList.add('error-field'); ok = false; alert("Tanggal fitting tidak boleh kemarin!"); }
                 }
             });
             return ok;
@@ -256,21 +304,19 @@
                 else { circ.textContent=i; }
             }
             prevBtn.classList.toggle('hidden', currentStep===1);
-            nextBtn.querySelector('span').textContent = currentStep===4?'Daftar Sekarang':'Selanjutnya';
+            nextBtn.querySelector('span').textContent = currentStep===4?'Kirim Pesanan':'Selanjutnya';
             if(currentStep===4) {
                 const fd = new FormData(form);
-                document.getElementById('summary-cards').innerHTML = `<div class="space-y-2 text-sm">
-                    <p><strong>Baju:</strong> ${fd.get('jenisPakaian')} (${fd.get('jumlah')})</p>
-                    <p><strong>Nama:</strong> ${fd.get('nama')}</p>
-                    <p><strong>WA:</strong> ${fd.get('noHP')}</p>
-                    <p><strong>Fitting:</strong> ${fd.get('tanggalFitting')}</p>
-                </div>`;
+                document.getElementById('summary-cards').innerHTML = `
+                    <p><strong>Baju:</strong> ${fd.get('jenisPakaian')} (${fd.get('jumlah')} pcs)</p>
+                    <p><strong>Kontak:</strong> ${fd.get('nama')} (${fd.get('noHP')})</p>
+                    <p><strong>Foto:</strong> ${uploadedImages.length} file diunggah</p>`;
             }
             lucide.createIcons();
         };
 
         async function submit() {
-            nextBtn.disabled=true; nextBtn.innerHTML="Memproses...";
+            nextBtn.disabled=true; nextBtn.innerHTML="Mengirim...";
             try {
                 const fd = new FormData(form);
                 const conf = doc(db,'config','app');
@@ -284,11 +330,12 @@
                     nomorAntrian:no, nama:fd.get('nama'), email:fd.get('email'), noHP:fd.get('noHP'),
                     jenisPakaian:fd.get('jenisPakaian'), deskripsi:fd.get('deskripsi'), jumlah:parseInt(fd.get('jumlah')),
                     tanggalFitting:Timestamp.fromDate(new Date(fd.get('tanggalFitting'))), tanggalMasuk:Timestamp.now(),
-                    status:'menunggu', statusBayar:'belum_lunas', qrToken:generateToken()
+                    status:'menunggu', statusBayar:'belum_lunas', fotoReferensis: uploadedImages,
+                    qrToken:generateToken()
                 });
                 form.classList.add('hidden'); document.getElementById('success-screen').classList.remove('hidden');
                 document.getElementById('result-no-antrian').textContent = '#'+String(no).padStart(4,'0');
-            } catch(e) { alert("Gagal: "+e.message); nextBtn.disabled=false; }
+            } catch(e) { alert("Gagal mengirim: "+e.message); nextBtn.disabled=false; }
         }
     </script>
 </body>
