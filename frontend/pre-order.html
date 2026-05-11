@@ -39,9 +39,17 @@
         .step-inactive { opacity: 0.3; }
         .step-active { opacity: 1; border-color: #9B6B7A; color: #9B6B7A; }
         .step-completed { background-color: #9B6B7A; color: white; border-color: #9B6B7A; }
+
+        /* Dark Mode Styles */
+        html.dark body { background: #1a1014; color: #f0e8ec; }
+        html.dark .bg-white { background: #231519 !important; border-color: #3d2535 !important; }
+        html.dark .bg-warm-white { background: #1e1215 !important; }
+        html.dark .border-cream { border-color: #3d2535 !important; }
+        html.dark .text-gray-500, html.dark .text-gray-400 { color: #c9a8b5 !important; }
+        html.dark input, html.dark textarea, html.dark select { background: #2e1c22 !important; border-color: #3d2535 !important; color: white !important; }
     </style>
 </head>
-<body class="bg-warm-white text-dark-brown font-body min-h-screen flex flex-col">
+<body class="bg-warm-white text-dark-brown font-body min-h-screen flex flex-col transition-colors duration-300">
 
     <!-- Header / Nav -->
     <header class="bg-white border-b border-cream py-4">
@@ -50,7 +58,13 @@
                 <i data-lucide="chevron-left" class="w-5 h-5"></i>
                 Dewi Tailor
             </a>
-            <span class="font-medium text-gray-500">Form Pre-Order</span>
+            <div class="flex items-center gap-4">
+                <button id="dark-toggle" class="w-9 h-9 rounded-full border border-cream flex items-center justify-center text-primary hover:bg-primary hover:text-white transition-all">
+                    <i data-lucide="moon" id="icon-moon" class="w-4 h-4"></i>
+                    <i data-lucide="sun" id="icon-sun" class="w-4 h-4 hidden"></i>
+                </button>
+                <span class="font-medium text-gray-500 hidden sm:inline">Form Pre-Order</span>
+            </div>
         </nav>
     </header>
 
@@ -122,6 +136,24 @@
                             <label class="block text-sm font-semibold mb-2">Deskripsi Model / Keinginan <span class="text-red-500">*</span></label>
                             <textarea name="deskripsi" required placeholder="Contoh: Dress A-line dengan lengan balon, kancing belakang..." class="w-full border-2 border-cream rounded-xl p-4 h-32 focus:border-primary focus:outline-none transition-all"></textarea>
                         </div>
+                        
+                        <!-- FITUR UPLOAD GAMBAR -->
+                        <div>
+                            <label class="block text-sm font-semibold mb-2">Upload Referensi Gambar (Opsional)</label>
+                            <div class="flex flex-col items-center justify-center w-full border-2 border-dashed border-cream rounded-2xl p-6 transition-all hover:border-primary bg-warm-white/20">
+                                <input type="file" id="image-upload" accept="image/*" class="hidden">
+                                <label for="image-upload" class="cursor-pointer flex flex-col items-center gap-2">
+                                    <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                                        <i data-lucide="image-plus" class="w-6 h-6"></i>
+                                    </div>
+                                    <span class="text-xs font-medium text-gray-500" id="file-name">Pilih foto model/desain</span>
+                                </label>
+                                <div id="image-preview" class="hidden mt-4 w-full max-w-[150px] aspect-square rounded-xl overflow-hidden border border-cream">
+                                    <img src="" class="w-full h-full object-cover">
+                                </div>
+                            </div>
+                        </div>
+
                         <div>
                             <label class="block text-sm font-semibold mb-2">Keterangan Khusus (Opsional)</label>
                             <textarea name="keteranganKhusus" placeholder="Contoh: Detail renda di bagian kerah..." class="w-full border-2 border-cream rounded-xl p-4 h-24 focus:border-primary focus:outline-none transition-all"></textarea>
@@ -130,7 +162,7 @@
                             <label class="block text-sm font-semibold mb-2">Jumlah Pakaian</label>
                             <div class="flex items-center gap-4">
                                 <button type="button" id="minus-btn" class="w-12 h-12 rounded-xl border-2 border-cream flex items-center justify-center hover:border-primary"><i data-lucide="minus"></i></button>
-                                <input type="number" name="jumlah" value="1" min="1" class="w-20 text-center text-xl font-bold border-none focus:outline-none">
+                                <input type="number" name="jumlah" value="1" min="1" class="w-20 text-center text-xl font-bold border-none focus:outline-none bg-transparent">
                                 <button type="button" id="plus-btn" class="w-12 h-12 rounded-xl border-2 border-cream flex items-center justify-center hover:border-primary"><i data-lucide="plus"></i></button>
                             </div>
                         </div>
@@ -143,8 +175,11 @@
                     <div class="space-y-6">
                         <div>
                             <label class="block text-sm font-semibold mb-2">Nama Lengkap <span class="text-red-500">*</span></label>
-                            <input type="text" name="nama" required placeholder="Nama lengkap Anda" class="w-full border-2 border-cream rounded-xl p-4 focus:border-primary focus:outline-none transition-all">
-                            <p class="text-xs text-gray-500 mt-2">Gunakan nama ini untuk mengecek status order nantinya.</p>
+                            <input type="text" name="nama" id="form-nama" required placeholder="Nama lengkap Anda" class="w-full border-2 border-cream rounded-xl p-4 focus:border-primary focus:outline-none transition-all">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold mb-2">Alamat Email <span class="text-red-500">*</span></label>
+                            <input type="email" name="email" id="form-email" required placeholder="nama@email.com" class="w-full border-2 border-cream rounded-xl p-4 focus:border-primary focus:outline-none transition-all">
                         </div>
                         <div>
                             <label class="block text-sm font-semibold mb-2">Nomor WhatsApp <span class="text-red-500">*</span></label>
@@ -154,27 +189,17 @@
                             <label class="block text-sm font-semibold mb-2">Rencana Datang Fitting <span class="text-red-500">*</span></label>
                             <input type="date" name="tanggalFitting" required class="w-full border-2 border-cream rounded-xl p-4 focus:border-primary focus:outline-none transition-all">
                         </div>
-                        <div>
-                            <label class="block text-sm font-semibold mb-2">Metode Pembayaran</label>
-                            <select name="metodeBayar" class="w-full border-2 border-cream rounded-xl p-4 focus:border-primary focus:outline-none transition-all bg-white">
-                                <option value="tunai">Tunai saat ambil</option>
-                                <option value="transfer">Transfer Bank</option>
-                                <option value="qris">QRIS</option>
-                            </select>
-                        </div>
                     </div>
                 </div>
 
                 <!-- Step 4: Konfirmasi -->
                 <div id="step-4" class="hidden space-y-8">
                     <h2 class="text-2xl font-heading font-bold text-center">Konfirmasi Pesanan</h2>
-                    <div id="summary-cards" class="space-y-4">
-                        <!-- Summary items injected here -->
-                    </div>
+                    <div id="summary-cards" class="space-y-4"></div>
                     <div class="bg-amber-50 border border-amber-200 rounded-xl p-6 flex gap-4">
                         <i data-lucide="info" class="text-amber-600 flex-shrink-0"></i>
                         <p class="text-sm text-amber-800 leading-relaxed">
-                            <strong>Penting:</strong> Estimasi waktu pengerjaan dan harga pasti akan ditentukan oleh penjahit setelah proses fitting di tempat. Silakan datang sesuai jadwal dengan membawa kain Anda.
+                            <strong>Penting:</strong> Estimasi harga akan ditentukan saat fitting. Silakan datang sesuai jadwal dengan membawa kain Anda.
                         </p>
                     </div>
                 </div>
@@ -189,7 +214,6 @@
                 </div>
             </form>
 
-            <!-- Success Message (Overlay) -->
             <div id="success-screen" class="hidden p-12 text-center space-y-8">
                 <div class="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto">
                     <i data-lucide="check" class="w-10 h-10"></i>
@@ -197,31 +221,67 @@
                 <h2 class="text-3xl font-heading font-bold">Pendaftaran Berhasil!</h2>
                 <div class="bg-warm-white p-6 rounded-2xl">
                     <p class="text-gray-500 text-sm mb-2">Nomor Antrian Anda:</p>
-                    <div id="result-no-antrian" class="text-5xl font-heading font-bold text-primary">#0042</div>
+                    <div id="result-no-antrian" class="text-5xl font-heading font-bold text-primary">#0000</div>
                 </div>
-                <p class="text-gray-600 leading-relaxed italic">"Silakan datang untuk fitting sesuai tanggal yang dipilih. Jangan lupa membawa kain/bahan Anda."</p>
+                <p class="text-gray-600 leading-relaxed italic">"Silakan datang untuk fitting sesuai jadwal."</p>
                 <div class="pt-4 flex flex-col gap-3">
                     <a href="index.html" class="bg-primary text-white py-4 rounded-full font-semibold">Kembali ke Beranda</a>
-                    <a href="antrian.html" class="text-primary font-semibold hover:underline">Lihat Antrian Publik</a>
+                    <a href="cek-status.html" class="text-primary font-semibold hover:underline">Cek Status Order</a>
                 </div>
             </div>
-
         </div>
     </main>
 
-    <!-- Footer -->
-    <footer class="py-8 text-center text-gray-400 text-sm">
-        &copy; 2026 Dewi Tailor. Semua hak dilindungi.
-    </footer>
+    <footer class="py-8 text-center text-gray-400 text-sm">&copy; 2026 Dewi Tailor.</footer>
 
-    <!-- Scripts -->
     <script type="module">
-        import { db } from './js/firebase-config.js';
+        import { db, auth } from './js/firebase-config.js';
         import { collection, addDoc, Timestamp, doc, getDoc, runTransaction } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+        import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
         import { generateToken } from './js/utils.js';
 
         lucide.createIcons();
 
+        // --- DARK MODE ---
+        function applyDark(on) {
+            document.documentElement.classList.toggle('dark', on);
+            document.getElementById('icon-moon')?.classList.toggle('hidden', on);
+            document.getElementById('icon-sun')?.classList.toggle('hidden', !on);
+            localStorage.setItem('dewi-dark', on ? '1' : '0');
+        }
+        applyDark(localStorage.getItem('dewi-dark') === '1');
+        document.getElementById('dark-toggle')?.addEventListener('click', () => applyDark(!document.documentElement.classList.contains('dark')));
+
+        // --- AUTH & AUTO-FILL ---
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                document.getElementById('form-email').value = user.email;
+                const snap = await getDoc(doc(db, 'users', user.uid));
+                if (snap.exists()) document.getElementById('form-nama').value = snap.data().username || '';
+            }
+        });
+
+        // --- IMAGE UPLOAD PREVIEW ---
+        const imageUpload = document.getElementById('image-upload');
+        const imagePreview = document.getElementById('image-preview');
+        const fileNameLabel = document.getElementById('file-name');
+        let uploadedImageData = "";
+
+        imageUpload.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                fileNameLabel.textContent = file.name;
+                const reader = new FileReader();
+                reader.onload = (re) => {
+                    uploadedImageData = re.target.result;
+                    imagePreview.querySelector('img').src = uploadedImageData;
+                    imagePreview.classList.remove('hidden');
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // --- STEP LOGIC ---
         let currentStep = 1;
         const totalSteps = 4;
         const form = document.getElementById('pre-order-form');
@@ -230,8 +290,8 @@
         const jenisGrid = document.getElementById('jenis-grid');
 
         const choices = {
-            wanita_dewasa: ['Dress', 'Kebaya', 'Gamis', 'Blouse/Atasan', 'Rok', 'Celana Wanita', 'Jumpsuit', 'Outer/Cardigan', 'Lainnya'],
-            anak_perempuan: ['Dress Anak', 'Gamis Anak', 'Rok Anak', 'Baju Pesta Anak', 'Seragam Anak', 'Lainnya']
+            wanita_dewasa: ['Dress', 'Kebaya', 'Gamis', 'Blouse/Atasan', 'Rok', 'Celana Wanita', 'Jumpsuit', 'Lainnya'],
+            anak_perempuan: ['Dress Anak', 'Gamis Anak', 'Baju Pesta Anak', 'Seragam Anak', 'Lainnya']
         };
 
         function updateJenisGrid() {
@@ -239,162 +299,96 @@
             jenisGrid.innerHTML = choices[kategori].map(choice => `
                 <label class="cursor-pointer">
                     <input type="radio" name="jenisPakaian" value="${choice}" class="hidden peer" ${choice === choices[kategori][0] ? 'checked' : ''}>
-                    <div class="border-2 border-cream rounded-xl p-3 text-center text-sm peer-checked:border-primary peer-checked:bg-primary peer-checked:text-white transition-all">
+                    <div class="border-2 border-cream rounded-xl p-3 text-center text-xs sm:text-sm peer-checked:border-primary peer-checked:bg-primary peer-checked:text-white transition-all">
                         ${choice}
                     </div>
                 </label>
             `).join('');
         }
-
         form.kategori.forEach(radio => radio.addEventListener('change', updateJenisGrid));
         updateJenisGrid();
 
-        // Counter Logic
-        const plusBtn = document.getElementById('plus-btn');
-        const minusBtn = document.getElementById('minus-btn');
-        const jumlahInput = form.jumlah;
+        document.getElementById('plus-btn').onclick = () => { form.jumlah.value = parseInt(form.jumlah.value) + 1; };
+        document.getElementById('minus-btn').onclick = () => { if(form.jumlah.value > 1) form.jumlah.value = parseInt(form.jumlah.value) - 1; };
 
-        plusBtn.addEventListener('click', () => { jumlahInput.value = parseInt(jumlahInput.value) + 1; });
-        minusBtn.addEventListener('click', () => { if (jumlahInput.value > 1) jumlahInput.value = parseInt(jumlahInput.value) - 1; });
-
-        function updateStep() {
+        function updateStepUI() {
             for (let i = 1; i <= totalSteps; i++) {
                 document.getElementById(`step-${i}`).classList.toggle('hidden', i !== currentStep);
-                const indicator = document.getElementById(`step-${i}-indicator`);
-                const circle = indicator.querySelector('div');
-                const text = indicator.querySelector('span');
-
+                const ind = document.getElementById(`step-${i}-indicator`);
+                const circ = ind.querySelector('div');
                 if (i < currentStep) {
-                    indicator.style.opacity = '1';
-                    circle.classList.add('step-completed');
-                    circle.innerHTML = '<i data-lucide="check" class="w-5 h-5"></i>';
-                    lucide.createIcons();
+                    ind.style.opacity = '1'; circ.classList.add('step-completed'); circ.innerHTML = '<i data-lucide="check" class="w-4 h-4"></i>';
                 } else if (i === currentStep) {
-                    indicator.style.opacity = '1';
-                    circle.classList.add('border-primary', 'text-primary');
-                    circle.classList.remove('step-completed');
-                    circle.textContent = i;
+                    ind.style.opacity = '1'; circ.classList.add('border-primary', 'text-primary'); circ.classList.remove('step-completed'); circ.textContent = i;
                 } else {
-                    indicator.style.opacity = '0.3';
-                    circle.classList.remove('border-primary', 'text-primary', 'step-completed');
-                    circle.classList.add('border-cream', 'text-gray-400');
-                    circle.textContent = i;
+                    ind.style.opacity = '0.3'; circ.classList.remove('border-primary', 'text-primary', 'step-completed'); circ.textContent = i;
                 }
             }
-
             prevBtn.classList.toggle('hidden', currentStep === 1);
-            nextBtn.querySelector('span').textContent = currentStep === totalSteps ? 'Konfirmasi & Daftar' : 'Selanjutnya';
-            
+            nextBtn.querySelector('span').textContent = currentStep === totalSteps ? 'Kirim Pesanan' : 'Selanjutnya';
             if (currentStep === 4) renderSummary();
+            lucide.createIcons();
         }
 
         function renderSummary() {
-            const formData = new FormData(form);
-            const summary = document.getElementById('summary-cards');
-            summary.innerHTML = `
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="bg-warm-white p-4 rounded-xl border border-cream">
-                        <p class="text-xs text-gray-500 mb-1">Kategori</p>
-                        <p class="font-semibold">${formData.get('kategori').replace('_', ' ')}</p>
-                    </div>
-                    <div class="bg-warm-white p-4 rounded-xl border border-cream">
-                        <p class="text-xs text-gray-500 mb-1">Jenis Pakaian</p>
-                        <p class="font-semibold">${formData.get('jenisPakaian')}</p>
-                    </div>
-                    <div class="bg-warm-white p-4 rounded-xl border border-cream col-span-2">
-                        <p class="text-xs text-gray-500 mb-1">Nama Lengkap</p>
-                        <p class="font-semibold">${formData.get('nama')}</p>
-                    </div>
-                    <div class="bg-warm-white p-4 rounded-xl border border-cream">
-                        <p class="text-xs text-gray-500 mb-1">WhatsApp</p>
-                        <p class="font-semibold">${formData.get('noHP')}</p>
-                    </div>
-                    <div class="bg-warm-white p-4 rounded-xl border border-cream">
-                        <p class="text-xs text-gray-500 mb-1">Rencana Fitting</p>
-                        <p class="font-semibold">${formData.get('tanggalFitting')}</p>
-                    </div>
+            const fd = new FormData(form);
+            document.getElementById('summary-cards').innerHTML = `
+                <div class="grid grid-cols-2 gap-3 text-sm">
+                    <div class="bg-primary/5 p-4 rounded-xl"><strong>Pakaian:</strong> ${fd.get('jenisPakaian')}</div>
+                    <div class="bg-primary/5 p-4 rounded-xl"><strong>Jumlah:</strong> ${fd.get('jumlah')}</div>
+                    <div class="bg-primary/5 p-4 rounded-xl col-span-2"><strong>Nama:</strong> ${fd.get('nama')}</div>
+                    <div class="bg-primary/5 p-4 rounded-xl col-span-2"><strong>Fitting:</strong> ${fd.get('tanggalFitting')}</div>
                 </div>
             `;
         }
 
-        nextBtn.addEventListener('click', async () => {
+        nextBtn.onclick = async () => {
             if (currentStep < totalSteps) {
-                // Validation
-                const currentFields = document.getElementById(`step-${currentStep}`).querySelectorAll('[required]');
-                let valid = true;
-                currentFields.forEach(f => { if (!f.value) { f.classList.add('border-red-400'); valid = false; } else { f.classList.remove('border-red-400'); } });
-                
-                if (valid) {
-                    currentStep++;
-                    updateStep();
-                }
+                const fields = document.getElementById(`step-${currentStep}`).querySelectorAll('[required]');
+                let ok = true;
+                fields.forEach(f => { if(!f.value) { f.classList.add('border-red-400'); ok = false; } else f.classList.remove('border-red-400'); });
+                if (ok) { currentStep++; updateStepUI(); }
             } else {
-                // Submit to Firebase
                 await handleSubmit();
             }
-        });
-
-        prevBtn.addEventListener('click', () => {
-            currentStep--;
-            updateStep();
-        });
+        };
+        prevBtn.onclick = () => { currentStep--; updateStepUI(); };
 
         async function handleSubmit() {
-            nextBtn.disabled = true;
-            nextBtn.innerHTML = '<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i> Memproses...';
-            lucide.createIcons();
-
+            nextBtn.disabled = true; nextBtn.innerHTML = 'Memproses...';
             try {
-                const formData = new FormData(form);
-                
-                // Get atomic counter
+                const fd = new FormData(form);
                 const configRef = doc(db, 'config', 'app');
-                let finalNomor = 0;
-                
-                await runTransaction(db, async (transaction) => {
-                    const configDoc = await transaction.get(configRef);
-                    if (!configDoc.exists()) {
-                        transaction.set(configRef, { counterAntrian: 1 });
-                        finalNomor = 1;
-                    } else {
-                        const newCounter = (configDoc.data().counterAntrian || 0) + 1;
-                        transaction.update(configRef, { counterAntrian: newCounter });
-                        finalNomor = newCounter;
-                    }
+                let no = 0;
+                await runTransaction(db, async (t) => {
+                    const snap = await t.get(configRef);
+                    no = (snap.exists() ? snap.data().counterAntrian || 0 : 0) + 1;
+                    t.set(configRef, { counterAntrian: no }, { merge: true });
                 });
 
-                const orderData = {
-                    nomorAntrian: finalNomor,
-                    nama: formData.get('nama'),
-                    noHP: formData.get('noHP'),
-                    jenisKategori: formData.get('kategori'),
-                    jenisPakaian: formData.get('jenisPakaian'),
-                    deskripsi: formData.get('deskripsi'),
-                    keteranganKhusus: formData.get('keteranganKhusus'),
-                    jumlah: parseInt(formData.get('jumlah')),
-                    tanggalFitting: Timestamp.fromDate(new Date(formData.get('tanggalFitting'))),
+                await addDoc(collection(db, 'orders'), {
+                    nomorAntrian: no,
+                    nama: fd.get('nama'),
+                    email: fd.get('email'),
+                    noHP: fd.get('noHP'),
+                    jenisPakaian: fd.get('jenisPakaian'),
+                    deskripsi: fd.get('deskripsi'),
+                    keteranganKhusus: fd.get('keteranganKhusus'),
+                    jumlah: parseInt(fd.get('jumlah')),
+                    tanggalFitting: Timestamp.fromDate(new Date(fd.get('tanggalFitting'))),
                     tanggalMasuk: Timestamp.now(),
-                    estimasiSelesai: null,
                     status: 'menunggu',
                     statusBayar: 'belum_lunas',
-                    metodeBayar: formData.get('metodeBayar'),
-                    harga: null,
-                    catatan: '',
+                    fotoReferensi: uploadedImageData, // DATA BASE64
                     qrToken: generateToken()
-                };
+                });
 
-                await addDoc(collection(db, 'orders'), orderData);
-
-                // Show Success
-                document.getElementById('pre-order-form').classList.add('hidden');
+                form.classList.add('hidden');
                 document.getElementById('success-screen').classList.remove('hidden');
-                document.getElementById('result-no-antrian').textContent = '#' + String(finalNomor).padStart(4, '0');
-
-            } catch (error) {
-                console.error("Submission error:", error);
-                alert("Terjadi kesalahan saat mendaftar. Silakan coba lagi.");
-                nextBtn.disabled = false;
-                nextBtn.textContent = 'Konfirmasi & Daftar';
+                document.getElementById('result-no-antrian').textContent = '#' + String(no).padStart(4, '0');
+            } catch (e) {
+                alert("Error: " + e.message);
+                nextBtn.disabled = false; nextBtn.textContent = 'Kirim Pesanan';
             }
         }
     </script>
