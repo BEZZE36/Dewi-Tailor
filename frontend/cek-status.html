@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cek Status Pesanan — Dewi Tailor</title>
+    <title>Riwayat Pesanan — Dewi Tailor</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -29,19 +29,19 @@
     </script>
     <style>
         .glass-card { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(12px); border: 1px solid rgba(232, 213, 196, 0.5); }
-        .status-badge { padding: 4px 12px; border-radius: 99px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; }
-        .status-pending { background: #FEF3C7; color: #92400E; }
+        .status-badge { padding: 4px 12px; border-radius: 99px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; }
+        
+        /* Status Colors Fixed */
+        .status-menunggu, .status-pending { background: #FEF3C7; color: #92400E; }
         .status-proses { background: #DBEAFE; color: #1E40AF; }
         .status-selesai { background: #D1FAE5; color: #065F46; }
         .status-diambil { background: #F3F4F6; color: #374151; }
 
-        /* Dark Mode Styles */
         html.dark body { background: #1a1014; color: #f0e8ec; }
         html.dark .glass-card { background: rgba(46, 28, 34, 0.8); border-color: #3d2535; }
         html.dark .bg-white { background: #231519 !important; border-color: #3d2535 !important; }
-        html.dark .text-gray-500, html.dark .text-gray-400, html.dark .text-gray-600 { color: #c9a8b5 !important; }
+        html.dark .text-gray-500, html.dark .text-gray-400 { color: #c9a8b5 !important; }
         html.dark input { background: #2e1c22 !important; border-color: #3d2535 !important; color: white !important; }
-        html.dark .bg-primary\/5 { background: rgba(155, 107, 122, 0.15); }
     </style>
 </head>
 <body class="font-body text-dark-brown min-h-screen transition-colors duration-300 bg-warm-white">
@@ -53,51 +53,43 @@
                 Dewi Tailor
             </a>
             <div class="flex items-center gap-4">
-                <button id="dark-toggle" class="w-9 h-9 rounded-full border border-cream flex items-center justify-center text-primary hover:bg-primary hover:text-white transition-all">
+                <button id="dark-toggle" class="w-9 h-9 rounded-full border border-cream flex items-center justify-center text-primary">
                     <svg id="icon-moon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
                     <svg id="icon-sun" class="w-4 h-4 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 9H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
                 </button>
-                <a href="pre-order.html" class="bg-primary text-white px-6 py-2 rounded-full font-semibold hover:bg-opacity-90 transition-all text-sm">Pre-Order</a>
             </div>
         </div>
     </nav>
 
-    <main class="container mx-auto px-6 py-12 max-w-2xl">
-        <div class="text-center mb-12">
-            <h1 class="font-heading text-4xl font-bold mb-4">Cek Status Pesanan</h1>
-            <p class="text-gray-500">Lihat status pesanan Anda secara real-time.</p>
+    <main class="container mx-auto px-6 py-8 max-w-3xl">
+        <div class="text-center mb-10">
+            <h1 class="font-heading text-4xl font-bold mb-3">Riwayat Pesanan</h1>
+            <p id="sub-title" class="text-gray-500 text-sm">Masuk untuk melihat semua riwayat jahitan Anda.</p>
         </div>
 
-        <div id="search-section" class="glass-card rounded-3xl p-8 mb-8">
-            <div class="bg-primary/5 rounded-2xl p-6 mb-8 flex items-start gap-4">
-                <div class="bg-white p-3 rounded-xl shadow-sm">
-                    <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-                </div>
-                <p class="text-sm text-gray-600 leading-relaxed">
-                    Pesanan akan otomatis tampil jika Anda sudah login. Atau masukkan email Anda di bawah ini.
-                </p>
+        <!-- Filter Area -->
+        <div id="filter-section" class="mb-8 hidden">
+            <div class="relative">
+                <input type="text" id="filter-input" placeholder="Cari berdasarkan jenis pakaian atau tanggal..." 
+                    class="w-full bg-white border border-cream rounded-2xl px-12 py-4 shadow-sm focus:border-primary outline-none transition-all">
+                <svg class="w-5 h-5 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
             </div>
-
-            <div class="space-y-6">
-                <div>
-                    <label class="block text-sm font-semibold mb-3">Email Anda</label>
-                    <input type="email" id="email-search" placeholder="nama@email.com" 
-                        class="w-full bg-white border border-cream rounded-2xl px-6 py-4 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all">
-                </div>
-
-                <button id="check-btn" onclick="window.checkStatusByEmail()" class="w-full bg-primary text-white py-4 rounded-2xl font-bold text-lg hover:brightness-110 transition-all shadow-lg shadow-primary/20 flex items-center justify-center gap-3">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                    Cari Pesanan
-                </button>
-            </div>
-            <p id="error-msg" class="text-red-500 text-sm mt-4 text-center hidden"></p>
         </div>
 
-        <div id="results-section" class="space-y-4"></div>
+        <!-- Login Prompt (jika belum login) -->
+        <div id="login-prompt" class="glass-card rounded-3xl p-10 text-center space-y-6">
+            <div class="w-16 h-16 bg-primary/10 text-primary rounded-full flex items-center justify-center mx-auto">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+            </div>
+            <p class="text-gray-600">Silakan login untuk melihat riwayat pesanan Anda secara otomatis.</p>
+            <a href="login-user.html?redirect=cek-status.html" class="bg-primary text-white px-10 py-4 rounded-full font-bold inline-block shadow-lg">Login Sekarang</a>
+        </div>
 
-        <div id="loading-state" class="hidden py-12 text-center">
+        <div id="results-section" class="grid grid-cols-1 gap-4"></div>
+
+        <div id="loading-state" class="hidden py-20 text-center">
             <div class="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-            <p class="text-gray-400">Mencari pesanan...</p>
+            <p class="text-gray-400 text-sm">Memuat riwayat...</p>
         </div>
     </main>
 
@@ -105,6 +97,8 @@
         import { db, auth } from './js/firebase-config.js';
         import { collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
         import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+        let allOrders = [];
 
         // --- DARK MODE ---
         function applyDark(on) {
@@ -114,29 +108,23 @@
             localStorage.setItem('dewi-dark', on ? '1' : '0');
         }
         applyDark(localStorage.getItem('dewi-dark') === '1');
-        document.getElementById('dark-toggle')?.addEventListener('click', () => applyDark(!document.documentElement.classList.contains('dark')));
+        document.getElementById('dark-toggle')?.onclick = () => applyDark(!document.documentElement.classList.contains('dark'));
 
-        // --- AUTO CHECK ---
+        // --- AUTH OBSERVER ---
         onAuthStateChanged(auth, (user) => {
             if (user) {
-                document.getElementById('email-search').value = user.email;
-                window.checkStatusByEmail(user.email);
+                document.getElementById('login-prompt').classList.add('hidden');
+                document.getElementById('filter-section').classList.remove('hidden');
+                document.getElementById('sub-title').textContent = `Menampilkan pesanan untuk ${user.email}`;
+                loadHistory(user.email);
             }
         });
 
-        window.checkStatusByEmail = async (providedEmail) => {
-            const email = providedEmail || document.getElementById('email-search').value.trim();
+        async function loadHistory(email) {
             const results = document.getElementById('results-section');
             const loading = document.getElementById('loading-state');
-            const errorMsg = document.getElementById('error-msg');
-            const btn = document.getElementById('check-btn');
-
-            if (!email) return;
-
-            errorMsg.classList.add('hidden');
             results.innerHTML = '';
             loading.classList.remove('hidden');
-            if (btn) btn.disabled = true;
 
             try {
                 const q = query(collection(db, "orders"), where("email", "==", email));
@@ -144,37 +132,61 @@
                 loading.classList.add('hidden');
 
                 if (snap.empty) {
-                    results.innerHTML = `<div class="text-center py-12 bg-white rounded-3xl border border-dashed border-cream"><p class="text-gray-400 text-sm">Tidak ada pesanan ditemukan.</p></div>`;
+                    results.innerHTML = `<div class="text-center py-16 bg-white rounded-3xl border border-dashed border-cream"><p class="text-gray-400 text-sm">Belum ada riwayat pesanan.</p></div>`;
                 } else {
-                    let orders = [];
-                    snap.forEach(doc => orders.push({id: doc.id, ...doc.data()}));
-                    orders.sort((a,b) => (b.tanggalMasuk?.seconds || 0) - (a.tanggalMasuk?.seconds || 0));
-                    
-                    orders.forEach(order => {
-                        const date = order.tanggalMasuk ? order.tanggalMasuk.toDate().toLocaleDateString('id-ID', {day:'numeric', month:'short', year:'numeric'}) : '-';
-                        results.innerHTML += `
-                            <div class="glass-card rounded-3xl p-6 shadow-sm border-l-4 border-l-primary">
-                                <div class="flex justify-between items-start mb-4">
-                                    <div><p class="text-[10px] text-gray-400 uppercase font-bold tracking-widest">ID ANTRIAN</p><h3 class="font-bold text-lg">#${String(order.nomorAntrian || 0).padStart(4,'0')}</h3></div>
-                                    <span class="status-badge status-${order.status || 'pending'}">${order.status || 'Menunggu'}</span>
-                                </div>
-                                <div class="grid grid-cols-2 gap-4 text-xs">
-                                    <div><p class="text-gray-400">Jenis Pakaian</p><p class="font-semibold">${order.jenisPakaian || '-'}</p></div>
-                                    <div><p class="text-gray-400">Tanggal Pesan</p><p class="font-semibold">${date}</p></div>
-                                </div>
-                                <div class="mt-4 pt-4 border-t border-cream flex justify-between items-center text-xs">
-                                    <span class="text-gray-400 italic">Estimasi: ${order.estimasiSelesai || 'Akan dikonfirmasi'}</span>
-                                    <p class="text-primary font-bold text-sm">${order.harga ? 'Rp ' + order.harga.toLocaleString('id-ID') : 'Menunggu Fitting'}</p>
-                                </div>
-                            </div>
-                        `;
-                    });
+                    allOrders = [];
+                    snap.forEach(doc => allOrders.push({id: doc.id, ...doc.data()}));
+                    // Urutkan terbaru
+                    allOrders.sort((a,b) => (b.tanggalMasuk?.seconds || 0) - (a.tanggalMasuk?.seconds || 0));
+                    renderOrders(allOrders);
                 }
             } catch (e) {
                 loading.classList.add('hidden');
-                errorMsg.textContent = "Gagal memuat data."; errorMsg.classList.remove('hidden');
-            } finally { if(btn) btn.disabled = false; }
-        };
+                results.innerHTML = `<p class="text-center text-red-500 font-bold">Gagal memuat data.</p>`;
+            }
+        }
+
+        function renderOrders(orders) {
+            const results = document.getElementById('results-section');
+            results.innerHTML = orders.map(order => {
+                const date = order.tanggalMasuk ? order.tanggalMasuk.toDate().toLocaleDateString('id-ID', {day:'numeric', month:'long', year:'numeric'}) : '-';
+                const statusLabels = { 'menunggu': 'Menunggu', 'proses': 'Dijahit', 'selesai': 'Selesai', 'diambil': 'Diambil' };
+                const sClass = `status-${order.status || 'menunggu'}`;
+                
+                return `
+                    <div class="glass-card rounded-3xl p-6 shadow-sm border-l-4 border-l-primary hover:scale-[1.01] transition-all">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <p class="text-[10px] text-gray-400 font-bold tracking-widest uppercase">No. Antrian</p>
+                                <h3 class="font-bold text-xl">#${String(order.nomorAntrian || 0).padStart(4,'0')}</h3>
+                            </div>
+                            <span class="status-badge ${sClass}">${statusLabels[order.status] || 'Menunggu'}</span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4 text-xs">
+                            <div><p class="text-gray-400 mb-1">Jenis Pakaian</p><p class="font-bold text-dark-brown">${order.jenisPakaian || '-'}</p></div>
+                            <div><p class="text-gray-400 mb-1">Tanggal Pesan</p><p class="font-bold text-dark-brown">${date}</p></div>
+                        </div>
+                        <div class="mt-5 pt-4 border-t border-cream flex justify-between items-center">
+                            <div class="flex items-center gap-2">
+                                <div class="w-2 h-2 rounded-full bg-primary animate-pulse"></div>
+                                <span class="text-[10px] text-gray-500 italic">${order.estimasiSelesai || 'Estimasi akan dikonfirmasi'}</span>
+                            </div>
+                            <p class="text-primary font-bold">${order.harga ? 'Rp ' + order.harga.toLocaleString('id-ID') : 'Menunggu Fitting'}</p>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // --- FILTER LOGIC ---
+        document.getElementById('filter-input').addEventListener('input', (e) => {
+            const val = e.target.value.toLowerCase();
+            const filtered = allOrders.filter(o => 
+                (o.jenisPakaian || '').toLowerCase().includes(val) ||
+                (o.tanggalMasuk ? o.tanggalMasuk.toDate().toLocaleDateString('id-ID').toLowerCase() : '').includes(val)
+            );
+            renderOrders(filtered);
+        });
     </script>
 </body>
 </html>
