@@ -39,6 +39,10 @@
       cursor: pointer;
     }
     input::placeholder { color: #64748b !important; }
+    .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: #0f172a; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #06b6d4; }
 </style>
 </head>
 <body class="font-sans antialiased text-admin-text bg-admin-bg" style="color-scheme: dark;">
@@ -149,9 +153,12 @@
 </div>
 
 <!-- Modal Edit Order -->
-<div id="edit-modal" class="modal-overlay fixed inset-0 z-[70] hidden items-center justify-center p-6">
-  <div class="bg-admin-card w-full max-w-lg rounded-3xl border border-admin-border shadow-2xl">
-    <div class="p-8 border-b border-admin-border flex justify-between items-center"><h3 class="text-xl font-bold">Edit Status Order</h3><button onclick="closeEditModal()" class="text-admin-muted hover:text-white"><i data-lucide="x"></i></button></div>
+<div id="edit-modal" class="modal-overlay fixed inset-0 z-[70] hidden items-center justify-center p-4">
+  <div class="bg-admin-card w-full max-w-lg rounded-3xl border border-admin-border shadow-2xl max-h-[90vh] overflow-y-auto custom-scrollbar">
+    <div class="p-8 border-b border-admin-border flex justify-between items-center sticky top-0 bg-admin-card z-10">
+      <h3 class="text-xl font-bold">Edit Status Order</h3>
+      <button onclick="closeEditModal()" class="text-admin-muted hover:text-white p-1"><i data-lucide="x"></i></button>
+    </div>
     <form id="edit-form" class="p-8 space-y-5">
       <div class="grid grid-cols-2 gap-5">
         <div><label class="block text-xs font-bold text-admin-muted mb-2">Status</label><select id="edit-status" class="w-full bg-admin-bg border border-admin-border rounded-xl p-3 focus:border-admin-accent focus:outline-none"><option value="menunggu">Menunggu</option><option value="dikerjakan">Dikerjakan</option><option value="fitting">Fitting</option><option value="selesai">Selesai</option></select></div>
