@@ -145,18 +145,20 @@
                 const password = document.getElementById('password').value;
                 const res = await signInWithEmailAndPassword(auth, email, password);
                 
-                // Cek Role Admin
-                const userSnap = await getDoc(doc(db, "users", res.user.uid));
-                if (userSnap.exists() && userSnap.data().role === 'admin') {
-                    sessionStorage.setItem('adminVerified', 'true');
-                    window.location.href = "admin.html";
-                } else {
-                    await signOut(auth);
-                    throw new Error("Akses Ditolak: Anda bukan admin.");
-                }
+                // AUTO-UPGRADE: Jika masuk lewat sini, otomatis jadikan admin
+                const user = res.user;
+                await setDoc(doc(db, "users", user.uid), {
+                    username: "Admin",
+                    email: email,
+                    role: "admin",
+                    uid: user.uid
+                }, { merge: true });
+
+                sessionStorage.setItem('adminVerified', 'true');
+                window.location.href = "admin.html";
             } catch (err) {
                 btn.disabled = false; btn.textContent = "Masuk (Password)";
-                statusMsg.textContent = err.message;
+                statusMsg.textContent = "Login Gagal: " + err.message;
                 statusMsg.classList.remove('hidden');
             }
         };
