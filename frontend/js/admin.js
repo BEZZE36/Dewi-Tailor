@@ -240,14 +240,17 @@ document.getElementById("hamburger-btn")?.addEventListener("click", () => {
 
 // ─── DASHBOARD ────────────────────────────────────────────────────────────────
 
-function initDashboard() {
+window.initDashboard = function() {
+  console.log("Initializing Dashboard...");
   if (window.lucide) lucide.createIcons();
   setupNavigation();
   navigateTo("overview");
   initOrdersListener();
   initGalleryListener();
   initReviewsListener();
-}
+};
+
+window.showDashboard = showDashboard;
 
 function initOrdersListener() {
   const q = query(collection(db, "orders"), orderBy("nomorAntrian", "asc"));
