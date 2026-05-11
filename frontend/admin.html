@@ -32,9 +32,16 @@
     input:checked + .slider:before { transform: translateX(20px); }
     #toast { position: fixed; bottom: 30px; right: 30px; background: #06b6d4; color: white; padding: 16px 24px; border-radius: 16px; font-weight: bold; transform: translateY(100px); opacity: 0; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 200; box-shadow: 0 10px 25px rgba(6, 182, 212, 0.3); }
     #toast.show { transform: translateY(0); opacity: 1; }
+    
+    /* Dark Mode Form Fixes */
+    input[type="date"]::-webkit-calendar-picker-indicator {
+      filter: invert(1);
+      cursor: pointer;
+    }
+    input::placeholder { color: #64748b !important; }
 </style>
 </head>
-<body class="font-sans antialiased text-admin-text bg-admin-bg">
+<body class="font-sans antialiased text-admin-text bg-admin-bg" style="color-scheme: dark;">
 
 <!-- ═══ LOADING OVERLAY ═══ -->
 <div id="loading-overlay" class="fixed inset-0 z-[100] bg-admin-bg flex flex-col items-center justify-center p-6 text-white">
@@ -156,6 +163,13 @@
       </div>
       <div><label class="block text-xs font-bold text-admin-muted mb-2">Metode Bayar</label><select id="edit-metode-bayar" class="w-full bg-admin-bg border border-admin-border rounded-xl p-3 focus:border-admin-accent focus:outline-none"><option value="tunai">Tunai</option><option value="transfer">Transfer</option><option value="qris">QRIS</option></select></div>
       <div><label class="block text-xs font-bold text-admin-muted mb-2">Catatan</label><textarea id="edit-catatan" class="w-full bg-admin-bg border border-admin-border rounded-xl p-3 h-24 focus:border-admin-accent focus:outline-none resize-none"></textarea></div>
+      
+      <!-- FOTO REFERENSI DARI USER -->
+      <div id="edit-foto-container" class="hidden">
+        <label class="block text-xs font-bold text-admin-muted mb-3 uppercase tracking-wider">Foto Referensi (User)</label>
+        <div id="edit-foto-list" class="flex gap-3 overflow-x-auto pb-2 custom-scrollbar"></div>
+      </div>
+
       <div class="flex gap-4 pt-2"><button type="button" onclick="closeEditModal()" class="flex-1 p-4 rounded-xl border border-admin-border font-bold hover:bg-admin-bg">Batal</button><button type="submit" id="edit-save-btn" class="flex-1 p-4 rounded-xl bg-admin-accent text-white font-bold">Simpan</button></div>
     </form>
   </div>
@@ -318,9 +332,32 @@
 
   const renderOrders = () => {
     const tbody = document.getElementById("orders-tbody");
-    tbody.innerHTML = allOrders.map(o => `
-      <tr class="border-b border-admin-border hover:bg-white/5 transition-colors">
-        <td class="px-5 py-4 font-bold text-admin-accent">#${formatNomorAntrian(o.nomorAntrian)}</td>
+    
+    // LOGIKA RESET 1 HARI & ANTRIAN DINAMIS (Sesuai dengan antrian.js)
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    // Filter & Sort: Ambil yang BELUM selesai, ATAU yang SELESAI HARI INI
+    // Urutkan berdasarkan tanggalMasuk
+    const sortedActive = [...allOrders]
+      .filter(o => {
+        if (o.status !== "selesai") return true;
+        if (!o.tanggalSelesai) return false;
+        const tglSelesai = o.tanggalSelesai.toDate ? o.tanggalSelesai.toDate() : new Date(o.tanggalSelesai);
+        tglSelesai.setHours(0,0,0,0);
+        return tglSelesai.getTime() === today.getTime();
+      })
+      .sort((a,b) => (a.tanggalMasuk?.seconds || 0) - (b.tanggalMasuk?.seconds || 0));
+
+    // Map untuk mendapatkan ranking
+    const rankedMap = new Map();
+    sortedActive.forEach((o, i) => rankedMap.set(o.id, i + 1));
+
+    tbody.innerHTML = allOrders.map(o => {
+      const dynamicRank = rankedMap.get(o.id) || "-";
+      return `
+      <tr class="border-b border-admin-border hover:bg-white/5 transition-colors ${!rankedMap.has(o.id) ? 'opacity-50 grayscale-[0.5]' : ''}">
+        <td class="px-5 py-4 font-bold text-admin-accent">${dynamicRank !== "-" ? "#" + formatNomorAntrian(dynamicRank) : "-"}</td>
         <td class="px-5 py-4">${o.nama||"-"}</td>
         <td class="px-5 py-4">${o.jenisPakaian||"-"}</td>
         <td class="px-5 py-4 text-xs">${formatTglPendek(o.tanggalMasuk)}</td>
@@ -329,7 +366,8 @@
         <td class="px-5 py-4">${statusBayarBadge(o.statusBayar)}</td>
         <td class="px-5 py-4"><button onclick="window.openQR('${o.id}')" class="text-admin-accent font-bold">QR</button></td>
         <td class="px-5 py-4"><button onclick="window.editOrder('${o.id}')" class="font-bold">Edit</button></td>
-      </tr>`).join("");
+      </tr>`;
+    }).join("");
   };
 
   const showToast = (msg) => {
@@ -378,7 +416,41 @@
     const o = allOrders.find(x => x.id === id);
     if(!o) return;
     currentEditOrderId = id;
+    
+    // Fill basic fields
     document.getElementById("edit-status").value = o.status || "menunggu";
+    document.getElementById("edit-harga").value = o.harga || "";
+    document.getElementById("edit-status-bayar").value = o.statusBayar || "belum_lunas";
+    document.getElementById("edit-metode-bayar").value = o.metodeBayar || "tunai";
+    document.getElementById("edit-catatan").value = o.catatanAdmin || "";
+    
+    // Fill Date (must be YYYY-MM-DD)
+    if (o.estimasiSelesai) {
+      const d = o.estimasiSelesai.toDate ? o.estimasiSelesai.toDate() : new Date(o.estimasiSelesai);
+      document.getElementById("edit-estimasi").value = d.toISOString().split('T')[0];
+    } else {
+      document.getElementById("edit-estimasi").value = "";
+    }
+
+    // Render User Photos (fotoReferensis)
+    const fotoCtn = document.getElementById("edit-foto-container");
+    const fotoList = document.getElementById("edit-foto-list");
+    if (o.fotoReferensis && o.fotoReferensis.length > 0) {
+      fotoCtn.classList.remove("hidden");
+      fotoList.innerHTML = o.fotoReferensis.map((base64, i) => `
+        <div class="relative group flex-shrink-0">
+          <img src="${base64}" class="w-20 h-20 object-cover rounded-xl border border-admin-border">
+          <a href="${base64}" download="referensi-${o.nama}-${i+1}.jpg" class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white rounded-xl">
+            <i data-lucide="download" class="w-5 h-5"></i>
+          </a>
+        </div>
+      `).join("");
+      if(window.lucide) lucide.createIcons();
+    } else {
+      fotoCtn.classList.add("hidden");
+      fotoList.innerHTML = "";
+    }
+
     document.getElementById("edit-modal").style.display = "flex";
   };
   window.closeEditModal = () => document.getElementById("edit-modal").style.display = "none";
@@ -541,11 +613,31 @@
   document.getElementById("edit-form").onsubmit = async (e) => {
     e.preventDefault();
     if(!currentEditOrderId) return;
-    await updateDoc(doc(db, "orders", currentEditOrderId), {
-      status: document.getElementById("edit-status").value,
+    
+    const status = document.getElementById("edit-status").value;
+    const estimasiVal = document.getElementById("edit-estimasi").value;
+    
+    const updateData = {
+      status: status,
+      estimasiSelesai: estimasiVal ? Timestamp.fromDate(new Date(estimasiVal)) : null,
+      harga: document.getElementById("edit-harga").value,
+      statusBayar: document.getElementById("edit-status-bayar").value,
+      metodeBayar: document.getElementById("edit-metode-bayar").value,
+      catatanAdmin: document.getElementById("edit-catatan").value,
       tanggalUpdate: Timestamp.now()
-    });
+    };
+
+    // Logika reset harian: Jika status 'selesai', catat tanggal selesainya
+    if (status === "selesai") {
+      updateData.tanggalSelesai = Timestamp.now();
+    } else {
+      // Jika status dibatalkan dari 'selesai' ke lain, hapus tanggalSelesai agar tetap masuk antrian aktif
+      updateData.tanggalSelesai = null;
+    }
+
+    await updateDoc(doc(db, "orders", currentEditOrderId), updateData);
     window.closeEditModal();
+    showToast("✅ Pesanan berhasil diperbarui.");
   };
 
   document.querySelectorAll("[data-section]").forEach(btn => {
