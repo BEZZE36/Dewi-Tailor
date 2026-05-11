@@ -178,7 +178,7 @@
       <div class="container mx-auto px-6 text-center">
         <h2 class="font-heading text-4xl mb-4">Galeri Hasil Jahitan</h2>
         <div class="w-24 h-1 bg-primary mx-auto mb-16"></div>
-        <div id="gallery-grid" class="grid grid-cols-1 md:grid-cols-3 gap-8 text-left"></div>
+        <div id="gallery-container" class="text-left"></div>
       </div>
     </section>
 
@@ -392,22 +392,36 @@
       };
 
       // --- GALLERY & DYNAMIC REVIEWS ---
-      onSnapshot(query(collection(db, "gallery"), where("aktif", "==", true), limit(6)), (snap) => {
-        const grid = document.getElementById("gallery-grid");
-        grid.innerHTML = snap.empty ? '<p class="col-span-full text-center text-gray-400">Belum ada foto.</p>' : '';
-        snap.forEach(d => {
-          const v = d.data();
-          grid.innerHTML += `
-            <div class="rounded-2xl overflow-hidden border border-cream bg-white shadow-sm hover:shadow-xl transition-all">
-              <img src="${v.fotoURL}" class="w-full h-52 object-cover" 
-                onerror="this.src='https://placehold.co/400x300/f3f4f6/94a3b8?text=%F0%9F%93%B7+No+Image'">
-              <div class="p-5 font-bold text-sm">
-                ${v.namaModel}
-                <a href="${v.fotoURL}" target="_blank" class="text-[9px] text-blue-500 truncate block mt-1 font-normal">URL: ${v.fotoURL}</a>
-              </div>
-            </div>`;
-        });
-      });
+      const snap = await getDocs(query(collection(db, "gallery"), orderBy("namaModel", "asc")));
+      const categories = [...new Set(snap.docs.map(d => d.data().kategori || 'lainnya'))];
+      
+      const ctn = document.getElementById("gallery-container");
+      ctn.innerHTML = categories.map(cat => {
+        const items = snap.docs.filter(d => (d.data().kategori || 'lainnya') === cat);
+        return `
+          <div class="mb-12">
+            <h3 class="text-2xl font-serif text-maroon mb-6 capitalize border-l-4 border-maroon pl-4">${cat}</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+              ${items.map(d => {
+                const v = d.data();
+                if (v.aktif === false) return '';
+                const proxiedUrl = v.fotoURL && v.fotoURL.includes('i.ibb.co') 
+                  ? 'https://wsrv.nl/?url=' + encodeURIComponent(v.fotoURL) 
+                  : v.fotoURL;
+                return `
+                <div class="rounded-2xl overflow-hidden border border-cream bg-white shadow-sm hover:shadow-xl transition-all">
+                  <img src="${proxiedUrl}" class="w-full h-52 object-cover" 
+                    onerror="this.src='https://placehold.co/400x300/f3f4f6/94a3b8?text=%F0%9F%93%B7+No+Image'">
+                  <div class="p-5 font-bold text-sm">
+                    ${v.namaModel}
+                    <a href="${v.fotoURL}" target="_blank" class="text-[9px] text-blue-500 truncate block mt-1 font-normal">URL: ${v.fotoURL}</a>
+                  </div>
+                </div>`;
+              }).join("")}
+            </div>
+          </div>
+        `;
+      }).join("");
 
       onSnapshot(query(collection(db, 'reviews'), where('status', '==', 'approved')), (snap) => {
         const grid = document.getElementById('dynamic-reviews');
