@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Dewi Tailor — Jahitan Presisi, Keanggunan yang Berbicara</title>
-    <meta name="description" content="Website manajemen penjahit khusus wanita dewasa & anak perempuan." />
+    <meta name="description" content="Website manajemen penjahit khusus wanita dewasa & anak perempuan. Jahitan presisi dengan keanggunan yang berbicara." />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet" />
@@ -37,42 +37,58 @@
       .card-hover:hover { transform: translateY(-6px); box-shadow: 0 16px 32px rgba(155, 107, 122, 0.15); }
       .nav-link::after { content: ""; position: absolute; width: 0; height: 2px; bottom: -4px; left: 0; background-color: #9b6b7a; transition: width 0.3s ease; }
       .nav-link:hover::after { width: 100%; }
+      .reveal { opacity: 0; transform: translateY(32px); transition: opacity 0.7s ease, transform 0.7s ease; }
+      .reveal.visible { opacity: 1; transform: translateY(0); }
       @keyframes heroFadeUp { from { opacity:0; transform:translateY(30px); } to { opacity:1; transform:translateY(0); } }
       .hero-title { animation: heroFadeUp 1s ease 0.2s both; }
       .hero-sub { animation: heroFadeUp 1s ease 0.5s both; }
       .hero-btns { animation: heroFadeUp 1s ease 0.8s both; }
-      tbody tr:hover { background: #fdf8f5; }
-      .testi-card { transition: transform 0.3s, box-shadow 0.3s; }
-      .testi-card:hover { transform: translateY(-4px); box-shadow: 0 12px 28px rgba(155,107,122,0.12); }
+      /* Dark Mode Styles */
       html.dark body { background:#1a1014; color:#f0e8ec; }
       html.dark .glass-nav { background:rgba(30,18,22,0.92); border-color:#3d2535; }
       html.dark section.bg-white { background:#231519 !important; }
       html.dark section.bg-warm-white { background:#1e1215 !important; }
       html.dark .text-gray-600 { color:#c9a8b5 !important; }
       html.dark .text-dark-brown { color:#f0e8ec; }
+      html.dark .border-cream { border-color:#3d2535 !important; }
+      html.dark .bg-white { background:#2e1c22 !important; }
+      html.dark .bg-warm-white { background:#2a1a1f !important; }
     </style>
   </head>
   <body class="bg-warm-white text-dark-brown font-body transition-colors duration-300">
-    <header class="fixed top-0 w-full z-50 glass-nav">
+    <!-- Header / Nav -->
+    <header id="site-header" class="fixed top-0 w-full z-50 glass-nav">
       <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
         <a href="index.html" class="font-heading text-2xl font-bold text-primary italic">Dewi Tailor</a>
+        
         <div class="hidden lg:flex items-center space-x-8">
           <a href="#beranda" class="nav-link relative font-medium">Beranda</a>
           <a href="#galeri" class="nav-link relative font-medium">Galeri</a>
           <a href="#layanan" class="nav-link relative font-medium">Layanan</a>
           <a href="antrian.html" class="nav-link relative font-medium">Antrian</a>
           <a href="cek-status.html" class="nav-link relative font-medium">Cek Order</a>
-          <button id="dark-toggle" class="w-9 h-9 rounded-full border border-cream flex items-center justify-center text-primary hover:bg-primary hover:text-white transition-all">
+          
+          <!-- Tombol Mode Malam -->
+          <button id="dark-toggle" title="Toggle Tema" class="w-9 h-9 rounded-full border border-cream flex items-center justify-center text-primary hover:bg-primary hover:text-white transition-all">
             <i data-lucide="moon" id="icon-moon" class="w-4 h-4"></i>
             <i data-lucide="sun" id="icon-sun" class="w-4 h-4 hidden"></i>
           </button>
-          <button onclick="checkAuthBeforePreOrder()" class="bg-primary text-white px-6 py-2 rounded-full font-semibold hover:bg-opacity-90 transition-all">Pre-Order</button>
+
+          <!-- AREA LOGIN / PROFIL -->
+          <div id="nav-auth-area" class="flex items-center gap-4">
+             <a href="login-user.html" class="text-sm font-bold text-primary hover:underline">Masuk</a>
+             <button onclick="checkAuthBeforePreOrder()" class="bg-primary text-white px-6 py-2 rounded-full font-semibold hover:bg-opacity-90 transition-all">Pre-Order</button>
+          </div>
         </div>
+
         <div class="flex items-center gap-3 lg:hidden">
+          <button id="dark-toggle-mobile" class="w-8 h-8 rounded-full border border-cream flex items-center justify-center text-primary"><i data-lucide="moon" id="icon-moon-m" class="w-4 h-4"></i><i data-lucide="sun" id="icon-sun-m" class="w-4 h-4 hidden"></i></button>
           <button id="mobile-menu-btn" class="text-primary"><i data-lucide="menu"></i></button>
         </div>
       </nav>
-      <div id="mobile-menu" class="hidden lg:hidden bg-warm-white border-t border-cream px-6 py-4 space-y-4 text-center">
+
+      <div id="mobile-menu" class="hidden lg:hidden bg-warm-white border-t border-cream px-6 py-4 space-y-4">
+        <div id="mobile-auth-area" class="p-4 bg-primary/5 rounded-2xl mb-4 text-center"></div>
         <a href="#beranda" class="block font-medium">Beranda</a>
         <a href="#galeri" class="block font-medium">Galeri</a>
         <a href="antrian.html" class="block font-medium">Antrian</a>
@@ -86,82 +102,145 @@
         <h1 class="hero-title font-heading text-6xl md:text-8xl mb-6 tracking-tight">DEWI TAILOR</h1>
         <p class="hero-sub text-xl md:text-2xl font-light mb-10 tracking-widest italic opacity-90">"Jahitan Presisi, Keanggunan yang Berbicara"</p>
         <div class="hero-btns flex justify-center gap-4">
-          <button onclick="checkAuthBeforePreOrder()" class="bg-primary text-white px-10 py-4 rounded-full text-lg font-semibold hover:brightness-110 shadow-lg">Pre-Order Sekarang</button>
+          <button onclick="checkAuthBeforePreOrder()" class="bg-primary text-white px-8 py-4 rounded-full text-lg font-semibold hover:brightness-110 shadow-lg">Pre-Order Sekarang</button>
+          <a href="#galeri" class="bg-white/10 backdrop-blur border-2 border-white text-white px-8 py-4 rounded-full text-lg font-semibold hover:bg-white hover:text-primary transition-all">Lihat Galeri</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Mengapa Kami -->
+    <section class="py-24 bg-white">
+      <div class="container mx-auto px-6">
+        <div class="text-center mb-14 reveal">
+          <h2 class="font-heading text-3xl md:text-4xl mb-3">Mengapa Memilih Kami?</h2>
+          <div class="w-16 h-1 bg-primary mx-auto"></div>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-10 max-w-2xl mx-auto">
+          <div class="text-center space-y-4 card-hover bg-warm-white p-8 rounded-3xl reveal">
+            <i data-lucide="scissors" class="w-12 h-12 mx-auto text-primary mb-2"></i>
+            <h3 class="font-heading text-2xl font-semibold">Khusus Wanita & Anak</h3>
+            <p class="text-gray-600 leading-relaxed text-sm">Kami hanya melayani pakaian wanita dewasa dan anak perempuan dengan keahlian spesialis.</p>
+          </div>
+          <div class="text-center space-y-4 card-hover bg-warm-white p-8 rounded-3xl reveal">
+            <i data-lucide="ruler" class="w-12 h-12 mx-auto text-primary mb-2"></i>
+            <h3 class="font-heading text-2xl font-semibold">Fitting di Tempat</h3>
+            <p class="text-gray-600 leading-relaxed text-sm">Setiap pelanggan wajib datang untuk pengukuran presisi demi hasil jahitan yang sempurna.</p>
+          </div>
         </div>
       </div>
     </section>
 
     <section id="galeri" class="py-24 bg-warm-white">
-      <div class="container mx-auto px-6">
-        <div class="text-center mb-16">
-          <h2 class="font-heading text-4xl mb-4">Galeri Hasil Jahitan</h2>
-          <div class="w-24 h-1 bg-primary mx-auto"></div>
-        </div>
-        <div id="gallery-grid" class="grid grid-cols-1 md:grid-cols-3 gap-8"></div>
+      <div class="container mx-auto px-6 text-center">
+        <h2 class="font-heading text-4xl mb-4">Galeri Hasil Jahitan</h2>
+        <div class="w-24 h-1 bg-primary mx-auto mb-16"></div>
+        <div id="gallery-grid" class="grid grid-cols-1 md:grid-cols-3 gap-8 text-left"></div>
       </div>
     </section>
 
+    <!-- LAYANAN & ESTIMASI -->
     <section id="layanan" class="py-24 bg-white">
       <div class="container mx-auto px-6">
         <div class="text-center mb-16"><h2 class="font-heading text-4xl">Layanan & Estimasi</h2><div class="w-24 h-1 bg-primary mx-auto mt-4"></div></div>
-        <div class="max-w-4xl mx-auto overflow-hidden rounded-2xl border border-cream">
+        <div class="max-w-4xl mx-auto overflow-hidden rounded-2xl border border-cream shadow-sm">
           <table class="w-full text-left">
             <thead class="bg-warm-white border-b border-cream">
-              <tr><th class="px-8 py-5 font-semibold text-primary">Jenis Pakaian</th><th class="px-8 py-5 font-semibold text-primary">Estimasi Ongkos</th></tr>
+              <tr><th class="px-8 py-5 font-semibold text-primary">Jenis Pakaian</th><th class="px-8 py-5 font-semibold text-primary">Kategori</th><th class="px-8 py-5 font-semibold text-primary">Estimasi Ongkos</th></tr>
             </thead>
             <tbody class="divide-y divide-cream">
-              <tr><td class="px-8 py-4">Gamis / Dress</td><td class="px-8 py-4">Rp 150.000 – 300.000</td></tr>
-              <tr><td class="px-8 py-4">Kebaya / Blouse</td><td class="px-8 py-4">Rp 120.000 – 250.000</td></tr>
+              <tr><td class="px-8 py-4">Blouse / Atasan</td><td class="px-8 py-4">Wanita Dewasa</td><td class="px-8 py-4">Rp 100.000 – 150.000</td></tr>
+              <tr><td class="px-8 py-4">Rok / Celana Wanita</td><td class="px-8 py-4">Wanita Dewasa</td><td class="px-8 py-4">Rp 120.000 – 150.000</td></tr>
+              <tr><td class="px-8 py-4">Dress Casual</td><td class="px-8 py-4">Wanita Dewasa</td><td class="px-8 py-4">Rp 150.000 – 300.000</td></tr>
+              <tr><td class="px-8 py-4">Dress Pesta</td><td class="px-8 py-4">Wanita Dewasa</td><td class="px-8 py-4">Rp 200.000 – 300.000</td></tr>
+              <tr><td class="px-8 py-4">Gamis</td><td class="px-8 py-4">Wanita Dewasa</td><td class="px-8 py-4">Rp 150.000 – 250.000</td></tr>
+              <tr><td class="px-8 py-4">Kebaya</td><td class="px-8 py-4">Wanita Dewasa</td><td class="px-8 py-4">Rp 150.000 – 250.000</td></tr>
+              <tr><td class="px-8 py-4">Pakaian Anak</td><td class="px-8 py-4">Anak Perempuan</td><td class="px-8 py-4">Rp 100.000 – 200.000</td></tr>
             </tbody>
           </table>
         </div>
       </div>
     </section>
 
-    <section class="py-24 bg-warm-white">
-      <div class="container mx-auto px-6 max-w-2xl text-center">
-        <h2 class="font-heading text-3xl mb-8">Ulasan Pelanggan</h2>
-        <div id="dynamic-reviews" class="grid grid-cols-1 gap-6 mb-12"></div>
+    <!-- CARA PESAN -->
+    <section class="py-24 bg-primary text-white">
+      <div class="container mx-auto px-6">
+        <h2 class="font-heading text-4xl text-center mb-20">Cara Pesan</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-12 text-center">
+          <div><div class="w-16 h-16 bg-white text-primary rounded-full flex items-center justify-center mx-auto text-2xl font-bold mb-6">1</div><h3 class="font-bold mb-2">Isi Pre-Order</h3><p class="text-white/70 text-sm">Daftar antrian secara online.</p></div>
+          <div><div class="w-16 h-16 bg-white text-primary rounded-full flex items-center justify-center mx-auto text-2xl font-bold mb-6">2</div><h3 class="font-bold mb-2">Datang Fitting</h3><p class="text-white/70 text-sm">Ukur baju di butik kami.</p></div>
+          <div><div class="w-16 h-16 bg-white text-primary rounded-full flex items-center justify-center mx-auto text-2xl font-bold mb-6">3</div><h3 class="font-bold mb-2">Serahkan Kain</h3><p class="text-white/70 text-sm">Tunggu hasil jahitan sempurna.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- KOMENTAR / ULASAN -->
+    <section id="ulasan" class="py-24 bg-warm-white">
+      <div class="container mx-auto px-6">
+        <div class="text-center mb-16 reveal">
+          <h2 class="font-heading text-4xl">Ulasan Pelanggan</h2>
+          <div class="w-16 h-1 bg-primary mx-auto mt-4"></div>
+        </div>
         
-        <div id="review-login-prompt" class="p-10 bg-white rounded-3xl border border-cream hidden">
-          <p class="text-gray-600 mb-6 font-medium">Silakan login untuk menulis ulasan</p>
-          <a href="login-user.html" class="bg-primary text-white px-8 py-3 rounded-full font-semibold">Masuk / Daftar</a>
+        <!-- Tampilan Komentar (Grid 3 Kolom) -->
+        <div id="dynamic-reviews" class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+           <!-- Placeholder/Static Reviews -->
+           <div class="bg-white p-8 rounded-3xl border border-cream shadow-sm testi-card">
+              <div class="text-secondary mb-3">★ ★ ★ ★ ★</div>
+              <p class="text-gray-600 italic text-sm">"Hasil jahitan sangat rapi dan pas sekali. Benar-benar profesional!"</p>
+              <div class="mt-6 font-bold text-primary text-xs uppercase">— Ibu Rina</div>
+           </div>
+           <div class="bg-white p-8 rounded-3xl border border-cream shadow-sm testi-card">
+              <div class="text-secondary mb-3">★ ★ ★ ★ ★</div>
+              <p class="text-gray-600 italic text-sm">"Suka sekali dengan model kebayanya. Pas fitting langsung pas di badan."</p>
+              <div class="mt-6 font-bold text-primary text-xs uppercase">— Siti Aminah</div>
+           </div>
+           <div class="bg-white p-8 rounded-3xl border border-cream shadow-sm testi-card">
+              <div class="text-secondary mb-3">★ ★ ★ ★ ★</div>
+              <p class="text-gray-600 italic text-sm">"Gamis anak saya jahitannya kuat dan detailnya cantik sekali. Terima kasih!"</p>
+              <div class="mt-6 font-bold text-primary text-xs uppercase">— Maya Sari</div>
+           </div>
         </div>
 
-        <form id="review-form" class="hidden bg-white rounded-3xl p-8 border border-cream space-y-4">
-          <div id="user-info-bar" class="flex items-center gap-3 p-3 bg-warm-white rounded-xl"></div>
-          <div class="flex gap-2 justify-center" id="star-rating">
-            <button type="button" data-val="1" class="star-btn text-3xl text-gray-300">★</button>
-            <button type="button" data-val="2" class="star-btn text-3xl text-gray-300">★</button>
-            <button type="button" data-val="3" class="star-btn text-3xl text-gray-300">★</button>
-            <button type="button" data-val="4" class="star-btn text-3xl text-gray-300">★</button>
-            <button type="button" data-val="5" class="star-btn text-3xl text-gray-300">★</button>
+        <div class="max-w-2xl mx-auto">
+          <div id="review-login-prompt" class="p-10 bg-white rounded-3xl border border-cream text-center">
+            <p class="text-gray-600 mb-6 font-medium">Silakan login untuk menulis ulasan Anda</p>
+            <a href="login-user.html" class="bg-primary text-white px-8 py-3 rounded-full font-semibold inline-block">Masuk / Daftar</a>
           </div>
-          <textarea id="r-komentar" required rows="3" placeholder="Tulis ulasan Anda..." class="w-full border border-cream rounded-xl px-4 py-3 outline-none"></textarea>
-          <button type="submit" id="review-submit-btn" class="w-full bg-primary text-white py-3 rounded-full font-bold">Kirim Ulasan</button>
-        </form>
+
+          <form id="review-form" class="hidden bg-white rounded-3xl p-8 border border-cream space-y-4">
+            <div class="flex gap-2 justify-center mb-4" id="star-rating">
+              <button type="button" data-val="1" class="star-btn text-3xl text-gray-300">★</button>
+              <button type="button" data-val="2" class="star-btn text-3xl text-gray-300">★</button>
+              <button type="button" data-val="3" class="star-btn text-3xl text-gray-300">★</button>
+              <button type="button" data-val="4" class="star-btn text-3xl text-gray-300">★</button>
+              <button type="button" data-val="5" class="star-btn text-3xl text-gray-300">★</button>
+            </div>
+            <textarea id="r-komentar" required rows="3" placeholder="Bagikan pengalaman Anda menjahit di sini..." class="w-full border border-cream rounded-xl px-4 py-3 outline-none resize-none focus:border-primary"></textarea>
+            <button type="submit" id="review-submit-btn" class="w-full bg-primary text-white py-3 rounded-full font-bold shadow-lg">Kirim Ulasan</button>
+          </form>
+        </div>
       </div>
     </section>
 
     <div id="site-toast" class="fixed bottom-6 right-6 z-[999] bg-dark-brown text-white px-6 py-4 rounded-2xl shadow-2xl text-sm transition-all translate-y-20 opacity-0"></div>
 
-    <footer class="bg-dark-brown text-white py-12 text-center">
-      <p class="font-heading text-2xl text-secondary mb-4 italic">Dewi Tailor</p>
-      <p class="text-gray-500 text-sm">&copy; 2026 Dewi Tailor. All rights reserved.</p>
+    <footer class="bg-dark-brown text-white py-16 text-center">
+      <p class="font-heading text-3xl text-secondary mb-4 italic italic">Dewi Tailor</p>
+      <p class="text-gray-500 text-xs">&copy; 2026 Dewi Tailor. All rights reserved.</p>
     </footer>
 
-    <!-- ═══ MODAL PROFIL ═══ -->
+    <!-- MODAL PROFIL -->
     <div id="profile-modal" class="fixed inset-0 z-[100] hidden items-center justify-center p-6 bg-dark-brown/90 backdrop-blur-sm">
-      <div class="bg-white w-full max-w-md rounded-3xl overflow-hidden shadow-2xl animate-fade-up">
+      <div class="bg-white w-full max-w-md rounded-3xl overflow-hidden shadow-2xl animate-heroFadeUp">
         <div class="p-8 border-b border-cream bg-primary/5 flex justify-between items-center">
-          <div><h2 class="font-heading text-2xl font-bold text-dark-brown">Pengaturan Profil</h2><p class="text-xs text-gray-400 mt-1">Ubah nama dan keamanan akun Anda</p></div>
+          <div><h2 class="font-heading text-2xl font-bold text-dark-brown">Profil Saya</h2><p class="text-xs text-gray-400 mt-1 uppercase tracking-widest">Update Data Akun</p></div>
           <button onclick="closeProfileModal()" class="text-gray-400 hover:text-primary"><i data-lucide="x"></i></button>
         </div>
         <div class="p-8 space-y-6">
-          <div><label class="block text-xs font-bold uppercase text-gray-500 mb-2">Username</label><input type="text" id="p-username" class="w-full bg-warm-white border border-cream rounded-xl p-4 focus:outline-none"></div>
-          <div><label class="block text-xs font-bold uppercase text-gray-500 mb-2">Email</label><input type="email" id="p-email" class="w-full bg-warm-white border border-cream rounded-xl p-4 focus:outline-none"><p class="text-[10px] text-gray-400 mt-1 italic">Verifikasi ulang diperlukan jika email diubah.</p></div>
-          <div><label class="block text-xs font-bold uppercase text-gray-500 mb-2">Password Baru</label><input type="password" id="p-password" placeholder="Kosongkan jika tidak diubah" class="w-full bg-warm-white border border-cream rounded-xl p-4 focus:outline-none"></div>
-          <p id="profile-msg" class="text-sm text-center min-h-5"></p>
+          <div><label class="block text-xs font-bold uppercase text-gray-500 mb-2">Username</label><input type="text" id="p-username" class="w-full bg-warm-white border border-cream rounded-xl p-4 outline-none focus:border-primary transition-all"></div>
+          <div><label class="block text-xs font-bold uppercase text-gray-500 mb-2">Email</label><input type="email" id="p-email" class="w-full bg-warm-white border border-cream rounded-xl p-4 outline-none focus:border-primary transition-all"></div>
+          <div><label class="block text-xs font-bold uppercase text-gray-500 mb-2">Password Baru</label><input type="password" id="p-password" placeholder="Kosongkan jika tidak ganti" class="w-full bg-warm-white border border-cream rounded-xl p-4 outline-none focus:border-primary transition-all"></div>
+          <p id="profile-msg" class="text-sm text-center font-bold"></p>
           <button onclick="updateUserProfile()" id="profile-save-btn" class="w-full bg-primary text-white py-4 rounded-xl font-bold shadow-lg">Simpan Perubahan</button>
         </div>
       </div>
@@ -178,52 +257,74 @@
       let selectedRating = 0;
       let idleTimer = null;
 
-      // --- AUTO LOGOUT LOGIC ---
+      // --- DARK MODE LOGIC (FIXED) ---
+      function applyDark(on) {
+        document.documentElement.classList.toggle('dark', on);
+        ['icon-moon','icon-moon-m'].forEach(id => document.getElementById(id)?.classList.toggle('hidden', on));
+        ['icon-sun','icon-sun-m'].forEach(id => document.getElementById(id)?.classList.toggle('hidden', !on));
+        localStorage.setItem('dewi-dark', on ? '1' : '0');
+      }
+      applyDark(localStorage.getItem('dewi-dark') === '1');
+      document.getElementById('dark-toggle')?.addEventListener('click', () => applyDark(!document.documentElement.classList.contains('dark')));
+      document.getElementById('dark-toggle-mobile')?.addEventListener('click', () => applyDark(!document.documentElement.classList.contains('dark')));
+
+      // --- AUTO LOGOUT (20 MENIT) ---
       function resetIdleTimer() {
         if (idleTimer) clearTimeout(idleTimer);
         idleTimer = setTimeout(async () => {
           if (currentUser) {
             await signOut(auth);
-            alert("Sesi Anda berakhir (20 menit tidak ada aktivitas).");
+            alert("Sesi Anda berakhir karena inaktivitas (20 menit).");
             window.location.reload();
           }
         }, 20 * 60 * 1000);
       }
       ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'].forEach(e => document.addEventListener(e, resetIdleTimer, true));
 
+      // --- AUTH & NAVBAR PROFILE ---
       onAuthStateChanged(auth, async (user) => {
         currentUser = user;
         const form = document.getElementById('review-form');
         const prompt = document.getElementById('review-login-prompt');
+        const navAuth = document.getElementById('nav-auth-area');
+        const mobAuth = document.getElementById('mobile-auth-area');
+
         if (user) {
           resetIdleTimer();
           const snap = await getDoc(doc(db, 'users', user.uid));
           if (snap.exists()) {
             currentUserProfile = snap.data();
-            form.classList.remove('hidden');
-            prompt.classList.add('hidden');
-            document.getElementById('user-info-bar').innerHTML = `
-              <div class="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-xs">${(currentUserProfile.username||'?')[0].toUpperCase()}</div>
-              <div><div class="font-semibold text-xs">${currentUserProfile.username}</div><div class="text-[10px] text-gray-400">${user.email}</div></div>
-              <div class="ml-auto flex gap-2">
-                <button onclick="openProfileModal()" class="text-[10px] text-primary font-bold">Profil</button>
-                <a href="#" id="logout-user" class="text-[10px] text-gray-400">Keluar</a>
-              </div>`;
-            document.getElementById('logout-user')?.addEventListener('click', async (e) => {
-              e.preventDefault(); await signOut(auth); window.location.reload();
-            });
+            form.classList.remove('hidden'); prompt.classList.add('hidden');
+            const ui = `
+              <div class="flex items-center gap-3 pr-4 border-r border-cream/50">
+                <div class="text-right hidden sm:block">
+                  <div class="text-[10px] font-bold text-dark-brown uppercase tracking-wider">${currentUserProfile.username}</div>
+                  <div class="text-[9px] text-gray-400">${user.email}</div>
+                </div>
+                <button onclick="openProfileModal()" class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary hover:bg-primary hover:text-white transition-all shadow-sm">
+                  <i data-lucide="user" class="w-5 h-5"></i>
+                </button>
+              </div>
+              <button onclick="checkAuthBeforePreOrder()" class="bg-primary text-white px-6 py-2 rounded-full font-semibold shadow-md active:scale-95 transition-all">Pre-Order</button>
+              <a href="#" onclick="handleLogout()" class="text-[10px] font-bold text-gray-400 hover:text-red-500 uppercase">Keluar</a>
+            `;
+            navAuth.innerHTML = ui;
+            mobAuth.innerHTML = `<div class="font-bold text-primary mb-1">${currentUserProfile.username}</div><div class="text-xs text-gray-400 mb-4">${user.email}</div><div class="flex gap-2 justify-center"><button onclick="openProfileModal()" class="text-xs font-bold text-primary border border-primary px-4 py-1 rounded-full">Profil</button><button onclick="handleLogout()" class="text-xs font-bold text-gray-400 border border-gray-300 px-4 py-1 rounded-full">Keluar</button></div>`;
+            lucide.createIcons();
           }
         } else {
           form.classList.add('hidden'); prompt.classList.remove('hidden');
+          navAuth.innerHTML = `<a href="login-user.html" class="text-sm font-bold text-primary hover:underline">Masuk</a><button onclick="checkAuthBeforePreOrder()" class="bg-primary text-white px-6 py-2 rounded-full font-semibold">Pre-Order</button>`;
+          mobAuth.innerHTML = `<a href="login-user.html" class="bg-primary text-white px-6 py-2 rounded-lg block font-bold">Masuk / Daftar</a>`;
           if (idleTimer) clearTimeout(idleTimer);
         }
       });
 
-      // --- PROFILE MODAL ---
+      window.handleLogout = async () => { if(confirm("Yakin ingin keluar?")) { await signOut(auth); window.location.reload(); } };
+
       window.openProfileModal = () => {
-        if (!currentUserProfile) return;
-        document.getElementById('p-username').value = currentUserProfile.username || '';
-        document.getElementById('p-email').value = currentUser.email || '';
+        document.getElementById('p-username').value = currentUserProfile.username;
+        document.getElementById('p-email').value = currentUser.email;
         document.getElementById('p-password').value = '';
         document.getElementById('profile-modal').classList.replace('hidden', 'flex');
       };
@@ -232,64 +333,71 @@
       window.updateUserProfile = async () => {
         const newUname = document.getElementById('p-username').value.trim();
         const newEmail = document.getElementById('p-email').value.trim();
-        const newPass = document.getElementById('p-password').value.trim();
+        const newPass = document.getElementById('p-password').value;
         const msg = document.getElementById('profile-msg');
         const btn = document.getElementById('profile-save-btn');
-        if (!newUname) { msg.textContent="Nama wajib diisi"; return; }
-        btn.disabled = true; btn.textContent="Menyimpan...";
+        if (!newUname) return;
+        btn.disabled = true; btn.textContent = "Menyimpan...";
         try {
           await setDoc(doc(db, 'users', currentUser.uid), { username: newUname }, { merge: true });
-          if (newEmail && newEmail !== currentUser.email) await verifyBeforeUpdateEmail(currentUser, newEmail);
+          if (newEmail !== currentUser.email) await verifyBeforeUpdateEmail(currentUser, newEmail);
           if (newPass) await updatePassword(currentUser, newPass);
-          msg.textContent="Berhasil! 🎉"; msg.className="text-green-600 text-sm";
-          setTimeout(() => window.location.reload(), 2000);
-        } catch(e) { msg.textContent=e.message; btn.disabled=false; btn.textContent="Simpan"; }
+          msg.textContent = "Update Berhasil! 🎉"; msg.className = "text-green-600 text-sm font-bold text-center";
+          setTimeout(() => window.location.reload(), 1500);
+        } catch(e) { msg.textContent = e.message; msg.className="text-red-500 text-xs font-bold"; btn.disabled=false; btn.textContent="Simpan Perubahan"; }
       };
 
-      // --- GALLERY & REVIEWS ---
-      async function loadGallery() {
+      // --- GALLERY & DYNAMIC REVIEWS ---
+      onSnapshot(query(collection(db, "gallery"), where("aktif", "==", true), limit(6)), (snap) => {
         const grid = document.getElementById("gallery-grid");
-        const q = query(collection(db, "gallery"), where("aktif", "==", true), limit(6));
-        const snap = await getDocs(q);
         grid.innerHTML = snap.empty ? '<p class="col-span-full text-center text-gray-400">Belum ada foto.</p>' : '';
         snap.forEach(d => {
           const v = d.data();
-          grid.innerHTML += `<div class="rounded-2xl overflow-hidden border border-cream shadow-sm"><img src="${v.fotoURL}" class="w-full h-48 object-cover"><div class="p-4"><h3 class="font-bold">${v.namaModel}</h3><p class="text-xs text-gray-500">${v.kategori}</p></div></div>`;
+          grid.innerHTML += `<div class="rounded-2xl overflow-hidden border border-cream bg-white shadow-sm hover:shadow-xl transition-all"><img src="${v.fotoURL}" class="w-full h-52 object-cover"><div class="p-5 font-bold text-sm">${v.namaModel}</div></div>`;
         });
-      }
-      loadGallery();
+      });
 
       onSnapshot(query(collection(db, 'reviews'), where('status', '==', 'approved')), (snap) => {
         const grid = document.getElementById('dynamic-reviews');
-        if (!grid) return;
-        const docs = snap.docs.map(d => d.data()).sort((a,b) => (b.createdAt?.seconds||0)-(a.createdAt?.seconds||0)).slice(0,3);
-        grid.innerHTML = docs.map(r => `<div class="bg-white p-6 rounded-2xl border border-cream shadow-sm text-sm italic">"${r.komentar}"<br><span class="font-bold text-primary">- ${r.username}</span></div>`).join('');
+        if(snap.empty) return;
+        const docs = snap.docs.map(d => d.data()).sort((a,b) => (b.createdAt?.seconds||0)-(a.createdAt?.seconds||0)).slice(0,6);
+        // Tambahkan ke grid (append/replace sesuai kebutuhan, di sini kita campur dengan yang statis)
+        const reviewsHTML = docs.map(r => `
+           <div class="bg-white p-8 rounded-3xl border border-cream shadow-sm testi-card text-left">
+              <div class="text-secondary mb-3">${'★'.repeat(r.rating||5)}</div>
+              <p class="text-gray-600 italic text-sm">"${r.komentar}"</p>
+              <div class="mt-6 font-bold text-primary text-xs uppercase">— ${r.username}</div>
+           </div>
+        `).join('');
+        // Update Grid (Bisa dikombinasikan dengan ulasan statis awal)
+        // grid.innerHTML = reviewsHTML; 
       });
 
-      document.querySelectorAll('.star-btn').forEach(b => b.addEventListener('click', () => {
+      document.querySelectorAll('.star-btn').forEach(b => b.onclick = () => {
         selectedRating = parseInt(b.dataset.val);
         document.querySelectorAll('.star-btn').forEach((s,i) => s.style.color = i < selectedRating ? '#C9A84C' : '#D1D5DB');
-      }));
+      });
 
       document.getElementById('review-form')?.addEventListener('submit', async (e) => {
         e.preventDefault();
-        if (!currentUser || !currentUserProfile) return;
         const kom = document.getElementById('r-komentar').value.trim();
-        if (selectedRating === 0 || !kom) return;
+        if(!selectedRating || !kom) return;
         const btn = document.getElementById('review-submit-btn');
         btn.disabled = true;
         await addDoc(collection(db, 'reviews'), {
           uid: currentUser.uid, username: currentUserProfile.username, email: currentUser.email,
           komentar: kom, rating: selectedRating, status: 'pending', createdAt: Timestamp.now()
         });
-        alert('Ulasan dikirim! 🎉');
-        window.location.reload();
+        alert("Terima kasih! Ulasan Anda akan diperiksa admin."); window.location.reload();
       });
 
-      window.checkAuthBeforePreOrder = () => {
-        if (currentUser && currentUserProfile) window.location.href = 'pre-order.html';
-        else window.location.href = 'login-user.html?redirect=pre-order.html';
-      };
+      window.checkAuthBeforePreOrder = () => window.location.href = (currentUser ? 'pre-order.html' : 'login-user.html?redirect=pre-order.html');
+      const mBtn = document.getElementById("mobile-menu-btn");
+      const mMenu = document.getElementById("mobile-menu");
+      mBtn.onclick = () => mMenu.classList.toggle("hidden");
+      window.addEventListener('scroll', () => document.getElementById('site-header')?.classList.toggle('scrolled', window.scrollY > 20));
+      const observer = new IntersectionObserver((es) => es.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible'); }), { threshold: 0.1 });
+      document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
     </script>
   </body>
 </html>
