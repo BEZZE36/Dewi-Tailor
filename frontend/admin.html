@@ -467,46 +467,62 @@
     e.preventDefault();
     const btn = document.getElementById("gallery-save-btn");
     const statusEl = document.getElementById("gallery-upload-status");
-    btn.disabled = true; btn.textContent = "Menyimpan...";
+    
+    // Validasi Dasar
+    const nama = document.getElementById("g-nama").value.trim();
+    if (!nama) { alert("Nama Model tidak boleh kosong!"); return; }
+
+    btn.disabled = true; 
+    btn.innerHTML = `⏳ Menyimpan...`;
 
     try {
       let fotoURL = document.getElementById("g-foto-url").value.trim();
       const fileInput = document.getElementById("g-foto-file");
 
+      // JIKA USER MEMILIH FILE
       if (fileInput.files && fileInput.files[0]) {
         statusEl.classList.remove("hidden");
+        statusEl.innerHTML = "⏳ Sedang mengirim foto ke server ImgBB...";
+        console.log("Memulai upload ke ImgBB...");
+        
         fotoURL = await uploadToImgBB(fileInput.files[0]);
-        statusEl.classList.add("hidden");
+        
+        console.log("Upload Berhasil! URL:", fotoURL);
+        statusEl.innerHTML = "✅ Foto berhasil diupload!";
       }
 
-      if (!fotoURL) { alert("Masukkan URL foto atau upload file gambar!"); return; }
+      // Validasi Akhir URL
+      if (!fotoURL || fotoURL.length < 15) { 
+        throw new Error("Link foto tidak valid atau terpotong. Harap upload file baru atau masukkan URL yang benar."); 
+      }
 
       const data = {
-        namaModel: document.getElementById("g-nama").value.trim(),
+        namaModel: nama,
         kategori: document.getElementById("g-kategori").value,
         deskripsi: document.getElementById("g-deskripsi").value.trim(),
         harga: Number(document.getElementById("g-harga").value) || 0,
-        fotoURL,
+        fotoURL: fotoURL,
         aktif: document.getElementById("g-aktif").checked,
         updatedAt: Timestamp.now()
       };
 
       if (currentGalleryEditId) {
-        console.log("Updating gallery item:", currentGalleryEditId, data);
         await updateDoc(doc(db, "gallery", currentGalleryEditId), data);
-        showToast("✅ Galeri berhasil diperbarui!");
+        alert("✅ BERHASIL! Item galeri telah diperbarui.");
       } else {
-        console.log("Adding new gallery item:", data);
         data.createdAt = Timestamp.now();
         await addDoc(collection(db, "gallery"), data);
-        showToast("✅ Item galeri berhasil ditambahkan!");
+        alert("✅ BERHASIL! Item galeri baru telah ditambahkan.");
       }
+      
       window.closeGalleryModal();
     } catch (err) {
-      console.error(err);
-      alert("Gagal menyimpan: " + err.message);
+      console.error("Gagal total:", err);
+      alert("❌ GAGAL SIMPAN: " + err.message);
     } finally {
-      btn.disabled = false; btn.textContent = "Simpan";
+      btn.disabled = false; 
+      btn.innerHTML = `Simpan`;
+      statusEl.classList.add("hidden");
     }
   };
 
