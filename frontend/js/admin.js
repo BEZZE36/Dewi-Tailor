@@ -212,20 +212,26 @@ document.getElementById("logout-btn")?.addEventListener("click", async () => {
 
 // ─── NAVIGATION ───────────────────────────────────────────────────────────────
 
-document.querySelectorAll("[data-section]").forEach((el) => {
-  el.addEventListener("click", () => {
-    navigateTo(el.getAttribute("data-section"));
-    document.getElementById("sidebar")?.classList.remove("open");
+function setupNavigation() {
+  document.querySelectorAll("[data-section]").forEach((el) => {
+    el.onclick = () => {
+      navigateTo(el.getAttribute("data-section"));
+      document.getElementById("sidebar")?.classList.remove("open");
+    };
   });
-});
+}
 
 function navigateTo(section) {
   document.querySelectorAll(".section-page").forEach((s) => (s.style.display = "none"));
   const target = document.getElementById(`section-${section}`);
-  if (target) { target.style.display = "block"; target.style.animation = "fadeUp .4s ease"; }
+  if (target) { 
+    target.style.display = "block"; 
+    target.style.animation = "fadeUp .4s ease"; 
+  }
   document.querySelectorAll("[data-section]").forEach((el) =>
     el.classList.toggle("active", el.getAttribute("data-section") === section)
   );
+  if (window.lucide) lucide.createIcons();
 }
 
 document.getElementById("hamburger-btn")?.addEventListener("click", () => {
@@ -235,6 +241,8 @@ document.getElementById("hamburger-btn")?.addEventListener("click", () => {
 // ─── DASHBOARD ────────────────────────────────────────────────────────────────
 
 function initDashboard() {
+  if (window.lucide) lucide.createIcons();
+  setupNavigation();
   navigateTo("overview");
   initOrdersListener();
   initGalleryListener();
