@@ -691,7 +691,7 @@
       }
       loadReviews();
 
-      // ── Auth: show/hide review form ────────────────────────────
+      // ── Auth & Profile Management ────────────────────────────
       let currentUser = null;
       let currentUserProfile = null;
       let selectedRating = 0;
@@ -704,24 +704,24 @@
           const snap = await getDoc(doc(db, 'users', user.uid));
           if (snap.exists()) {
             currentUserProfile = snap.data();
-            // Show form, hide prompt
             form.classList.remove('hidden');
             prompt.classList.add('hidden');
-            // Show user info bar
-            const phone = user.phoneNumber ? user.phoneNumber.replace('+62','0').replace(/(\d{4})(\d{4})(\d+)/,'$1****$3') : '';
+            
             document.getElementById('user-info-bar').innerHTML = `
               <div class="w-9 h-9 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-sm">${(currentUserProfile.username||'?')[0].toUpperCase()}</div>
-              <div><div class="font-semibold text-sm">${currentUserProfile.username}</div><div class="text-xs text-gray-400">${phone}</div></div>
-              <a href="#" id="logout-user" class="ml-auto text-xs text-gray-400 hover:text-red-500 transition-all">Keluar</a>`;
+              <div><div class="font-semibold text-sm">${currentUserProfile.username}</div><div class="text-xs text-gray-400">${user.email}</div></div>
+              <div class="ml-auto flex gap-2">
+                <button onclick="openProfileModal()" class="text-xs text-primary font-bold hover:underline">Profil</button>
+                <span class="text-gray-300">|</span>
+                <a href="#" id="logout-user" class="text-xs text-gray-400 hover:text-red-500 transition-all">Keluar</a>
+              </div>`;
+            
             document.getElementById('logout-user')?.addEventListener('click', async (e) => {
               e.preventDefault();
               const { signOut } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js');
               await signOut(auth);
+              window.location.reload();
             });
-          } else {
-            // User logged in via Firebase but no profile yet → show login prompt
-            form.classList.add('hidden');
-            prompt.classList.remove('hidden');
           }
         } else {
           form.classList.add('hidden');
@@ -729,17 +729,44 @@
         }
       });
 
+      window.openProfileModal = () => {
+        if (!currentUserProfile) return;
+        document.getElementById('p-username').value = currentUserProfile.username || '';
+        document.getElementById('p-password').value = '';
+        document.getElementById('profile-modal').classList.replace('hidden', 'flex');
+      };
+      window.closeProfileModal = () => document.getElementById('profile-modal').classList.replace('flex', 'hidden');
+
+      window.updateUserProfile = async () => {
+        const { updatePassword } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js");
+        const newUname = document.getElementById('p-username').value.trim();
+        const newPass = document.getElementById('p-password').value.trim();
+        const msg = document.getElementById('profile-msg');
+        const btn = document.getElementById('profile-save-btn');
+
+        if (!newUname) { msg.textContent = "Username wajib diisi."; msg.className="text-red-500 text-sm"; return; }
+        
+        btn.disabled = true; btn.textContent = "Menyimpan...";
+        try {
+          await setDoc(doc(db, 'users', currentUser.uid), { username: newUname }, { merge: true });
+          if (newPass) {
+            if (newPass.length < 6) throw new Error("Password minimal 6 karakter.");
+            await updatePassword(currentUser, newPass);
+          }
+          msg.textContent = "Profil berhasil diperbarui! 🎉";
+          msg.className = "text-green-600 text-sm";
+          setTimeout(() => window.location.reload(), 1500);
+        } catch(e) {
+          msg.textContent = e.message || "Gagal memperbarui profil.";
+          msg.className = "text-red-500 text-sm";
+          btn.disabled = false; btn.textContent = "Simpan Perubahan";
+        }
+      };
+
       // ── Star Rating ────────────────────────────────────────────
       document.querySelectorAll('.star-btn').forEach(btn => {
         btn.addEventListener('click', () => {
           selectedRating = parseInt(btn.dataset.val);
-          document.querySelectorAll('.star-btn').forEach((b,i) => b.style.color = i < selectedRating ? '#C9A84C' : '#D1D5DB');
-        });
-        btn.addEventListener('mouseenter', () => {
-          const v = parseInt(btn.dataset.val);
-          document.querySelectorAll('.star-btn').forEach((b,i) => b.style.color = i < v ? '#C9A84C' : '#D1D5DB');
-        });
-        btn.addEventListener('mouseleave', () => {
           document.querySelectorAll('.star-btn').forEach((b,i) => b.style.color = i < selectedRating ? '#C9A84C' : '#D1D5DB');
         });
       });
@@ -757,26 +784,53 @@
           await addDoc(collection(db, 'reviews'), {
             uid: currentUser.uid,
             username: currentUserProfile.username,
-            phone: currentUserProfile.phone,
+            email: currentUser.email,
             komentar, rating: selectedRating,
             status: 'pending', createdAt: Timestamp.now(),
           });
           showToast('Ulasan berhasil dikirim! 🎉');
           document.getElementById('review-form').reset();
-          document.getElementById('r-komentar').value = '';
           selectedRating = 0;
           document.querySelectorAll('.star-btn').forEach(b => b.style.color = '#D1D5DB');
         } catch(err) {
           showToast('Gagal mengirim. Coba lagi.', false);
         } finally { btn.disabled = false; btn.textContent = 'Kirim Ulasan'; }
       });
+
       window.checkAuthBeforePreOrder = function() {
-        if (currentUser && currentUserProfile) {
-          window.location.href = 'pre-order.html';
-        } else {
-          window.location.href = 'login-user.html?redirect=pre-order.html';
-        }
+        if (currentUser && currentUserProfile) { window.location.href = 'pre-order.html'; }
+        else { window.location.href = 'login-user.html?redirect=pre-order.html'; }
       };
     </script>
+
+    <!-- ═══ MODAL PROFIL ═══ -->
+    <div id="profile-modal" class="fixed inset-0 z-[100] hidden items-center justify-center p-6 bg-dark-brown/90 backdrop-blur-sm">
+      <div class="bg-white w-full max-w-md rounded-3xl overflow-hidden shadow-2xl">
+        <div class="p-8 border-b border-cream bg-primary/5 flex justify-between items-center">
+          <div>
+            <h2 class="font-heading text-2xl font-bold text-dark-brown">Pengaturan Profil</h2>
+            <p class="text-xs text-gray-400 mt-1">Ubah nama dan keamanan akun Anda</p>
+          </div>
+          <button onclick="closeProfileModal()" class="text-gray-400 hover:text-primary">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        </div>
+        <div class="p-8 space-y-6">
+          <div>
+            <label class="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2">Username</label>
+            <input type="text" id="p-username" class="w-full bg-warm-white border border-cream rounded-xl p-4 focus:border-primary focus:outline-none transition-all">
+          </div>
+          <div>
+            <label class="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2">Password Baru (Opsional)</label>
+            <input type="password" id="p-password" placeholder="Biarkan kosong jika tidak diubah" 
+              class="w-full bg-warm-white border border-cream rounded-xl p-4 focus:border-primary focus:outline-none transition-all">
+          </div>
+          <p id="profile-msg" class="text-sm text-center min-h-5"></p>
+          <button onclick="updateUserProfile()" id="profile-save-btn" class="w-full bg-primary text-white py-4 rounded-xl font-bold hover:brightness-110 transition-all shadow-lg shadow-primary/20">
+            Simpan Perubahan
+          </button>
+        </div>
+      </div>
+    </div>
   </body>
 </html>

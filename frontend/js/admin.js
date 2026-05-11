@@ -35,16 +35,20 @@ const ADMIN_SESSION_KEY = "adminVerified";
 function initAuth() {
   onAuthStateChanged(auth, async (user) => {
     if (user) {
-      // Cek apakah user ini adalah admin di Firestore users collection dengan role 'admin'
+      // Cek apakah user ini adalah admin
       const userSnap = await getDoc(doc(db, "users", user.uid));
       const isAdmin = userSnap.exists() && userSnap.data().role === 'admin';
       
-      if (sessionStorage.getItem(ADMIN_SESSION_KEY) === "true") {
+      if (isAdmin) {
+        // Jika sudah admin, langsung masuk (Persistence)
+        sessionStorage.setItem(ADMIN_SESSION_KEY, "true");
         showDashboard();
         initDashboard();
       } else {
-        // Tampilkan OTP jika belum verifikasi sesi ini
-        showOTPStep();
+        // Jika login tapi bukan admin (User biasa nyasar ke halaman admin)
+        await signOut(auth);
+        showLogin();
+        alert("Akses Ditolak: Anda bukan admin.");
       }
     } else {
       showLogin();
@@ -68,43 +72,49 @@ function showOTPStep() {
   setupOTPAdmin();
 }
 
-// Step 1: Kirim OTP
+// Step 1: Login dengan Password
 document.getElementById("login-form")?.addEventListener("submit", async (e) => {
   e.preventDefault();
   const email = document.getElementById("login-email").value.trim();
+  const password = document.getElementById("login-password").value.trim();
   const btn = document.getElementById("login-btn");
   const err = document.getElementById("login-error");
   
   btn.disabled = true;
-  btn.innerHTML = '<span class="animate-spin inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2"></span>Mengirim...';
+  btn.innerHTML = 'Memproses...';
   err.textContent = "";
+
+  try {
+    await signInWithEmailAndPassword(auth, email, password);
+    // initAuth akan otomatis mengarahkan ke dashboard jika role=admin
+  } catch (error) {
+    console.error(error);
+    err.textContent = "Email atau Password salah.";
+    btn.disabled = false;
+    btn.textContent = "Masuk (Password)";
+  }
+});
+
+window.requestAdminOTP = async () => {
+  const email = document.getElementById("login-email").value.trim();
+  const err = document.getElementById("login-error");
+  if (!email) { err.textContent = "Masukkan email dulu."; return; }
 
   try {
     adminEmail = email;
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
-
-    // 1. Simpan OTP ke Firestore mail_otps
     await setDoc(doc(db, "mail_otps", email), {
       otp: otp,
       createdAt: Timestamp.now(),
       expiresAt: new Timestamp(Math.floor(Date.now()/1000) + 600, 0)
     });
-
-    // 2. Kirim via EmailJS
-    await emailjs.send(SERVICE_ID, TEMPLATE_ID, {
-      to_email: email,
-      to_name: "Admin Dewi Tailor",
-      otp: otp
-    });
-
+    await emailjs.send(SERVICE_ID, TEMPLATE_ID, { to_email: email, to_name: "Admin", otp: otp });
     showOTPStep();
   } catch (error) {
-    err.textContent = "Gagal mengirim OTP. Pastikan EmailJS aktif.";
+    err.textContent = "Gagal kirim OTP.";
     console.error(error);
-    btn.disabled = false;
-    btn.textContent = "Kirim Kode OTP";
   }
-});
+};
 
 // Step 2: Verifikasi OTP
 document.getElementById("pin-form")?.addEventListener("submit", async (e) => {
