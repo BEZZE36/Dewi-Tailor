@@ -5,12 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pre-Order — Dewi Tailor</title>
     
-    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
     
-    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -31,8 +29,6 @@
             }
         }
     </script>
-    
-    <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
     
     <style>
@@ -40,191 +36,156 @@
         .step-active { opacity: 1; border-color: #9B6B7A; color: #9B6B7A; }
         .step-completed { background-color: #9B6B7A; color: white; border-color: #9B6B7A; }
 
-        /* Dark Mode Styles (Auto-Follow Index) */
-        html.dark body { background: #1a1014; color: #f0e8ec; }
-        html.dark .bg-white { background: #231519 !important; border-color: #3d2535 !important; }
-        html.dark .bg-warm-white { background: #1e1215 !important; }
+        /* Dark Mode Premium UI */
+        html.dark body { background: #0f090b; color: #f0e8ec; }
+        html.dark .bg-white { background: #1a1014 !important; border-color: #3d2535 !important; }
+        html.dark .bg-warm-white { background: #150d10 !important; }
         html.dark .border-cream { border-color: #3d2535 !important; }
         html.dark .text-gray-500, html.dark .text-gray-400 { color: #c9a8b5 !important; }
-        html.dark input, html.dark textarea, html.dark select { background: #2e1c22 !important; border-color: #3d2535 !important; color: white !important; }
+        html.dark input, html.dark textarea, html.dark select { background: #231519 !important; border-color: #3d2535 !important; color: white !important; }
+        html.dark .step-circle { background: #231519; border-color: #3d2535; color: #c9a8b5; }
+        html.dark .step-circle.active { border-color: #9B6B7A; color: #9B6B7A; }
+        html.dark .step-circle.completed { background: #9B6B7A; color: white; border-color: #9B6B7A; }
+
+        /* Validation Feedback */
+        .error-field { border-color: #ef4444 !important; animation: shake 0.3s ease-in-out; }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
     </style>
 </head>
 <body class="bg-warm-white text-dark-brown font-body min-h-screen flex flex-col transition-colors duration-300">
     <script>
-        // AUTO FOLLOW DARK MODE FROM INDEX
-        if (localStorage.getItem('dewi-dark') === '1') {
-            document.documentElement.classList.add('dark');
-        }
+        if (localStorage.getItem('dewi-dark') === '1') document.documentElement.classList.add('dark');
     </script>
 
-    <!-- Header / Nav -->
     <header class="bg-white border-b border-cream py-4">
         <nav class="container mx-auto px-6 flex justify-between items-center">
             <a href="index.html" class="font-heading text-xl font-bold text-primary italic flex items-center gap-2">
                 <i data-lucide="chevron-left" class="w-5 h-5"></i>
                 Dewi Tailor
             </a>
-            <!-- Button Mode Malam Dihapus Sesuai Instruksi -->
-            <span class="font-medium text-gray-500 hidden sm:inline">Form Pre-Order</span>
+            <span class="font-medium text-gray-500 hidden sm:inline text-xs tracking-widest uppercase">Form Pre-Order</span>
         </nav>
     </header>
 
     <main class="flex-grow flex items-center justify-center py-12 px-6">
-        <div class="max-w-2xl w-full bg-white rounded-3xl shadow-sm border border-cream overflow-hidden">
+        <div class="max-w-2xl w-full bg-white rounded-3xl shadow-xl border border-cream overflow-hidden">
             
             <!-- Progress Bar -->
             <div class="px-8 pt-10 pb-6 border-b border-cream bg-warm-white/50">
                 <div class="flex justify-between relative">
-                    <div class="absolute top-5 left-0 w-full h-0.5 bg-cream -z-10"></div>
+                    <div class="absolute top-5 left-0 w-full h-0.5 bg-cream -z-10 opacity-30"></div>
                     <div id="step-1-indicator" class="flex flex-col items-center gap-2 z-10">
-                        <div class="w-10 h-10 rounded-full border-2 border-primary bg-white flex items-center justify-center font-bold text-primary transition-all">1</div>
-                        <span class="text-xs font-semibold">Pakaian</span>
+                        <div class="step-circle active w-10 h-10 rounded-full border-2 flex items-center justify-center font-bold transition-all">1</div>
+                        <span class="text-[10px] font-bold uppercase tracking-tighter">Pakaian</span>
                     </div>
                     <div id="step-2-indicator" class="flex flex-col items-center gap-2 z-10 opacity-30">
-                        <div class="w-10 h-10 rounded-full border-2 border-cream bg-white flex items-center justify-center font-bold text-gray-400 transition-all">2</div>
-                        <span class="text-xs font-semibold">Detail</span>
+                        <div class="step-circle w-10 h-10 rounded-full border-2 flex items-center justify-center font-bold transition-all">2</div>
+                        <span class="text-[10px] font-bold uppercase tracking-tighter">Detail</span>
                     </div>
                     <div id="step-3-indicator" class="flex flex-col items-center gap-2 z-10 opacity-30">
-                        <div class="w-10 h-10 rounded-full border-2 border-cream bg-white flex items-center justify-center font-bold text-gray-400 transition-all">3</div>
-                        <span class="text-xs font-semibold">Data Diri</span>
+                        <div class="step-circle w-10 h-10 rounded-full border-2 flex items-center justify-center font-bold transition-all">3</div>
+                        <span class="text-[10px] font-bold uppercase tracking-tighter">Kontak</span>
                     </div>
                     <div id="step-4-indicator" class="flex flex-col items-center gap-2 z-10 opacity-30">
-                        <div class="w-10 h-10 rounded-full border-2 border-cream bg-white flex items-center justify-center font-bold text-gray-400 transition-all">4</div>
-                        <span class="text-xs font-semibold">Konfirmasi</span>
+                        <div class="step-circle w-10 h-10 rounded-full border-2 flex items-center justify-center font-bold transition-all">4</div>
+                        <span class="text-[10px] font-bold uppercase tracking-tighter">Selesai</span>
                     </div>
                 </div>
             </div>
 
-            <form id="pre-order-form" class="p-8 md:p-12">
+            <form id="pre-order-form" class="p-8 md:p-12" novalidate>
                 
-                <!-- Step 1: Jenis Pakaian -->
+                <!-- Step 1 -->
                 <div id="step-1" class="space-y-8">
-                    <h2 class="text-2xl font-heading font-bold text-center">Pilih Jenis Pakaian</h2>
-                    
+                    <h2 class="text-3xl font-heading font-bold text-center">Pilih Jenis Pakaian</h2>
                     <div class="space-y-6">
                         <div>
-                            <label class="block text-sm font-semibold mb-4">Kategori Pelanggan</label>
+                            <label class="block text-xs font-bold uppercase text-gray-400 mb-4 tracking-widest">Kategori Pelanggan</label>
                             <div class="grid grid-cols-2 gap-4">
                                 <label class="cursor-pointer">
                                     <input type="radio" name="kategori" value="wanita_dewasa" class="hidden peer" checked>
-                                    <div class="border-2 border-cream rounded-2xl p-4 text-center peer-checked:border-primary peer-checked:bg-primary peer-checked:text-white transition-all">
-                                        <div class="text-lg font-semibold">Wanita Dewasa</div>
+                                    <div class="border-2 border-cream rounded-2xl p-4 text-center peer-checked:border-primary peer-checked:bg-primary peer-checked:text-white transition-all shadow-sm">
+                                        <div class="text-sm font-bold">Wanita Dewasa</div>
                                     </div>
                                 </label>
                                 <label class="cursor-pointer">
                                     <input type="radio" name="kategori" value="anak_perempuan" class="hidden peer">
-                                    <div class="border-2 border-cream rounded-2xl p-4 text-center peer-checked:border-primary peer-checked:bg-primary peer-checked:text-white transition-all">
-                                        <div class="text-lg font-semibold">Anak Perempuan</div>
+                                    <div class="border-2 border-cream rounded-2xl p-4 text-center peer-checked:border-primary peer-checked:bg-primary peer-checked:text-white transition-all shadow-sm">
+                                        <div class="text-sm font-bold">Anak Perempuan</div>
                                     </div>
                                 </label>
                             </div>
                         </div>
-
                         <div>
-                            <label class="block text-sm font-semibold mb-4">Jenis Pakaian</label>
-                            <div id="jenis-grid" class="grid grid-cols-2 md:grid-cols-3 gap-3">
-                                <!-- Choices will change based on category -->
-                            </div>
+                            <label class="block text-xs font-bold uppercase text-gray-400 mb-4 tracking-widest">Jenis Pakaian</label>
+                            <div id="jenis-grid" class="grid grid-cols-2 md:grid-cols-3 gap-3"></div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Step 2: Keterangan -->
+                <!-- Step 2 -->
                 <div id="step-2" class="hidden space-y-8">
-                    <h2 class="text-2xl font-heading font-bold text-center">Detail Pesanan</h2>
+                    <h2 class="text-3xl font-heading font-bold text-center text-primary">Detail Pesanan</h2>
                     <div class="space-y-6">
                         <div>
-                            <label class="block text-sm font-semibold mb-2">Deskripsi Model / Keinginan <span class="text-red-500">*</span></label>
-                            <textarea name="deskripsi" required placeholder="Contoh: Dress A-line dengan lengan balon, kancing belakang..." class="w-full border-2 border-cream rounded-xl p-4 h-32 focus:border-primary focus:outline-none transition-all bg-transparent"></textarea>
+                            <label class="block text-xs font-bold uppercase text-gray-400 mb-2">Deskripsi Model <span class="text-red-500">*</span></label>
+                            <textarea name="deskripsi" required placeholder="Contoh: Dress A-line, kerah v-neck..." class="w-full border-2 border-cream rounded-xl p-4 h-32 focus:border-primary focus:outline-none transition-all"></textarea>
                         </div>
-                        
                         <div>
-                            <label class="block text-sm font-semibold mb-2">Upload Referensi Gambar (Opsional)</label>
-                            <div class="flex flex-col items-center justify-center w-full border-2 border-dashed border-cream rounded-2xl p-6 transition-all hover:border-primary bg-warm-white/20">
+                            <label class="block text-xs font-bold uppercase text-gray-400 mb-2">Upload Referensi (Foto)</label>
+                            <div class="border-2 border-dashed border-cream rounded-2xl p-6 text-center bg-warm-white/20">
                                 <input type="file" id="image-upload" accept="image/*" class="hidden">
-                                <label for="image-upload" class="cursor-pointer flex flex-col items-center gap-2">
-                                    <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-                                        <i data-lucide="image-plus" class="w-6 h-6"></i>
-                                    </div>
-                                    <span class="text-xs font-medium text-gray-500" id="file-name">Pilih foto model/desain</span>
-                                </label>
-                                <div id="image-preview" class="hidden mt-4 w-full max-w-[150px] aspect-square rounded-xl overflow-hidden border border-cream">
-                                    <img src="" class="w-full h-full object-cover">
-                                </div>
+                                <label for="image-upload" class="cursor-pointer text-xs font-bold text-primary">Pilih Gambar</label>
+                                <div id="image-preview" class="hidden mt-4 mx-auto w-32 h-32 rounded-xl overflow-hidden"><img class="w-full h-full object-cover"></div>
                             </div>
                         </div>
-
                         <div>
-                            <label class="block text-sm font-semibold mb-2">Keterangan Khusus (Opsional)</label>
-                            <textarea name="keteranganKhusus" placeholder="Contoh: Detail renda di bagian kerah..." class="w-full border-2 border-cream rounded-xl p-4 h-24 focus:border-primary focus:outline-none transition-all bg-transparent"></textarea>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-semibold mb-2">Jumlah Pakaian</label>
+                            <label class="block text-xs font-bold uppercase text-gray-400 mb-2">Jumlah</label>
                             <div class="flex items-center gap-4">
-                                <button type="button" id="minus-btn" class="w-12 h-12 rounded-xl border-2 border-cream flex items-center justify-center hover:border-primary transition-all"><i data-lucide="minus"></i></button>
-                                <input type="number" name="jumlah" value="1" min="1" class="w-20 text-center text-xl font-bold border-none focus:outline-none bg-transparent">
-                                <button type="button" id="plus-btn" class="w-12 h-12 rounded-xl border-2 border-cream flex items-center justify-center hover:border-primary transition-all"><i data-lucide="plus"></i></button>
+                                <button type="button" id="minus-btn" class="w-10 h-10 border-2 border-cream rounded-xl">-</button>
+                                <input type="number" name="jumlah" value="1" min="1" class="w-16 text-center font-bold bg-transparent">
+                                <button type="button" id="plus-btn" class="w-10 h-10 border-2 border-cream rounded-xl">+</button>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Step 3: Data Diri -->
+                <!-- Step 3 -->
                 <div id="step-3" class="hidden space-y-8">
-                    <h2 class="text-2xl font-heading font-bold text-center">Informasi Kontak</h2>
+                    <h2 class="text-3xl font-heading font-bold text-center">Informasi Kontak</h2>
                     <div class="space-y-6">
-                        <div>
-                            <label class="block text-sm font-semibold mb-2">Nama Lengkap <span class="text-red-500">*</span></label>
-                            <input type="text" name="nama" id="form-nama" required placeholder="Nama lengkap Anda" class="w-full border-2 border-cream rounded-xl p-4 focus:border-primary focus:outline-none transition-all bg-transparent">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-semibold mb-2">Alamat Email <span class="text-red-500">*</span></label>
-                            <input type="email" name="email" id="form-email" required placeholder="nama@email.com" class="w-full border-2 border-cream rounded-xl p-4 focus:border-primary focus:outline-none transition-all bg-transparent">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-semibold mb-2">Nomor WhatsApp <span class="text-red-500">*</span></label>
-                            <input type="tel" name="noHP" required placeholder="Contoh: 08123456789" class="w-full border-2 border-cream rounded-xl p-4 focus:border-primary focus:outline-none transition-all bg-transparent">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-semibold mb-2">Rencana Datang Fitting <span class="text-red-500">*</span></label>
-                            <input type="date" name="tanggalFitting" required class="w-full border-2 border-cream rounded-xl p-4 focus:border-primary focus:outline-none transition-all bg-transparent">
-                        </div>
+                        <div><label class="block text-xs font-bold uppercase text-gray-400 mb-2">Nama Lengkap *</label><input type="text" name="nama" id="form-nama" required class="w-full border-2 border-cream rounded-xl p-4 focus:border-primary outline-none"></div>
+                        <div><label class="block text-xs font-bold uppercase text-gray-400 mb-2">Email *</label><input type="email" name="email" id="form-email" required class="w-full border-2 border-cream rounded-xl p-4 focus:border-primary outline-none"></div>
+                        <div><label class="block text-xs font-bold uppercase text-gray-400 mb-2">Nomor WhatsApp *</label><input type="tel" name="noHP" id="form-nohp" required placeholder="Contoh: 08123456789" class="w-full border-2 border-cream rounded-xl p-4 focus:border-primary outline-none"></div>
+                        <div><label class="block text-xs font-bold uppercase text-gray-400 mb-2">Rencana Fitting *</label><input type="date" name="tanggalFitting" id="form-tanggal" required class="w-full border-2 border-cream rounded-xl p-4 focus:border-primary outline-none"></div>
                     </div>
                 </div>
 
-                <!-- Step 4: Konfirmasi -->
-                <div id="step-4" class="hidden space-y-8">
-                    <h2 class="text-2xl font-heading font-bold text-center">Konfirmasi Pesanan</h2>
-                    <div id="summary-cards" class="space-y-4"></div>
+                <!-- Step 4 -->
+                <div id="step-4" class="hidden space-y-8 text-center">
+                    <h2 class="text-3xl font-heading font-bold">Konfirmasi</h2>
+                    <div id="summary-cards" class="bg-primary/5 p-6 rounded-3xl border border-primary/10 text-left"></div>
+                    <p class="text-xs text-gray-500 italic">"Pastikan data Anda sudah benar sebelum mengirim."</p>
                 </div>
 
-                <!-- Footer Buttons -->
                 <div class="flex justify-between mt-12 gap-4">
-                    <button type="button" id="prev-btn" class="hidden px-8 py-3 rounded-full font-semibold border-2 border-cream hover:border-primary transition-all">Kembali</button>
-                    <button type="button" id="next-btn" class="flex-grow bg-primary text-white px-8 py-4 rounded-full font-semibold hover:bg-opacity-90 transition-all flex items-center justify-center gap-2 shadow-lg">
-                        <span>Selanjutnya</span>
-                        <i data-lucide="arrow-right" class="w-5 h-5"></i>
+                    <button type="button" id="prev-btn" class="hidden px-8 py-4 rounded-full font-bold border-2 border-cream hover:border-primary transition-all text-sm">Kembali</button>
+                    <button type="button" id="next-btn" class="flex-grow bg-primary text-white px-8 py-4 rounded-full font-bold hover:brightness-110 shadow-lg flex items-center justify-center gap-2">
+                        <span>Selanjutnya</span><i data-lucide="arrow-right" class="w-4 h-4"></i>
                     </button>
                 </div>
             </form>
 
-            <div id="success-screen" class="hidden p-12 text-center space-y-8">
-                <div class="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto">
-                    <i data-lucide="check" class="w-10 h-10"></i>
-                </div>
+            <div id="success-screen" class="hidden p-12 text-center space-y-8 animate-fadein">
+                <div class="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto shadow-inner"><i data-lucide="check" class="w-10 h-10"></i></div>
                 <h2 class="text-3xl font-heading font-bold">Pendaftaran Berhasil!</h2>
-                <div class="bg-warm-white p-6 rounded-2xl">
-                    <p class="text-gray-500 text-sm mb-2">Nomor Antrian Anda:</p>
-                    <div id="result-no-antrian" class="text-5xl font-heading font-bold text-primary">#0000</div>
-                </div>
-                <div class="pt-4 flex flex-col gap-3">
-                    <a href="index.html" class="bg-primary text-white py-4 rounded-full font-semibold">Kembali ke Beranda</a>
-                </div>
+                <div class="bg-warm-white p-8 rounded-3xl border border-cream"><p class="text-xs text-gray-400 uppercase font-bold tracking-widest mb-2">Nomor Antrian</p><div id="result-no-antrian" class="text-5xl font-heading font-bold text-primary">#0000</div></div>
+                <a href="index.html" class="bg-primary text-white px-10 py-4 rounded-full font-bold inline-block">Selesai</a>
             </div>
         </div>
     </main>
 
-    <footer class="py-8 text-center text-gray-400 text-sm">&copy; 2026 Dewi Tailor.</footer>
+    <footer class="py-8 text-center text-gray-400 text-[10px] tracking-widest uppercase">&copy; 2026 Dewi Tailor.</footer>
 
     <script type="module">
         import { db, auth } from './js/firebase-config.js';
@@ -233,143 +194,101 @@
         import { generateToken } from './js/utils.js';
 
         lucide.createIcons();
-
-        // AUTH & AUTO-FILL
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                document.getElementById('form-email').value = user.email;
-                const snap = await getDoc(doc(db, 'users', user.uid));
-                if (snap.exists()) document.getElementById('form-nama').value = snap.data().username || '';
-            }
-        });
-
-        const imageUpload = document.getElementById('image-upload');
-        const imagePreview = document.getElementById('image-preview');
-        const fileNameLabel = document.getElementById('file-name');
-        let uploadedImageData = "";
-
-        imageUpload.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                fileNameLabel.textContent = file.name;
-                const reader = new FileReader();
-                reader.onload = (re) => {
-                    uploadedImageData = re.target.result;
-                    imagePreview.querySelector('img').src = uploadedImageData;
-                    imagePreview.classList.remove('hidden');
-                };
-                reader.readAsDataURL(file);
-            }
-        });
-
         let currentStep = 1;
-        const totalSteps = 4;
         const form = document.getElementById('pre-order-form');
         const nextBtn = document.getElementById('next-btn');
         const prevBtn = document.getElementById('prev-btn');
-        const jenisGrid = document.getElementById('jenis-grid');
 
-        const choices = {
-            wanita_dewasa: ['Dress', 'Kebaya', 'Gamis', 'Blouse/Atasan', 'Rok', 'Celana Wanita', 'Jumpsuit', 'Lainnya'],
-            anak_perempuan: ['Dress Anak', 'Gamis Anak', 'Baju Pesta Anak', 'Seragam Anak', 'Lainnya']
-        };
-
-        function updateJenisGrid() {
-            const kategori = form.kategori.value;
-            jenisGrid.innerHTML = choices[kategori].map(choice => `
-                <label class="cursor-pointer">
-                    <input type="radio" name="jenisPakaian" value="${choice}" class="hidden peer" ${choice === choices[kategori][0] ? 'checked' : ''}>
-                    <div class="border-2 border-cream rounded-xl p-3 text-center text-xs sm:text-sm peer-checked:border-primary peer-checked:bg-primary peer-checked:text-white transition-all">
-                        ${choice}
-                    </div>
-                </label>
-            `).join('');
-        }
-        form.kategori.forEach(radio => radio.addEventListener('change', updateJenisGrid));
-        updateJenisGrid();
-
-        document.getElementById('plus-btn').onclick = () => { form.jumlah.value = parseInt(form.jumlah.value) + 1; };
-        document.getElementById('minus-btn').onclick = () => { if(form.jumlah.value > 1) form.jumlah.value = parseInt(form.jumlah.value) - 1; };
-
-        function updateStepUI() {
-            for (let i = 1; i <= totalSteps; i++) {
-                document.getElementById(`step-${i}`).classList.toggle('hidden', i !== currentStep);
-                const ind = document.getElementById(`step-${i}-indicator`);
-                const circ = ind.querySelector('div');
-                if (i < currentStep) {
-                    ind.style.opacity = '1'; circ.classList.add('step-completed'); circ.innerHTML = '<i data-lucide="check" class="w-4 h-4"></i>';
-                } else if (i === currentStep) {
-                    ind.style.opacity = '1'; circ.classList.add('border-primary', 'text-primary'); circ.classList.remove('step-completed'); circ.textContent = i;
-                } else {
-                    ind.style.opacity = '0.3'; circ.classList.remove('border-primary', 'text-primary', 'step-completed'); circ.textContent = i;
-                }
+        onAuthStateChanged(auth, async (u) => { 
+            if(u) { 
+                document.getElementById('form-email').value = u.email;
+                const s = await getDoc(doc(db,'users',u.uid));
+                if(s.exists()) document.getElementById('form-nama').value = s.data().username||'';
             }
-            prevBtn.classList.toggle('hidden', currentStep === 1);
-            nextBtn.querySelector('span').textContent = currentStep === totalSteps ? 'Kirim Pesanan' : 'Selanjutnya';
-            if (currentStep === 4) renderSummary();
-            lucide.createIcons();
-        }
+        });
 
-        function renderSummary() {
-            const fd = new FormData(form);
-            document.getElementById('summary-cards').innerHTML = `
-                <div class="grid grid-cols-2 gap-3 text-sm">
-                    <div class="bg-primary/5 p-4 rounded-xl"><strong>Pakaian:</strong> ${fd.get('jenisPakaian')}</div>
-                    <div class="bg-primary/5 p-4 rounded-xl"><strong>Jumlah:</strong> ${fd.get('jumlah')}</div>
-                    <div class="bg-primary/5 p-4 rounded-xl col-span-2"><strong>Nama:</strong> ${fd.get('nama')}</div>
-                    <div class="bg-primary/5 p-4 rounded-xl col-span-2"><strong>Email:</strong> ${fd.get('email')}</div>
-                </div>
-            `;
+        const choices = { wanita_dewasa: ['Dress', 'Kebaya', 'Gamis', 'Blouse', 'Rok', 'Celana', 'Lainnya'], anak_perempuan: ['Dress Anak', 'Gamis Anak', 'Baju Pesta', 'Lainnya'] };
+        const updateGrid = () => {
+            const k = form.kategori.value;
+            document.getElementById('jenis-grid').innerHTML = choices[k].map(c => `
+                <label class="cursor-pointer">
+                    <input type="radio" name="jenisPakaian" value="${c}" class="hidden peer" ${c===choices[k][0]?'checked':''}>
+                    <div class="border-2 border-cream rounded-xl p-3 text-center text-[10px] font-bold uppercase peer-checked:border-primary peer-checked:bg-primary peer-checked:text-white transition-all">${c}</div>
+                </label>`).join('');
+        };
+        form.kategori.forEach(r => r.onchange = updateGrid);
+        updateGrid();
+
+        document.getElementById('plus-btn').onclick = () => form.jumlah.value++;
+        document.getElementById('minus-btn').onclick = () => { if(form.jumlah.value>1) form.jumlah.value--; };
+
+        function validate() {
+            let ok = true;
+            const fields = document.getElementById(`step-${currentStep}`).querySelectorAll('[required]');
+            fields.forEach(f => {
+                f.classList.remove('error-field');
+                if(!f.value.trim()) { f.classList.add('error-field'); ok = false; }
+                // WA Validation
+                if(f.id==='form-nohp' && !/^\d{10,14}$/.test(f.value)) { f.classList.add('error-field'); ok = false; alert("Nomor WA tidak valid (minimal 10 digit angka)"); }
+                // Date Validation
+                if(f.id==='form-tanggal') {
+                    const selected = new Date(f.value); selected.setHours(0,0,0,0);
+                    const today = new Date(); today.setHours(0,0,0,0);
+                    if(selected < today) { f.classList.add('error-field'); ok = false; alert("Tanggal fitting tidak boleh di masa lalu!"); }
+                }
+            });
+            return ok;
         }
 
         nextBtn.onclick = async () => {
-            if (currentStep < totalSteps) {
-                const fields = document.getElementById(`step-${currentStep}`).querySelectorAll('[required]');
-                let ok = true;
-                fields.forEach(f => { if(!f.value) { f.classList.add('border-red-400'); ok = false; } else f.classList.remove('border-red-400'); });
-                if (ok) { currentStep++; updateStepUI(); }
-            } else {
-                await handleSubmit();
-            }
+            if(currentStep < 4) { if(validate()) { currentStep++; updateUI(); } }
+            else { await submit(); }
         };
-        prevBtn.onclick = () => { currentStep--; updateStepUI(); };
+        prevBtn.onclick = () => { currentStep--; updateUI(); };
 
-        async function handleSubmit() {
-            nextBtn.disabled = true; nextBtn.innerHTML = 'Memproses...';
+        const updateUI = () => {
+            for(let i=1; i<=4; i++) {
+                document.getElementById(`step-${i}`).classList.toggle('hidden', i!==currentStep);
+                const circ = document.getElementById(`step-${i}-indicator`).querySelector('.step-circle');
+                circ.classList.remove('active','completed');
+                if(i < currentStep) { circ.classList.add('completed'); circ.innerHTML='<i data-lucide="check" class="w-4 h-4"></i>'; }
+                else if(i===currentStep) { circ.classList.add('active'); circ.textContent=i; }
+                else { circ.textContent=i; }
+            }
+            prevBtn.classList.toggle('hidden', currentStep===1);
+            nextBtn.querySelector('span').textContent = currentStep===4?'Daftar Sekarang':'Selanjutnya';
+            if(currentStep===4) {
+                const fd = new FormData(form);
+                document.getElementById('summary-cards').innerHTML = `<div class="space-y-2 text-sm">
+                    <p><strong>Baju:</strong> ${fd.get('jenisPakaian')} (${fd.get('jumlah')})</p>
+                    <p><strong>Nama:</strong> ${fd.get('nama')}</p>
+                    <p><strong>WA:</strong> ${fd.get('noHP')}</p>
+                    <p><strong>Fitting:</strong> ${fd.get('tanggalFitting')}</p>
+                </div>`;
+            }
+            lucide.createIcons();
+        };
+
+        async function submit() {
+            nextBtn.disabled=true; nextBtn.innerHTML="Memproses...";
             try {
                 const fd = new FormData(form);
-                const configRef = doc(db, 'config', 'app');
-                let no = 0;
+                const conf = doc(db,'config','app');
+                let no = 1;
                 await runTransaction(db, async (t) => {
-                    const snap = await t.get(configRef);
-                    no = (snap.exists() ? snap.data().counterAntrian || 0 : 0) + 1;
-                    t.set(configRef, { counterAntrian: no }, { merge: true });
+                    const s = await t.get(conf);
+                    no = (s.exists()?s.data().counterAntrian||0:0)+1;
+                    t.set(conf, {counterAntrian:no}, {merge:true});
                 });
-
-                await addDoc(collection(db, 'orders'), {
-                    nomorAntrian: no,
-                    nama: fd.get('nama'),
-                    email: fd.get('email'),
-                    noHP: fd.get('noHP'),
-                    jenisPakaian: fd.get('jenisPakaian'),
-                    deskripsi: fd.get('deskripsi'),
-                    keteranganKhusus: fd.get('keteranganKhusus'),
-                    jumlah: parseInt(fd.get('jumlah')),
-                    tanggalFitting: Timestamp.fromDate(new Date(fd.get('tanggalFitting'))),
-                    tanggalMasuk: Timestamp.now(),
-                    status: 'menunggu',
-                    statusBayar: 'belum_lunas',
-                    fotoReferensi: uploadedImageData,
-                    qrToken: generateToken()
+                await addDoc(collection(db,'orders'), {
+                    nomorAntrian:no, nama:fd.get('nama'), email:fd.get('email'), noHP:fd.get('noHP'),
+                    jenisPakaian:fd.get('jenisPakaian'), deskripsi:fd.get('deskripsi'), jumlah:parseInt(fd.get('jumlah')),
+                    tanggalFitting:Timestamp.fromDate(new Date(fd.get('tanggalFitting'))), tanggalMasuk:Timestamp.now(),
+                    status:'menunggu', statusBayar:'belum_lunas', qrToken:generateToken()
                 });
-
-                form.classList.add('hidden');
-                document.getElementById('success-screen').classList.remove('hidden');
-                document.getElementById('result-no-antrian').textContent = '#' + String(no).padStart(4, '0');
-            } catch (e) {
-                alert("Error: " + e.message);
-                nextBtn.disabled = false; nextBtn.textContent = 'Kirim Pesanan';
-            }
+                form.classList.add('hidden'); document.getElementById('success-screen').classList.remove('hidden');
+                document.getElementById('result-no-antrian').textContent = '#'+String(no).padStart(4,'0');
+            } catch(e) { alert("Gagal: "+e.message); nextBtn.disabled=false; }
         }
     </script>
 </body>
