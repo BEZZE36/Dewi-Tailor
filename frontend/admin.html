@@ -198,7 +198,13 @@
         <input type="file" id="g-foto-file" accept="image/*" class="w-full bg-admin-bg border border-admin-border rounded-xl p-3 focus:outline-none text-sm">
         <p class="text-xs text-admin-muted mt-1">Atau isi URL langsung:</p>
         <input type="url" id="g-foto-url" placeholder="https://i.ibb.co/..." class="w-full bg-admin-bg border border-admin-border rounded-xl p-3 focus:border-admin-accent focus:outline-none mt-1">
-        <div id="g-foto-preview" class="mt-2 hidden"><img id="g-foto-preview-img" class="w-full h-40 object-cover rounded-xl border border-admin-border"></div>
+        <div id="g-foto-preview" class="mt-2 hidden">
+          <img id="g-foto-preview-img" class="w-full h-40 object-cover rounded-xl border border-admin-border"
+            onerror="this.style.display='none'; document.getElementById('g-preview-error').style.display='flex'">
+          <div id="g-preview-error" style="display:none" class="w-full h-40 rounded-xl border border-red-500/30 bg-red-500/10 flex flex-col items-center justify-center text-red-400 text-xs gap-2">
+            <span>⚠️ Gambar tidak dapat dimuat</span><span class="text-admin-muted">Ganti URL atau upload file baru</span>
+          </div>
+        </div>
       </div>
       <div class="flex items-center gap-3">
         <label class="toggle-switch"><input type="checkbox" id="g-aktif" checked><span class="slider"></span></label>
@@ -379,6 +385,11 @@
     document.getElementById("gallery-form").reset();
     document.getElementById("g-foto-preview").classList.add("hidden");
     document.getElementById("gallery-upload-status").classList.add("hidden");
+    // Reset preview error state
+    const previewImg = document.getElementById("g-foto-preview-img");
+    const previewErr = document.getElementById("g-preview-error");
+    previewImg.style.display = "block";
+    previewErr.style.display = "none";
     if (id) {
       const item = allGallery.find(g => g.id === id);
       if (!item) return;
@@ -422,9 +433,12 @@
     const formData = new FormData();
     formData.append("image", file);
     const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_KEY}`, { method: "POST", body: formData });
+    if (!res.ok) throw new Error("Upload gagal: " + res.status);
     const json = await res.json();
-    if (!json.success) throw new Error("Upload gagal");
-    return json.data.url;
+    if (!json.success) throw new Error("Upload ditolak ImgBB");
+    const url = json.data?.url || json.data?.display_url || json.data?.image?.url;
+    if (!url) throw new Error("URL tidak diterima dari ImgBB");
+    return url;
   };
 
   document.getElementById("gallery-form").onsubmit = async (e) => {
