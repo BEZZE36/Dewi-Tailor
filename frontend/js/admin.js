@@ -34,21 +34,24 @@ const ADMIN_SESSION_KEY = "adminVerified";
 
 function initAuth() {
   onAuthStateChanged(auth, async (user) => {
+    // Jika sudah ada session dari halaman rahasia, langsung buka
+    if (sessionStorage.getItem(ADMIN_SESSION_KEY) === "true") {
+      showDashboard();
+      initDashboard();
+      return;
+    }
+
     if (user) {
-      // Cek apakah user ini adalah admin
       const userSnap = await getDoc(doc(db, "users", user.uid));
       const isAdmin = userSnap.exists() && userSnap.data().role === 'admin';
       
       if (isAdmin) {
-        // Jika sudah admin, langsung masuk (Persistence)
         sessionStorage.setItem(ADMIN_SESSION_KEY, "true");
         showDashboard();
         initDashboard();
       } else {
-        // Jika login tapi bukan admin (User biasa nyasar ke halaman admin)
         await signOut(auth);
         showLogin();
-        alert("Akses Ditolak: Anda bukan admin.");
       }
     } else {
       showLogin();
