@@ -231,30 +231,6 @@
   </div>
 </div>
 
-<script>
-// PIN box auto-advance
-document.addEventListener('DOMContentLoaded', () => {
-  if(window.lucide) lucide.createIcons();
-  const boxes = document.querySelectorAll('.pin-box');
-  boxes.forEach((box, i) => {
-    box.addEventListener('input', () => {
-      box.value = box.value.replace(/\D/g,'').slice(0,1);
-      if(box.value && i < boxes.length-1) boxes[i+1].focus();
-      document.getElementById('pin-input').value = [...boxes].map(b=>b.value).join('');
-    });
-    box.addEventListener('keydown', e => {
-      if(e.key==='Backspace' && !box.value && i > 0) { boxes[i-1].focus(); boxes[i-1].value=''; }
-    });
-  });
-  document.getElementById('back-to-login-btn')?.addEventListener('click', () => {
-    document.getElementById('login-step-2').style.display='none';
-    document.getElementById('login-step-1').style.display='block';
-    document.getElementById('login-error').textContent='';
-    boxes.forEach(b=>b.value='');
-    document.getElementById('pin-input').value='';
-  });
-});
-</script>
 <script type="module" src="./js/admin.js"></script>
 </body>
 </html>

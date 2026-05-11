@@ -187,15 +187,13 @@ document.getElementById("toggle-password")?.addEventListener("click", () => {
 });
 
 function showLogin() {
-  document.getElementById("login-step-1").style.display = "block";
-  document.getElementById("login-step-2").style.display = "none";
-  document.getElementById("login-overlay").style.display = "flex";
-  document.getElementById("dashboard-wrapper").style.display = "none";
-  sessionStorage.removeItem(ADMIN_SESSION_KEY);
+  // Redirect ke halaman rahasia jika belum terverifikasi
+  window.location.href = "index.html";
 }
 
 function showDashboard() {
-  document.getElementById("login-overlay").style.display = "none";
+  const loading = document.getElementById("loading-overlay");
+  if (loading) loading.style.display = "none";
   document.getElementById("dashboard-wrapper").style.display = "block";
 }
 
