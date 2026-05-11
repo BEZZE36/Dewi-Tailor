@@ -421,11 +421,33 @@
 
   document.getElementById("g-foto-url").addEventListener("input", (e) => {
     const url = e.target.value.trim();
+    const previewImg = document.getElementById("g-foto-preview-img");
+    const previewErr = document.getElementById("g-preview-error");
     if (url) {
-      document.getElementById("g-foto-preview-img").src = url;
+      previewImg.src = url;
+      previewImg.style.display = "block";
+      previewErr.style.display = "none";
       document.getElementById("g-foto-preview").classList.remove("hidden");
     } else {
       document.getElementById("g-foto-preview").classList.add("hidden");
+    }
+  });
+
+  // Preview untuk file yang dipilih lokal
+  document.getElementById("g-foto-file").addEventListener("change", (e) => {
+    const file = e.target.files[0];
+    const previewImg = document.getElementById("g-foto-preview-img");
+    const previewErr = document.getElementById("g-preview-error");
+    
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        previewImg.src = event.target.result;
+        previewImg.style.display = "block";
+        previewErr.style.display = "none";
+        document.getElementById("g-foto-preview").classList.remove("hidden");
+      };
+      reader.readAsDataURL(file);
     }
   });
 
