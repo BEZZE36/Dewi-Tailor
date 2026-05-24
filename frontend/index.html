@@ -110,7 +110,7 @@
           <a href="#galeri" class="nav-link relative font-medium">Galeri</a>
           <a href="#layanan" class="nav-link relative font-medium">Layanan</a>
           <a href="antrian.html" class="nav-link relative font-medium">Antrian</a>
-          <a href="cek-status.html" class="nav-link relative font-medium">Cek Order</a>
+
           
           <!-- Tombol Mode Malam -->
           <button id="dark-toggle" title="Toggle Tema" class="w-9 h-9 rounded-full border border-cream flex items-center justify-center text-primary hover:bg-primary hover:text-white transition-all">
@@ -120,8 +120,6 @@
 
           <!-- AREA LOGIN / PROFIL -->
           <div id="nav-auth-area" class="flex items-center gap-4">
-             <a href="login-user.html" class="text-sm font-bold text-primary hover:underline">Masuk</a>
-             <button onclick="checkAuthBeforePreOrder()" class="bg-primary text-white px-6 py-2 rounded-full font-semibold hover:bg-opacity-90 transition-all">Pre-Order</button>
           </div>
         </div>
 
@@ -136,7 +134,7 @@
         <a href="#beranda" class="block font-medium">Beranda</a>
         <a href="#galeri" class="block font-medium">Galeri</a>
         <a href="antrian.html" class="block font-medium">Antrian</a>
-        <button onclick="checkAuthBeforePreOrder()" class="block w-full bg-primary text-white py-3 rounded-lg font-semibold">Pre-Order</button>
+
       </div>
     </header>
 
@@ -359,7 +357,7 @@
                   <i data-lucide="user" class="w-5 h-5"></i>
                 </button>
               </div>
-              <button onclick="checkAuthBeforePreOrder()" class="bg-primary text-white px-6 py-2 rounded-full font-semibold shadow-md active:scale-95 transition-all">Pre-Order</button>
+
               <a href="#" onclick="handleLogout()" class="text-[10px] font-bold text-gray-400 hover:text-red-500 uppercase">Keluar</a>
             `;
             navAuth.innerHTML = ui;
@@ -368,8 +366,8 @@
           }
         } else {
           form.classList.add('hidden'); prompt.classList.remove('hidden');
-          navAuth.innerHTML = `<a href="login-user.html" class="text-sm font-bold text-primary hover:underline">Masuk</a><button onclick="checkAuthBeforePreOrder()" class="bg-primary text-white px-6 py-2 rounded-full font-semibold">Pre-Order</button>`;
-          mobAuth.innerHTML = `<a href="login-user.html" class="bg-primary text-white px-6 py-2 rounded-lg block font-bold">Masuk / Daftar</a>`;
+          navAuth.innerHTML = ``;
+          mobAuth.innerHTML = ``;
           if (idleTimer) clearTimeout(idleTimer);
         }
       });
