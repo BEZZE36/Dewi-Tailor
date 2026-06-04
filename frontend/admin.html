@@ -101,7 +101,8 @@
         <div id="section-orders" class="section-page hidden space-y-8">
           <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <h1 class="text-3xl font-bold">Manajemen Order</h1>
-            <div class="flex flex-wrap gap-3">
+            <div class="flex flex-wrap gap-3 items-center">
+              <button onclick="window.openAddOrderModal()" class="bg-admin-accent text-white px-5 py-2 rounded-xl font-bold flex items-center gap-2 hover:brightness-110 transition-all text-sm"><i data-lucide="plus" class="w-4 h-4"></i> Tambah Order</button>
               <div class="relative"><input id="search-order" type="text" placeholder="Cari nama..." class="bg-admin-card border border-admin-border rounded-xl px-4 py-2 pl-10 focus:border-admin-accent focus:outline-none text-sm w-48"><i data-lucide="search" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-admin-muted"></i></div>
               <select id="filter-status" class="bg-admin-card border border-admin-border rounded-xl px-4 py-2 text-sm focus:outline-none"><option value="semua">Semua Status</option><option value="menunggu">Menunggu</option><option value="dikerjakan">Dikerjakan</option><option value="fitting">Fitting</option><option value="selesai">Selesai</option></select>
               <select id="sort-order" class="bg-admin-card border border-admin-border rounded-xl px-4 py-2 text-sm focus:outline-none"><option value="terbaru">Terbaru</option><option value="terlama">Terlama</option><option value="estimasi">Estimasi Terdekat</option></select>
@@ -242,6 +243,88 @@
 
 <div id="toast"></div>
 
+<!-- Modal Tambah Order Manual -->
+<div id="add-order-modal" class="modal-overlay fixed inset-0 z-[70] hidden items-center justify-center p-4">
+  <div class="bg-admin-card w-full max-w-lg rounded-3xl border border-admin-border shadow-2xl max-h-[90vh] overflow-y-auto custom-scrollbar">
+    <div class="p-8 border-b border-admin-border flex justify-between items-center sticky top-0 bg-admin-card z-10">
+      <div>
+        <h3 class="text-xl font-bold">Tambah Order Manual</h3>
+        <p class="text-admin-muted text-xs mt-1">Tambah pesanan langsung dari admin</p>
+      </div>
+      <button onclick="closeAddOrderModal()" class="text-admin-muted hover:text-white p-1"><i data-lucide="x"></i></button>
+    </div>
+    <form id="add-order-form" class="p-8 space-y-5">
+      <div class="grid grid-cols-2 gap-5">
+        <div>
+          <label class="block text-xs font-bold text-admin-muted mb-2">Nama Pelanggan <span class="text-red-400">*</span></label>
+          <input type="text" id="ao-nama" placeholder="cth. Siti Rahayu" required class="w-full bg-admin-bg border border-admin-border rounded-xl p-3 focus:border-admin-accent focus:outline-none">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-admin-muted mb-2">No. HP / WhatsApp</label>
+          <input type="tel" id="ao-nohp" placeholder="cth. 08123456789" class="w-full bg-admin-bg border border-admin-border rounded-xl p-3 focus:border-admin-accent focus:outline-none">
+        </div>
+      </div>
+      <div>
+        <label class="block text-xs font-bold text-admin-muted mb-2">Jenis Pakaian <span class="text-red-400">*</span></label>
+        <select id="ao-jenis" required class="w-full bg-admin-bg border border-admin-border rounded-xl p-3 focus:border-admin-accent focus:outline-none">
+          <option value="">-- Pilih Jenis --</option>
+          <option value="Blouse / Atasan">Blouse / Atasan</option>
+          <option value="Rok / Celana Wanita">Rok / Celana Wanita</option>
+          <option value="Dress Casual">Dress Casual</option>
+          <option value="Dress Pesta">Dress Pesta</option>
+          <option value="Gamis">Gamis</option>
+          <option value="Kebaya">Kebaya</option>
+          <option value="Pakaian Anak">Pakaian Anak</option>
+          <option value="Lainnya">Lainnya</option>
+        </select>
+      </div>
+      <div class="grid grid-cols-2 gap-5">
+        <div>
+          <label class="block text-xs font-bold text-admin-muted mb-2">Status Awal</label>
+          <select id="ao-status" class="w-full bg-admin-bg border border-admin-border rounded-xl p-3 focus:border-admin-accent focus:outline-none">
+            <option value="menunggu">Menunggu</option>
+            <option value="dikerjakan">Dikerjakan</option>
+            <option value="fitting">Fitting</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-admin-muted mb-2">Estimasi Selesai</label>
+          <input type="date" id="ao-estimasi" class="w-full bg-admin-bg border border-admin-border rounded-xl p-3 focus:border-admin-accent focus:outline-none">
+        </div>
+      </div>
+      <div class="grid grid-cols-2 gap-5">
+        <div>
+          <label class="block text-xs font-bold text-admin-muted mb-2">Harga (Rp)</label>
+          <input type="number" id="ao-harga" placeholder="0" class="w-full bg-admin-bg border border-admin-border rounded-xl p-3 focus:border-admin-accent focus:outline-none">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-admin-muted mb-2">Status Bayar</label>
+          <select id="ao-status-bayar" class="w-full bg-admin-bg border border-admin-border rounded-xl p-3 focus:border-admin-accent focus:outline-none">
+            <option value="belum_lunas">Belum Lunas</option>
+            <option value="lunas">Lunas</option>
+          </select>
+        </div>
+      </div>
+      <div>
+        <label class="block text-xs font-bold text-admin-muted mb-2">Metode Bayar</label>
+        <select id="ao-metode-bayar" class="w-full bg-admin-bg border border-admin-border rounded-xl p-3 focus:border-admin-accent focus:outline-none">
+          <option value="tunai">Tunai</option>
+          <option value="transfer">Transfer</option>
+          <option value="qris">QRIS</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-xs font-bold text-admin-muted mb-2">Catatan Admin</label>
+        <textarea id="ao-catatan" placeholder="Catatan tambahan..." class="w-full bg-admin-bg border border-admin-border rounded-xl p-3 h-20 focus:border-admin-accent focus:outline-none resize-none"></textarea>
+      </div>
+      <div class="flex gap-4 pt-2">
+        <button type="button" onclick="closeAddOrderModal()" class="flex-1 p-4 rounded-xl border border-admin-border font-bold hover:bg-admin-bg">Batal</button>
+        <button type="submit" id="add-order-save-btn" class="flex-1 p-4 rounded-xl bg-admin-accent text-white font-bold hover:brightness-110 transition-all">Tambah Order</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <!-- ═══ SCRIPTS ═══ -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
@@ -372,9 +455,60 @@
         <td class="px-5 py-4">${statusBadge(o.status)}</td>
         <td class="px-5 py-4">${statusBayarBadge(o.statusBayar)}</td>
         <td class="px-5 py-4"><button onclick="window.openQR('${o.id}')" class="text-admin-accent font-bold">QR</button></td>
-        <td class="px-5 py-4"><button onclick="window.editOrder('${o.id}')" class="font-bold">Edit</button></td>
+        <td class="px-5 py-4 flex items-center gap-2">
+          <button onclick="window.editOrder('${o.id}')" class="font-bold text-admin-accent hover:underline">Edit</button>
+          <span class="text-admin-border">|</span>
+          <button onclick="window.deleteOrder('${o.id}', '${(o.nama||"").replace(/'/g,"&#39;")}')" class="font-bold text-red-400 hover:text-red-300 hover:underline">Hapus</button>
+        </td>
       </tr>`;
     }).join("");
+  };
+
+  // --- DELETE ORDER ---
+  window.deleteOrder = async (id, nama) => {
+    if (!confirm(`Hapus order milik "${nama}"?\nData akan terhapus permanen dari antrian web juga.`)) return;
+    await deleteDoc(doc(db, "orders", id));
+    showToast(`🗑️ Order "${nama}" berhasil dihapus.`);
+  };
+
+  // --- ADD ORDER MODAL ---
+  window.openAddOrderModal = () => {
+    document.getElementById("add-order-form").reset();
+    document.getElementById("add-order-modal").style.display = "flex";
+    if (window.lucide) lucide.createIcons();
+  };
+  window.closeAddOrderModal = () => document.getElementById("add-order-modal").style.display = "none";
+
+  document.getElementById("add-order-form").onsubmit = async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById("add-order-save-btn");
+    btn.disabled = true; btn.textContent = "Menyimpan...";
+    try {
+      const namaVal = document.getElementById("ao-nama").value.trim();
+      const estimasiVal = document.getElementById("ao-estimasi").value;
+      const data = {
+        nama: namaVal,
+        noHp: document.getElementById("ao-nohp").value.trim(),
+        jenisPakaian: document.getElementById("ao-jenis").value,
+        status: document.getElementById("ao-status").value,
+        harga: Number(document.getElementById("ao-harga").value) || 0,
+        statusBayar: document.getElementById("ao-status-bayar").value,
+        metodeBayar: document.getElementById("ao-metode-bayar").value,
+        catatanAdmin: document.getElementById("ao-catatan").value.trim(),
+        estimasiSelesai: estimasiVal ? Timestamp.fromDate(new Date(estimasiVal)) : null,
+        tanggalMasuk: Timestamp.now(),
+        tanggalUpdate: Timestamp.now(),
+        tanggalSelesai: null,
+        sumber: "admin"
+      };
+      await addDoc(collection(db, "orders"), data);
+      window.closeAddOrderModal();
+      showToast(`✅ Order baru untuk "${namaVal}" berhasil ditambahkan!`);
+    } catch(err) {
+      alert("❌ Gagal menambah order: " + err.message);
+    } finally {
+      btn.disabled = false; btn.textContent = "Tambah Order";
+    }
   };
 
   const showToast = (msg) => {

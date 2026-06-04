@@ -1,12 +1,13 @@
 // Utility functions for Dewi Tailor
 
 /**
- * Samarkan nama: 2 karakter pertama + "***"
- * Contoh: "Siti Rahma" → "Si***"
+ * Tampilkan nama pelanggan: nama lengkap, maksimal 15 karakter
+ * Contoh: "Siti Rahmadhani" → "Siti Rahmadhani"
+ * Contoh: "Yuliana Permatasari" → "Yuliana Permata"
  */
 export function samarkanNama(nama) {
-  if (!nama || nama.length === 0) return "***";
-  return nama.slice(0, 2) + "***";
+  if (!nama || nama.length === 0) return "-";
+  return nama.length > 15 ? nama.slice(0, 15) : nama;
 }
 
 /**

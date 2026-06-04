@@ -94,7 +94,7 @@ function renderTabel(orders) {
       <tr class="antrian-row border-b border-cream/30 hover:bg-warm-white/50 dark:hover:bg-white/5 transition-colors ${o.status === "dikerjakan" ? "bg-primary/5" : ""}"
           style="animation: slideInRow 0.3s ease ${i * 0.05}s both">
         <td class="px-8 py-5 font-bold text-primary">#${formatNomorAntrian(o.nomorAntrianDinamis)}</td>
-        <td class="px-8 py-5 font-medium dark:text-gray-200">${samarkanNama(o.nama)}</td>
+        <td class="px-8 py-5 font-medium dark:text-gray-200 max-w-[10rem]"><span class="block truncate" title="${o.nama||''}">${samarkanNama(o.nama)}</span></td>
         <td class="px-8 py-5 text-gray-600 dark:text-gray-400">${o.jenisPakaian || "-"}</td>
         <td class="px-8 py-5">${statusBadge(o.status)}</td>
         <td class="px-8 py-5 text-gray-600 dark:text-gray-400">${formatTgl(o.estimasiSelesai)}</td>
@@ -110,7 +110,7 @@ function renderTabel(orders) {
           <span class="font-bold text-primary text-lg">#${formatNomorAntrian(o.nomorAntrianDinamis)}</span>
           ${statusBadge(o.status)}
         </div>
-        <div class="font-semibold mb-1 dark:text-gray-200">${samarkanNama(o.nama)}</div>
+        <div class="font-semibold mb-1 dark:text-gray-200 truncate max-w-[180px]" title="${o.nama||''}">${samarkanNama(o.nama)}</div>
         <div class="text-sm text-gray-500 dark:text-gray-400">✂️ ${o.jenisPakaian || "-"}</div>
         <div class="text-sm text-gray-400 dark:text-gray-500 mt-2">📅 ${formatTgl(o.estimasiSelesai)}</div>
       </div>
