@@ -265,18 +265,16 @@
         </div>
       </div>
       <div>
-        <label class="block text-xs font-bold text-admin-muted mb-2">Jenis Pakaian <span class="text-red-400">*</span></label>
-        <select id="ao-jenis" required class="w-full bg-admin-bg border border-admin-border rounded-xl p-3 focus:border-admin-accent focus:outline-none">
-          <option value="">-- Pilih Jenis --</option>
-          <option value="Blouse / Atasan">Blouse / Atasan</option>
-          <option value="Rok / Celana Wanita">Rok / Celana Wanita</option>
-          <option value="Dress Casual">Dress Casual</option>
-          <option value="Dress Pesta">Dress Pesta</option>
-          <option value="Gamis">Gamis</option>
-          <option value="Kebaya">Kebaya</option>
-          <option value="Pakaian Anak">Pakaian Anak</option>
-          <option value="Lainnya">Lainnya</option>
-        </select>
+        <div class="flex items-center justify-between mb-2">
+          <label class="block text-xs font-bold text-admin-muted">Pakaian yang Dipesan <span class="text-red-400">*</span></label>
+          <span id="ao-item-count" class="text-[10px] bg-admin-accent/20 text-admin-accent px-2 py-0.5 rounded-full font-bold">1 item</span>
+        </div>
+        <div id="ao-items-list" class="space-y-2">
+          <!-- Item rows rendered by JS -->
+        </div>
+        <button type="button" id="ao-add-item-btn" onclick="window.addItemRow()" class="mt-3 flex items-center gap-2 text-admin-accent text-xs font-bold hover:brightness-125 transition-all">
+          <i data-lucide="plus-circle" class="w-4 h-4"></i> Tambah Pakaian
+        </button>
       </div>
       <div class="grid grid-cols-2 gap-5">
         <div>
@@ -443,13 +441,21 @@
     const rankedMap = new Map();
     sortedActive.forEach((o, i) => rankedMap.set(o.id, i + 1));
 
+  const getItemsHtml = (o) => {
+    if (o.itemPakaian && Array.isArray(o.itemPakaian) && o.itemPakaian.length > 0) {
+      if (o.itemPakaian.length === 1) return o.itemPakaian[0];
+      return `<span class="font-bold text-admin-accent text-xs">${o.itemPakaian.length} pakaian</span><br><span class="text-[11px] text-admin-muted leading-tight">${o.itemPakaian.join(', ')}</span>`;
+    }
+    return o.jenisPakaian || "-";
+  };
+
     tbody.innerHTML = allOrders.map(o => {
       const dynamicRank = rankedMap.get(o.id) || "-";
       return `
       <tr class="border-b border-admin-border hover:bg-white/5 transition-colors ${!rankedMap.has(o.id) ? 'opacity-50 grayscale-[0.5]' : ''}">
         <td class="px-5 py-4 font-bold text-admin-accent">${dynamicRank !== "-" ? "#" + formatNomorAntrian(dynamicRank) : "-"}</td>
         <td class="px-5 py-4">${o.nama||"-"}</td>
-        <td class="px-5 py-4">${o.jenisPakaian||"-"}</td>
+        <td class="px-5 py-3 leading-tight">${getItemsHtml(o)}</td>
         <td class="px-5 py-4 text-xs">${formatTglPendek(o.tanggalMasuk)}</td>
         <td class="px-5 py-4 text-xs">${formatTgl(o.estimasiSelesai)}</td>
         <td class="px-5 py-4">${statusBadge(o.status)}</td>
@@ -471,11 +477,81 @@
     showToast(`🗑️ Order "${nama}" berhasil dihapus.`);
   };
 
+  // --- MULTI-ITEM HELPERS ---
+  const JENIS_OPTIONS = [
+    "Blouse / Atasan", "Rok / Celana Wanita", "Dress Casual",
+    "Dress Pesta", "Gamis", "Kebaya", "Pakaian Anak", "Lainnya"
+  ];
+
+  const buildSelectOptions = (selected = "") =>
+    `<option value="">-- Pilih Jenis --</option>` +
+    JENIS_OPTIONS.map(j => `<option value="${j}" ${j===selected?'selected':''}>${j}</option>`).join("");
+
+  const updateItemCount = () => {
+    const count = document.querySelectorAll(".ao-item-row").length;
+    document.getElementById("ao-item-count").textContent = count + " item";
+    // Sembunyikan tombol tambah jika sudah 5 item
+    document.getElementById("ao-add-item-btn").style.display = count >= 5 ? "none" : "flex";
+    // Sembunyikan tombol hapus jika hanya 1 item
+    document.querySelectorAll(".ao-remove-btn").forEach(btn => {
+      btn.style.display = count <= 1 ? "none" : "flex";
+    });
+  };
+
+  const createItemRow = (selected = "", customVal = "") => {
+    const row = document.createElement("div");
+    row.className = "ao-item-row space-y-2";
+    const isLainnya = selected === "Lainnya";
+    row.innerHTML = `
+      <div class="flex items-center gap-2">
+        <select class="ao-item-jenis flex-1 bg-admin-bg border border-admin-border rounded-xl p-3 focus:border-admin-accent focus:outline-none text-sm">
+          ${buildSelectOptions(selected)}
+        </select>
+        <button type="button" class="ao-remove-btn w-9 h-9 flex items-center justify-center rounded-xl border border-red-500/30 text-red-400 hover:bg-red-500/10 transition-all flex-shrink-0" onclick="window.removeItemRow(this)">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+      <input type="text" class="ao-item-custom w-full bg-admin-bg border border-admin-accent/50 rounded-xl p-3 focus:border-admin-accent focus:outline-none text-sm placeholder-admin-muted ${isLainnya ? '' : 'hidden'}" placeholder="Ketik jenis pakaian..." value="${customVal}">
+    `;
+    // Bind onchange untuk show/hide custom input
+    row.querySelector(".ao-item-jenis").addEventListener("change", function() {
+      const customInput = this.closest(".ao-item-row").querySelector(".ao-item-custom");
+      if (this.value === "Lainnya") {
+        customInput.classList.remove("hidden");
+        customInput.focus();
+      } else {
+        customInput.classList.add("hidden");
+        customInput.value = "";
+      }
+    });
+    return row;
+  };
+
+  window.addItemRow = () => {
+    const list = document.getElementById("ao-items-list");
+    if (list.querySelectorAll(".ao-item-row").length >= 5) return;
+    list.appendChild(createItemRow());
+    if (window.lucide) lucide.createIcons();
+    updateItemCount();
+  };
+
+  window.removeItemRow = (btn) => {
+    const list = document.getElementById("ao-items-list");
+    if (list.querySelectorAll(".ao-item-row").length <= 1) return;
+    btn.closest(".ao-item-row").remove();
+    updateItemCount();
+  };
+
   // --- ADD ORDER MODAL ---
   window.openAddOrderModal = () => {
     document.getElementById("add-order-form").reset();
-    document.getElementById("add-order-modal").style.display = "flex";
+    // Reset item list ke 1 baris kosong
+    const list = document.getElementById("ao-items-list");
+    list.innerHTML = "";
+    list.appendChild(createItemRow());
     if (window.lucide) lucide.createIcons();
+    updateItemCount();
+    document.getElementById("add-order-modal").style.display = "flex";
   };
   window.closeAddOrderModal = () => document.getElementById("add-order-modal").style.display = "none";
 
@@ -484,12 +560,25 @@
     const btn = document.getElementById("add-order-save-btn");
     btn.disabled = true; btn.textContent = "Menyimpan...";
     try {
+      // Kumpulkan semua item pakaian (handle "Lainnya" → ambil dari custom input)
+      const itemRows = document.querySelectorAll(".ao-item-row");
+      const itemPakaian = [...itemRows].map(row => {
+        const sel = row.querySelector(".ao-item-jenis");
+        const custom = row.querySelector(".ao-item-custom");
+        if (sel.value === "Lainnya") {
+          return custom ? custom.value.trim() : "";
+        }
+        return sel.value;
+      }).filter(v => v !== "");
+      if (itemPakaian.length === 0) { alert("Pilih minimal 1 jenis pakaian!"); btn.disabled=false; btn.textContent="Tambah Order"; return; }
+
       const namaVal = document.getElementById("ao-nama").value.trim();
       const estimasiVal = document.getElementById("ao-estimasi").value;
       const data = {
         nama: namaVal,
         noHp: document.getElementById("ao-nohp").value.trim(),
-        jenisPakaian: document.getElementById("ao-jenis").value,
+        itemPakaian: itemPakaian,
+        jenisPakaian: itemPakaian.join(", "),  // ringkasan untuk backward compat
         status: document.getElementById("ao-status").value,
         harga: Number(document.getElementById("ao-harga").value) || 0,
         statusBayar: document.getElementById("ao-status-bayar").value,
@@ -503,7 +592,7 @@
       };
       await addDoc(collection(db, "orders"), data);
       window.closeAddOrderModal();
-      showToast(`✅ Order baru untuk "${namaVal}" berhasil ditambahkan!`);
+      showToast(`✅ Order baru untuk "${namaVal}" (${itemPakaian.length} pakaian) berhasil ditambahkan!`);
     } catch(err) {
       alert("❌ Gagal menambah order: " + err.message);
     } finally {

@@ -106,8 +106,13 @@
       </div>
     </div>
 
-    <!-- Tabel -->
+    <!-- Tabel Antrian Aktif -->
     <div class="bg-white rounded-3xl border border-cream shadow-sm overflow-hidden animate-fadein" style="animation-delay:.3s">
+      <div class="px-8 py-5 border-b border-cream flex items-center gap-3">
+        <span class="w-2.5 h-2.5 rounded-full bg-amber-400 inline-block animate-pulse"></span>
+        <h2 class="font-bold text-base text-dark-brown tracking-wide">Antrian Aktif</h2>
+        <span id="badge-aktif" class="ml-auto text-xs font-bold bg-primary/10 text-primary px-3 py-1 rounded-full">0 pesanan</span>
+      </div>
       <div class="hidden md:block overflow-x-auto">
         <table class="w-full text-left">
           <thead class="bg-warm-white border-b border-cream">
@@ -125,6 +130,32 @@
         </table>
       </div>
       <div id="antrian-cards" class="md:hidden"></div>
+    </div>
+
+    <!-- Section Selesai Hari Ini -->
+    <div id="section-selesai" class="mt-8 animate-fadein hidden" style="animation-delay:.4s">
+      <div class="flex items-center gap-3 mb-4 px-1">
+        <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span>
+        <h2 class="font-bold text-base text-dark-brown tracking-wide">Selesai Hari Ini</h2>
+        <span id="badge-selesai" class="ml-auto text-xs font-bold bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full dark:bg-emerald-900/30 dark:text-emerald-400">0 pesanan</span>
+      </div>
+      <div class="bg-white rounded-3xl border border-emerald-200 shadow-sm overflow-hidden dark:border-emerald-900/30">
+        <div class="hidden md:block overflow-x-auto">
+          <table class="w-full text-left">
+            <thead class="bg-emerald-50/60 border-b border-emerald-100 dark:bg-emerald-900/10 dark:border-emerald-900/20">
+              <tr>
+                <th class="px-8 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">No. Antrian</th>
+                <th class="px-8 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Nama</th>
+                <th class="px-8 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Jenis Pakaian</th>
+                <th class="px-8 py-4 text-xs font-bold text-emerald-500 uppercase tracking-wider">✓ Status</th>
+                <th class="px-8 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Tanggal Selesai</th>
+              </tr>
+            </thead>
+            <tbody id="selesai-tbody" class="divide-y divide-emerald-100/60 dark:divide-emerald-900/20"></tbody>
+          </table>
+        </div>
+        <div id="selesai-cards" class="md:hidden"></div>
+      </div>
     </div>
   </main>
 
